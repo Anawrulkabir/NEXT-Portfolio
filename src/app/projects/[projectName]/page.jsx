@@ -4,7 +4,9 @@ const page = ({ params }) => {
   console.log(params.projectName)
   return (
     <div>
-      <p>{params.projectName}</p>
+      <p className={'text-6xl text-white text-center mt-20'}>
+        {params.projectName}
+      </p>
     </div>
   )
 }

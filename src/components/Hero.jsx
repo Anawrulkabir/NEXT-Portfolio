@@ -2,6 +2,7 @@ import { FaArrowDown } from 'react-icons/fa'
 import { IoMdArrowDown } from 'react-icons/io'
 import About from './About'
 import Projects from './Projects'
+import Skills from './Skills'
 const Hero = () => {
   return (
     <>
@@ -65,6 +66,7 @@ const Hero = () => {
       {/*  */}
       <About />
       <Projects />
+      <Skills />
     </>
   )
 }

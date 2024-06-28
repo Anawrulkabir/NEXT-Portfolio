@@ -70,6 +70,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { TextAnimation } from './animation/TextAnimation'
 
 export default function Header() {
   return (
@@ -85,18 +86,20 @@ export default function Header() {
             <p className="text-[36px] text-white font-normal">FAHAD K.</p>
           </Link>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-4  hover:text-black">
           <Link
             href="/projects"
-            className="text-foreground transition-colors hover:text-foreground"
+            className="text-foreground transition-colors   px-2 py-[4px] rounded-xl text-white hover:bg-white hover:text-black flex items-center"
           >
-            <p className="text-white text-xs">PROJECTS</p>
+            {/* <p className="text-white hover:text-black text-sm">PROJECTS</p> */}
+            <TextAnimation text="PROJECTS" size={'sm'} font={'light'} />
           </Link>
           <Link
             href="#"
-            className="text-foreground transition-colors hover:text-foreground"
+            className="text-foreground transition-colors hover:text-foreground  px-2 py-[4px] rounded-xl  hover:bg-white text-white"
           >
-            <p className="text-white text-xs">ABOUT</p>
+            {/* <p className="text-white hover:text-black text-sm">ABOUT</p> */}
+            <TextAnimation text="ABOUT" size={'sm'} font={'light'} />
           </Link>
         </div>
         <div>
@@ -104,8 +107,13 @@ export default function Header() {
             href="#"
             className="text-foreground transition-colors hover:text-foreground "
           >
-            <div className="border border-white px-3 py-1  rounded-full">
-              <p className="text-white text-xs">AVAILABLE FOR HIRED</p>
+            <div className="border border-white px-3 py-2  rounded-full text-white hover:bg-white hover:text-black">
+              {/* <p className="text-white text-sm">AVAILABLE FOR HIRED</p> */}
+              <TextAnimation
+                text="AVAILABLE &nbsp;FOR &nbsp;HIRED"
+                size={'sm'}
+                font={'light'}
+              />
             </div>
           </Link>
         </div>

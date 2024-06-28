@@ -1,0 +1,50 @@
+.container {
+  text-align: center;
+}
+
+.cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.card {
+  position: relative;
+  /* width: 200px; */
+  height: 500px;
+  transition: all 0.3s ease;
+  border-radius: 1.5rem;
+}
+
+.cardImage {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  border-radius: 1.5rem;
+}
+
+.cardName {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.glow {
+  box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.7);
+}
+
+.shadow {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.hoveredText {
+  margin-top: 20px;
+  font-size: 64px;
+  /* color: #333; */
+}
