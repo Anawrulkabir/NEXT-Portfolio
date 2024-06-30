@@ -74,8 +74,7 @@ import { TextAnimation } from './animation/TextAnimation'
 
 export default function Header() {
   return (
-    // <div className="flex min-h-screen w-full flex-col bg-black">
-    <header className="sticky top-0 flex h-16 items-center gap-4   px-4 md:px-6 bg-black bg-opacity-95">
+    <header className="sticky top-0 flex h-16 items-center gap-4   px-4 md:px-6 bg-black bg-opacity-5 z-50">
       {/* for desktop view */}
       <nav className="hidden flex-col justify-between gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:justify-between md:gap-5 md:text-sm lg:gap-6  w-full">
         <div>
@@ -160,6 +159,5 @@ export default function Header() {
         </SheetContent>
       </Sheet>
     </header>
-    // </div>
   )
 }

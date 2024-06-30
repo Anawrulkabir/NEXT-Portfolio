@@ -1,3 +1,4 @@
+import Review from '@/components/review/Review'
 import Link from 'next/link'
 import React from 'react'
 
@@ -13,6 +14,8 @@ const page = () => {
         </div>
         <p>/04</p>
       </div>
+
+      <Review />
     </div>
   )
 }

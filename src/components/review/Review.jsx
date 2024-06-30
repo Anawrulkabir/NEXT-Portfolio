@@ -6,7 +6,7 @@ import { FaFire } from 'react-icons/fa'
 
 const Review = () => {
   return (
-    <div className="h-screen w-full bg-neutral-900 text-neutral-50">
+    <div className="h-screen mx-12   text-neutral-50">
       <Board />
     </div>
   )
@@ -16,16 +16,16 @@ const Board = () => {
   const [cards, setCards] = useState(DEFAULT_CARDS)
 
   return (
-    <div className="flex h-full w-full gap-3 overflow-scroll p-12">
-      <Column
+    <div className="flex h-full  gap-3 px-24 py-24  justify-center">
+      {/* <Column
         title="Profile"
         column="profile"
         headingColor="text-green-500"
         cards={cards}
         setCards={setCards}
-      />
+      /> */}
       <Column
-        title="UI"
+        title="Design"
         column="ui"
         headingColor="text-yellow-200"
         cards={cards}
@@ -39,12 +39,13 @@ const Board = () => {
         setCards={setCards}
       />
       <Column
-        title="Portfolio"
+        title="Resume"
         column="portfolio"
         headingColor="text-emerald-200"
         cards={cards}
         setCards={setCards}
       />
+
       <BurnBarrel setCards={setCards} />
     </div>
   )
@@ -331,4 +332,4 @@ const DEFAULT_CARDS = [
   },
 ]
 
-export default CustomKanban
+export default Review

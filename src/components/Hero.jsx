@@ -3,6 +3,8 @@ import { IoMdArrowDown } from 'react-icons/io'
 import About from './About'
 import Projects from './Projects'
 import Skills from './Skills'
+import GsapAnimate from './animation/GsapAnimate'
+import Review from './review/Review'
 const Hero = () => {
   return (
     <>
@@ -56,9 +58,15 @@ const Hero = () => {
               </div>
             </div>
           </div>
-          <div className="flex justify-center items-center mt-16">
-            <div className="h-[83.33px] w-[83.33px] border rounded-full flex items-center justify-center text-[36px] text-white font-thin">
-              <IoMdArrowDown />
+
+          <div className="flex justify-center items-center mt-16 relative  ">
+            <GsapAnimate>
+              <div className="h-[83.33px] w-[83.33px] border rounded-full flex items-center justify-center text-[36px] text-white font-thin">
+                <IoMdArrowDown />
+              </div>
+            </GsapAnimate>
+            <div className="z-[-1] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[83.33px] w-[83.33px] border rounded-full flex items-center justify-center text-[36px] text-white font-thin">
+              {/* <IoMdArrowDown /> */}
             </div>
           </div>
         </div>
@@ -67,6 +75,7 @@ const Hero = () => {
       <About />
       <Projects />
       <Skills />
+      <Review />
     </>
   )
 }

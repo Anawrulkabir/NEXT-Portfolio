@@ -15,13 +15,15 @@ export const TextAnimation = ({ text, size, font }) => {
 const DURATION = 0.25
 const STAGGER = 0.025
 
-const FlipLink = ({ children, href, text, font }) => {
+const FlipLink = ({ children, href, text, font, hover }) => {
   return (
     <motion.a
       initial="initial"
       whileHover="hovered"
       href={href}
-      className={`relative block overflow-hidden whitespace-nowrap text-${text} font-${font} uppercase  hover:text-black `}
+      className={`relative block overflow-hidden whitespace-nowrap text-${text} font-${font} uppercase  hover:text-${
+        hover === "black"
+      } `}
       style={{
         lineHeight: 0.75,
       }}

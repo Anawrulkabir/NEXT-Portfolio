@@ -1,8 +1,10 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import GsapMagnetic from './animation/GsapAnimate'
+import { TextAnimation } from './animation/TextAnimation'
 
 const technologies = [
   {
@@ -18,16 +20,20 @@ const technologies = [
     icon: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png',
   },
   {
+    name: 'Tailwind CSS',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg',
+  },
+  {
     name: 'React',
     icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
   },
   {
     name: 'Node.js',
-    icon: 'https://upload.wikimedia.org/wikipedia/commons/d/d9/Node.js_logo.svg',
+    icon: 'https://cdn.iconscout.com/icon/free/png-256/free-node-js-1174925.png',
   },
   {
     name: 'Express',
-    icon: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Expressjs.png',
+    icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI3nGP9w-Ol7H0GYUnDUdCwqnoLwRzoe_cmA&s',
   },
   {
     name: 'MongoDB',
@@ -38,65 +44,138 @@ const technologies = [
     icon: 'https://nextjs.org/static/favicon/favicon.ico',
   },
   {
+    name: 'Firebase',
+    icon: 'https://www.svgrepo.com/show/303670/firebase-1-logo.svg',
+  },
+
+  {
     name: 'Git',
     icon: 'https://git-scm.com/images/logos/downloads/Git-Icon-1788C.png',
   },
   {
     name: 'GitHub',
-    icon: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+    icon: 'https://cdn.worldvectorlogo.com/logos/github-icon-2.svg',
   },
   {
     name: 'Bootstrap',
-    icon: 'https://getbootstrap.com/docs/5.1/assets/img/bootstrap-icons.png',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Bootstrap_logo.svg/2560px-Bootstrap_logo.svg.png',
   },
-  {
-    name: 'Tailwind CSS',
-    icon: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg',
-  },
-  {
-    name: 'TypeScript',
-    icon: 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg',
-  },
+
   {
     name: 'Swiper.js',
-    icon: 'https://swiperjs.com/images/shared/swiper-logo.svg',
+    icon: 'https://swiperjs.com/images/swiper-logo.svg',
   },
   {
     name: 'Chart.js',
     icon: 'https://www.chartjs.org/img/chartjs-logo.svg',
   },
-  {
-    name: 'Google Charts',
-    icon: 'https://www.gstatic.com/images/branding/product/2x/google_96dp.png',
-  },
+
   {
     name: 'Framer Motion',
-    icon: 'https://raw.githubusercontent.com/framer/motion/main/.github/assets/logo.svg',
+    icon: 'https://cdn.worldvectorlogo.com/logos/framer-motion.svg',
   },
   {
     name: 'TanStack Query',
-    icon: 'https://raw.githubusercontent.com/TanStack/query/main/.github/assets/logo.svg',
+    icon: 'https://tanstack.com/_build/assets/logo-color-100w-lPbOTx1K.png',
   },
   {
     name: 'Hook Form',
-    icon: 'https://react-hook-form.com/images/logo.svg',
+    icon: 'https://react-hook-form.com/images/logo/react-hook-form-logo-only.svg',
   },
   {
     name: 'ShadCN UI',
-    icon: 'https://raw.githubusercontent.com/shadcn/ui/main/public/icon.png',
+    icon: 'https://avatars.githubusercontent.com/u/139895814?s=200&v=4',
   },
   {
     name: 'DaisyUI',
-    icon: 'https://raw.githubusercontent.com/saadeghi/daisyui/main/static/media/logo.svg',
+    icon: 'https://img.daisyui.com/images/daisyui-logo/daisyui-logomark.svg',
   },
   {
     name: 'MUI',
     icon: 'https://v4.mui.com/static/logo.png',
   },
+  {
+    name: 'Stripe',
+    icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQGluJhW7I1NYU7jF77E-9K9I46_ib_DUNHw&s',
+  },
+  {
+    name: 'GSAP',
+    icon: 'https://cdn.worldvectorlogo.com/logos/gsap-greensock.svg',
+  },
+  {
+    name: 'NPM',
+    icon: 'https://static-00.iconduck.com/assets.00/npm-icon-2048x2048-wm0mnkz6.png',
+  },
 ]
 
 const Skills = () => {
   const ref = useRef(null)
+
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+
+  const handleMouse = (e) => {
+    const { clientX, clientY } = e
+
+    const { height, width, left, top } = ref.current.getBoundingClientRect()
+
+    const middleX = clientX - (left + width / 2)
+
+    const middleY = clientY - (top + height / 2)
+
+    setPosition({ x: middleX, y: middleY })
+  }
+
+  const reset = () => {
+    setPosition({ x: 0, y: 0 })
+  }
+
+  const { x, y } = position
+
+  // return (
+  //   <div className="mx-8">
+  //     <div className="border-t border-white mx-5"></div>
+  //     <div className="flex items-center justify-between py-4 text-white  mx-8">
+  //       <div className="flex flex-row justify-around  w-1/2">
+  //         <p>04/</p>
+
+  //         <div className="flex gap-1">
+  //           <Link href="#">CAPABILITIES</Link>
+  //         </div>
+  //       </div>
+
+  //       <p className=" flex  w-1/2 justify-end pr-12">/04</p>
+  //     </div>
+
+  //     <div
+  //       className=" h-[75vh] border-[0.5px] rounded-3xl mx-12 border-zinc-500 my-12 text-white grid grid-rows-4  grid-cols-7 gap-4 p-3"
+  //       ref={ref}
+  //     >
+  //       {technologies.map((tech) => (
+  //         <motion.div
+  //           drag
+  //           dragConstraints={ref}
+  //           whileDrag={{
+  //             scale: 2,
+  //             backgroundColor: 'whitesmoke',
+  //           }}
+  //           dragElastic={0.5}
+  //           dragMomentum={true}
+  //           key={tech?.name}
+  //           className={`flex flex-col  border-[0.5px] border-zinc-400 rounded-full h-28 w-28 items-center justify-center gap-2`}
+  //         >
+  //           <Image
+  //             src={tech?.icon}
+  //             alt=""
+  //             className=""
+  //             width={20}
+  //             height={20}
+  //           />
+  //           <p className="text-xs text-gray-300">{tech?.name}</p>
+  //         </motion.div>
+  //       ))}
+  //     </div>
+  //   </div>
+  // )
   return (
     <div className="mx-8">
       <div className="border-t border-white mx-5"></div>
@@ -105,33 +184,49 @@ const Skills = () => {
           <p>04/</p>
 
           <div className="flex gap-1">
-            <Link href="#">CAPABILITIES</Link>
+            {/* <Link href="#">TECHNICAL SKILL</Link> */}
+            <Link
+              href="#"
+              className="flex items-center text-white hover:text-white"
+            >
+              <TextAnimation
+                text="TECHNICAL&nbsp;SKILL"
+                size={'normal'}
+                font={'light'}
+              />
+            </Link>
           </div>
         </div>
 
         <p className=" flex  w-1/2 justify-end pr-12">/04</p>
       </div>
 
-      <div
-        className=" h-[65vh] border-[0.5px] rounded-3xl mx-12 border-zinc-500 my-12 text-white grid grid-rows-5  grid-cols-12 gap-4 p-3"
-        ref={ref}
-      >
-        {technologies.map((tech) => (
-          <motion.div
-            drag
-            dragConstraints={ref}
-            whileDrag={{
-              scale: 2,
-              backgroundColor: 'whitesmoke',
-            }}
-            onMouseOver={{ scale: 1.1 }}
-            key={tech.name}
-            className="flex flex-col items-center justify-center border-[0.5px] border-zinc-400 rounded-full p-10"
-          >
-            <Image src={tech.icon} alt="" className="" width={20} height={20} />
-            <p className="text-xs text-gray-300">{tech.name}</p>
-          </motion.div>
-        ))}
+      <div className="relative">
+        <div
+          className=" h-[75vh] border-[0.5px] rounded-3xl mx-12 border-zinc-500 my-12 text-white grid grid-rows-4  grid-cols-7 gap-4 p-3 grid-flow-row"
+          ref={ref}
+        >
+          {technologies.map((tech) => (
+            <GsapMagnetic key={tech?.name}>
+              <div
+                className={`flex flex-col  border-[0.5px] border-zinc-400 rounded-3xl h-28 w-28 items-center justify-center gap-2`}
+              >
+                <Image
+                  src={tech?.icon}
+                  alt=""
+                  className=""
+                  width={20}
+                  height={20}
+                />
+                <p className="text-xs text-gray-300">{tech?.name}</p>
+              </div>
+            </GsapMagnetic>
+          ))}
+        </div>
+        <div className="flex flex-col   font-bold text-5xl text-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[-1]">
+          <p className="text-zinc-200 opacity-15">TECHNICAL SKILL I</p>
+          <p className="text-zinc-100 opacity-15">SPECILIZE IN</p>
+        </div>
       </div>
     </div>
   )
