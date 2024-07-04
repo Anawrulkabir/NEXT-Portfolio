@@ -46,6 +46,14 @@ const About = () => {
             </Marquee>
           </div>
         </div>
+        <div className="flex items-center justify-center mt-20 ">
+          {/* learn more btn */}
+          <GsapAnimate>
+            <button className="border h-24 w-24 rounded-full text-xs">
+              LEARN <br /> MORE
+            </button>
+          </GsapAnimate>
+        </div>
       </div>
 
       {/* for desktop */}

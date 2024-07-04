@@ -118,9 +118,10 @@ const Projects = () => {
   ]
 
   return (
-    <div className="mx-8 text-white my-32 ">
-      <div className="border-t border-white mx-5"></div>
-      <div className="flex items-center justify-between py-4 text-white  mx-8">
+    <div className="mx-4 md:mx-8 text-white my-12 md:my-32 ">
+      <div className="border-t border-white md:mx-5"></div>
+
+      <div className="flex items-center justify-between py-4 text-white  md:mx-8 ">
         <div className="flex flex-row justify-around  w-1/2">
           <p>03/</p>
 
@@ -137,20 +138,29 @@ const Projects = () => {
 
         <p className=" flex  w-1/2 justify-end pr-12">/04</p>
       </div>
-      <div className="flex items-center justify-between mt-12 mx-8">
+
+      <div className="flex flex-col-reverse md:flex-row items-center justify-between mt-12 mx-8">
         <GsapAnimate>
-          <div className=" border rounded-full h-32 w-32  flex flex-col items-center justify-center">
+          <div className=" border rounded-full h-24 md:h-32 w-24  md:w-32  flex flex-col items-center justify-center text-xs md:text-base">
             <p className="mr-6  leading-none">VIEW ALL</p>
             <p className="ml-6  leading-none">PROJECTS</p>
           </div>
         </GsapAnimate>
+        {/* for desktop view */}
+        <div className="hidden md:flex text-sm md:text-4xl font-normal">
+          <p className="text-right">Here are some projects that </p>
+          <p>showcase my passion in the field of programming </p>
+          <p>& urge to learn new tech every morning.</p>
+        </div>
 
-        <div className="text-4xl font-normal">
+        {/* for mobile device */}
+        <div className="hidden md:hidden text-sm md:text-4xl font-normal">
           <p className="text-right">Here are some projects that </p>
           <p>showcase my passion in the field of programming </p>
           <p>& urge to learn new tech every morning.</p>
         </div>
       </div>
+
       {/* <div className="flex items-center mt-12 justify-around">
         <Image
           src="/images/projects/project-1.png"

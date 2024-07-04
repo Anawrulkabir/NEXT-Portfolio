@@ -129,8 +129,9 @@ const Hero = () => {
 
       {/*  */}
       <About />
-      {/*
       <Projects />
+      {/*
+      
       <Skills />
       <Review /> */}
     </>
