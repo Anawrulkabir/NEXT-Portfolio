@@ -139,7 +139,7 @@ const Projects = () => {
         <p className=" flex  w-1/2 justify-end pr-12">/04</p>
       </div>
 
-      <div className="flex flex-col-reverse md:flex-row items-center justify-between mt-12 mx-8">
+      <div className="flex flex-col-reverse md:flex-row items-center justify-between mt-4  md:mt-12 mx-8">
         <GsapAnimate>
           <div className=" border rounded-full h-24 md:h-32 w-24  md:w-32  flex flex-col items-center justify-center text-xs md:text-base">
             <p className="mr-6  leading-none">VIEW ALL</p>
@@ -147,17 +147,19 @@ const Projects = () => {
           </div>
         </GsapAnimate>
         {/* for desktop view */}
-        <div className="hidden md:flex text-sm md:text-4xl font-normal">
+        <div className="hidden md:block text-sm md:text-4xl font-normal">
           <p className="text-right">Here are some projects that </p>
           <p>showcase my passion in the field of programming </p>
           <p>& urge to learn new tech every morning.</p>
         </div>
 
         {/* for mobile device */}
-        <div className="hidden md:hidden text-sm md:text-4xl font-normal">
-          <p className="text-right">Here are some projects that </p>
-          <p>showcase my passion in the field of programming </p>
-          <p>& urge to learn new tech every morning.</p>
+        <div className=" md:hidden text-sm md:text-4xl font-normal mb-4 text-center">
+          <p className="text-right">
+            Here are some projects that showcase my passion in the field of
+            programming &{' '}
+            <p className="text-left">urge to learn new tech every morning.</p>
+          </p>
         </div>
       </div>
 
@@ -193,7 +195,7 @@ const Projects = () => {
             <p className="text-sm font-light">Featured Project</p>
             {/* <TextAnimation text={hoveredCard.name} size={'5xl'} font={'bold'} /> */}
             {hoveredCard.name}
-            <div className="flex items-center gap-2  justify-center mt-3">
+            <div className="flex items-center gap-2  justify-center mt-3 ">
               {hoveredCard?.tech?.map((icon) => (
                 <Image
                   key={icon?.name}
@@ -207,7 +209,7 @@ const Projects = () => {
             </div>
           </div>
         )}
-        <div className={styles.cards}>
+        <div className={`${styles.cards} grid grid-cols-2 md:grid-cols-3`}>
           {cards.map((card) => (
             <Link href={`/projects/${card.name}`} key={card.id}>
               <div
