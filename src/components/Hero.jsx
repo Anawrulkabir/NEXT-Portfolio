@@ -11,7 +11,7 @@ const Hero = () => {
     <>
       {/* 1st page view */}
       {/* For mobile */}
-      <div className=" md:hidden  text-white h-screen">
+      <div className=" md:hidden lg:hidden text-white h-screen">
         <p className="flex gap-1 items-center text-xs my-12 mx-5">
           01/04 - SCROLL <FaArrowDown />
         </p>

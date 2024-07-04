@@ -121,7 +121,7 @@ export default function Header() {
 
       {/* for mobile view */}
       <Sheet>
-        <div className="flex items-center justify-between  w-full">
+        <div className="flex items-center justify-between  w-full md:hidden">
           <div>
             <p className="text-2xl font-medium text-white">AK.</p>
           </div>
