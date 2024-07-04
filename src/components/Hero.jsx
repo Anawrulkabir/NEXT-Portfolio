@@ -17,17 +17,17 @@ const Hero = () => {
         </p>
         <div className="my-20">
           <Marquee speed={45}>
-            <p className="text-7xl font-normal overflow-hidden">
+            <p className="text-7xl font-semibold overflow-hidden">
               MULTI&nbsp;-&nbsp;MULTI&nbsp;-&nbsp;
             </p>
           </Marquee>
           <Marquee speed={40} direction="right">
-            <p className="text-7xl font-normal overflow-hidden">
+            <p className="text-7xl font-semibold overflow-hidden">
               DISCLIPLINARY&nbsp;-&nbsp;DISCLIPLINARY&nbsp;-&nbsp;
             </p>
           </Marquee>
           <Marquee speed={35}>
-            <p className="text-7xl font-normal overflow-hidden">
+            <p className="text-7xl font-semibold overflow-hidden">
               ENGINEER&nbsp;-&nbsp;ENGINEER&nbsp;-&nbsp;
             </p>
           </Marquee>
