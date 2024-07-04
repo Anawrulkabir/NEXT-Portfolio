@@ -128,7 +128,8 @@ const Hero = () => {
       </div>
 
       {/*  */}
-      {/* <About />
+      <About />
+      {/*
       <Projects />
       <Skills />
       <Review /> */}
