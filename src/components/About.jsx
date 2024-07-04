@@ -80,7 +80,10 @@ const About = () => {
       </div>
       <div className="absolute bottom-0 w-full flex justify-end translate-y-1/2">
         <Marquee speed={200}>
-          <p className="text-8xl font-normal">MD ANAWRUL KABIR FAHAD&nbsp;</p>
+          <p className="text-8xl font-normal overflow-hidden">
+            MD ANAWRUL KABIR FAHAD&nbsp;MD ANAWRUL KABIR FAHAD&nbsp;MD ANAWRUL
+            KABIR FAHAD&nbsp;
+          </p>
         </Marquee>
       </div>
     </div>

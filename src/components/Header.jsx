@@ -71,6 +71,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { TextAnimation } from './animation/TextAnimation'
+import { RxHamburgerMenu } from 'react-icons/rx'
 
 export default function Header() {
   return (
@@ -120,12 +121,23 @@ export default function Header() {
 
       {/* for mobile view */}
       <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </SheetTrigger>
+        <div className="flex items-center justify-between  w-full">
+          <div>
+            <p className="text-2xl font-medium text-white">AK.</p>
+          </div>
+          <SheetTrigger asChild>
+            {/* <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0 md:hidden"
+            >
+              <RxHamburgerMenu className="text-white" />
+              <span className="sr-only">Toggle navigation menu</span>
+            </Button> */}
+            <RxHamburgerMenu className="text-white w-5 h-5  flex justify-end" />
+          </SheetTrigger>
+        </div>
+
         <SheetContent side="right">
           <nav className="grid gap-6 text-lg font-medium">
             <Link href="#" className="hover:text-foreground">
