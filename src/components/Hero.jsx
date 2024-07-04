@@ -34,7 +34,7 @@ const Hero = () => {
         </div>
 
         <div className="flex justify-center">
-          <div className="text-base font-normal  text-white  px-6  space-y-1  ">
+          <div className="text-base font-normal  text-white  px-4  space-y-1  ">
             <p className="text-right">CREATIVE THINKING AND PROBLEM</p>
 
             <p className="text-right">SOLVING ARE WHERE MY MIND WANDERS,</p>
