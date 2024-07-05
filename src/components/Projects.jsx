@@ -6,6 +6,16 @@ import styles from '../utils/Home.module.css'
 import GsapAnimate from './animation/GsapAnimate'
 import { TextAnimation } from './animation/TextAnimation'
 
+import { Card, CardContent } from '@/components/ui/card'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel'
+import ProjectCaroesel from './carousel/ProjectCaroesel'
+
 const Projects = () => {
   const [hoveredCard, setHoveredCard] = useState(null)
 
@@ -209,7 +219,9 @@ const Projects = () => {
             </div>
           </div>
         )}
-        <div className={`${styles.cards} grid grid-cols-2 md:grid-cols-3`}>
+        <div
+          className={`${styles.cards}grid  grid-cols-2 md:grid-cols-3 hidden md:block`}
+        >
           {cards.map((card) => (
             <Link href={`/projects/${card.name}`} key={card.id}>
               <div
@@ -227,7 +239,7 @@ const Projects = () => {
                   } hover:scale-[99%]  hover:bg-opacity-90 duration-300 ${
                     hoveredCard && hoveredCard?.id !== card?.id ? 'blur-sm' : ''
                   }`}
-                  width={390}
+                  width={900}
                   height={900}
                 />
                 {/* {hoveredCard && (
@@ -237,6 +249,37 @@ const Projects = () => {
             </Link>
           ))}
         </div>
+
+        <div className="flex md:hidden">
+          <ProjectCaroesel cards={cards} />
+        </div>
+
+        {/* <Carousel className="w-full ">
+          <CarouselContent className="-ml-1">
+            {cards.map((card, index) => (
+              <CarouselItem
+                key={index}
+                className="pl-1 md:basis-1/2 lg:basis-1/3"
+              >
+                <div className="p-1">
+                  <Card>
+                    <CardContent className=" ">
+                      <Image
+                        alt={card.name}
+                        src={card.image}
+                        width={1920}
+                        height={1500}
+                        className="object-cover w-full"
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel> */}
       </div>
     </div>
   )
