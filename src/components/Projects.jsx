@@ -14,7 +14,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-// import ProjectCaroesel from './carousel/ProjectCaroesel'
 
 const Projects = () => {
   const [hoveredCard, setHoveredCard] = useState(null)
@@ -249,9 +248,6 @@ const Projects = () => {
         </div>
       </div>
 
-      {/* <div className=" md:hidden"> */}
-      {/* <ProjectCaroesel  /> */}
-
       <Carousel className="w-full md:hidden mt-12">
         <CarouselContent>
           {cards.map((card, index) => (
@@ -272,10 +268,7 @@ const Projects = () => {
             </CarouselItem>
           ))}
         </CarouselContent>
-        {/* <CarouselPrevious /> */}
-        {/* <CarouselNext /> */}
       </Carousel>
-      {/* </div> */}
     </div>
   )
 }
