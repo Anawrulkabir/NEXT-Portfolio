@@ -51,12 +51,16 @@ const Hero = () => {
         </div>
 
         <div className="w-full flex items-center justify-center mt-12">
-        <a href="/resume/Fahad Kabir's Resume.pdf"  download>
-              <div className="text-center border border-purple-700 hover:border-purple-800 rounded-full px-4 py-1  flex flex-row items-center justify-center gap-2 ">
-                RESUME
-                <HiOutlineDownload />
-              </div>
-            </a>
+          <a
+            href="/resume/Fahad Kabir's Resume.pdf"
+            download
+            className="flex justify-center items-center"
+          >
+            <div className="text-center border border-purple-700 hover:border-purple-800 rounded-full px-4 py-1  flex flex-row items-center justify-center gap-2 ">
+              RESUME
+              <HiOutlineDownload />
+            </div>
+          </a>
         </div>
 
         <div className=" justify-center items-center  relative hidden">
@@ -126,7 +130,7 @@ const Hero = () => {
           </div>
 
           <div className="w-full flex items-center justify-center mt-12">
-            <a href="/resume/Fahad Kabir's Resume.pdf"  download>
+            <a href="/resume/Fahad Kabir's Resume.pdf" download>
               <div className="text-center border border-purple-700 hover:border-purple-800 rounded-full px-4 py-1  flex flex-row items-center justify-center gap-2 text-white text-sm">
                 RESUME
                 <HiOutlineDownload />
