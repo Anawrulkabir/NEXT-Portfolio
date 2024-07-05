@@ -6,6 +6,11 @@ import Skills from './Skills'
 import GsapAnimate from './animation/GsapAnimate'
 import Review from './review/Review'
 import Marquee from 'react-fast-marquee'
+import {
+  AnimatedTooltip,
+  AnimatedTooltipMain,
+} from './animation/AnimatedTooltipMain'
+import { HiOutlineDownload } from 'react-icons/hi'
 const Hero = () => {
   return (
     <>
@@ -45,7 +50,16 @@ const Hero = () => {
           </div>
         </div>
 
-        <div className="flex justify-center items-center mt-16 relative  ">
+        <div className="w-full flex items-center justify-center mt-12">
+        <a href="/resume/Fahad Kabir's Resume.pdf"  download>
+              <div className="text-center border border-purple-700 hover:border-purple-800 rounded-full px-4 py-1  flex flex-row items-center justify-center gap-2 ">
+                RESUME
+                <HiOutlineDownload />
+              </div>
+            </a>
+        </div>
+
+        <div className=" justify-center items-center  relative hidden">
           <GsapAnimate>
             <div className="h-[83.33px] w-[83.33px] border rounded-full flex items-center justify-center text-[36px] text-white font-thin">
               <IoMdArrowDown />
@@ -111,6 +125,14 @@ const Hero = () => {
             </div>
           </div>
 
+          <div className="w-full flex items-center justify-center mt-12">
+            <a href="/resume/Fahad Kabir's Resume.pdf"  download>
+              <div className="text-center border border-purple-700 hover:border-purple-800 rounded-full px-4 py-1  flex flex-row items-center justify-center gap-2 text-white text-sm">
+                RESUME
+                <HiOutlineDownload />
+              </div>
+            </a>
+          </div>
           <div className="flex justify-center items-center mt-16 relative  ">
             <GsapAnimate>
               <div className="h-[83.33px] w-[83.33px] border rounded-full flex items-center justify-center text-[36px] text-white font-thin">

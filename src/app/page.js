@@ -4,6 +4,8 @@ import Hero from '@/components/Hero'
 import React from 'react'
 import AnimatedCursor from 'react-animated-cursor'
 import '../utils/preventSelect.css'
+import { GridBackground } from '@/components/background/GridBackground'
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient'
 
 const page = () => {
   return (
@@ -29,8 +31,11 @@ const page = () => {
           '.link',
         ]}
       />
+
       <Header />
       <Hero />
+      <GridBackground />
+      {/* <HoverBorderGradient /> */}
       <Footer />
     </div>
   )
