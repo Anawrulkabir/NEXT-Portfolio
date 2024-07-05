@@ -14,7 +14,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-import ProjectCaroesel from './carousel/ProjectCaroesel'
+// import ProjectCaroesel from './carousel/ProjectCaroesel'
 
 const Projects = () => {
   const [hoveredCard, setHoveredCard] = useState(null)
@@ -197,7 +197,7 @@ const Projects = () => {
         />
       </div> */}
 
-      <div className={`${styles.container} relative mt-12`}>
+      <div className={`${styles.container} relative mt-12 hidden md:block`}>
         {hoveredCard && (
           <div
             className={`${styles.hoveredText} absolute  text-7xl text-green-600 font-bold top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10`}
@@ -219,9 +219,7 @@ const Projects = () => {
             </div>
           </div>
         )}
-        <div
-          className={`${styles.cards}grid  grid-cols-2 md:grid-cols-3 hidden md:block`}
-        >
+        <div className={`${styles.cards} hidden md:flex`}>
           {cards.map((card) => (
             <Link href={`/projects/${card.name}`} key={card.id}>
               <div
@@ -249,38 +247,35 @@ const Projects = () => {
             </Link>
           ))}
         </div>
-
-        <div className="flex md:hidden">
-          <ProjectCaroesel cards={cards} />
-        </div>
-
-        {/* <Carousel className="w-full ">
-          <CarouselContent className="-ml-1">
-            {cards.map((card, index) => (
-              <CarouselItem
-                key={index}
-                className="pl-1 md:basis-1/2 lg:basis-1/3"
-              >
-                <div className="p-1">
-                  <Card>
-                    <CardContent className=" ">
-                      <Image
-                        alt={card.name}
-                        src={card.image}
-                        width={1920}
-                        height={1500}
-                        className="object-cover w-full"
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel> */}
       </div>
+
+      {/* <div className=" md:hidden"> */}
+      {/* <ProjectCaroesel  /> */}
+
+      <Carousel className="w-full md:hidden mt-12">
+        <CarouselContent>
+          {cards.map((card, index) => (
+            <CarouselItem key={index}>
+              <div className="rounded-xl border-0">
+                <Card className="border-0">
+                  <Link href={`/projects/${card.name}`}>
+                    <Image
+                      src={card.image}
+                      alt="Image 1"
+                      width={900}
+                      height={1320}
+                      className="w-full object-cover  rounded-xl"
+                    />
+                  </Link>
+                </Card>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        {/* <CarouselPrevious /> */}
+        {/* <CarouselNext /> */}
+      </Carousel>
+      {/* </div> */}
     </div>
   )
 }
