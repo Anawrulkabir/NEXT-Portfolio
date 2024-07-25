@@ -34,7 +34,7 @@ const page = () => {
 
       <Header />
       <Hero />
-      <GridBackground />
+      {/* <GridBackground /> */}
       {/* <HoverBorderGradient /> */}
       <Footer />
     </div>

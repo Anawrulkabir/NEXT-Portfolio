@@ -40,6 +40,10 @@ const technologies = [
     icon: 'https://www.mongodb.com/assets/images/global/favicon.ico',
   },
   {
+    name: 'Mongoose',
+    icon: 'https://www.mongodb.com/assets/images/global/favicon.ico',
+  },
+  {
     name: 'Next.js',
     icon: 'https://nextjs.org/static/favicon/favicon.ico',
   },
@@ -177,20 +181,30 @@ const Skills = () => {
   //   </div>
   // )
   return (
-    <div className="mx-8">
-      <div className="border-t border-white mx-5"></div>
-      <div className="flex items-center justify-between py-4 text-white  mx-8">
+    <div className="mx-4 md:mx-8 text-white my-12 md:my-32 ">
+      <div className="border-t border-white md:mx-5"></div>
+
+      <div className="flex items-center justify-between py-4 text-white  md:mx-8 ">
         <div className="flex flex-row justify-around  w-1/2">
           <p>04/</p>
 
           <div className="flex gap-1">
-            {/* <Link href="#">TECHNICAL SKILL</Link> */}
+            {/* <Link href="#">PROJECTS</Link> */}
+            {/* mobile */}
             <Link
               href="#"
-              className="flex items-center text-white hover:text-white"
+              className="flex md:hidden items-center text-white hover:text-white"
+            >
+              <TextAnimation text="SKILLS" size={'normal'} font={'light'} />
+            </Link>
+
+            {/* desktop */}
+            <Link
+              href="#"
+              className="hidden md:flex items-center text-white hover:text-white"
             >
               <TextAnimation
-                text="TECHNICAL&nbsp;SKILL"
+                text="TECHNICAL&nbsp;SKILLS"
                 size={'normal'}
                 font={'light'}
               />
@@ -203,22 +217,53 @@ const Skills = () => {
 
       <div className="relative">
         <div
-          className=" h-[75vh] border-[0.5px] rounded-3xl mx-12 border-zinc-500 my-12 text-white grid grid-rows-4  grid-cols-7 gap-4 p-3 grid-flow-row"
+          className=" md:h-[75vh] border-[0.5px] rounded-3xl md:mx-12 border-zinc-500 my-4 md:my-12 text-white grid grid-rows-4 grid-cols-3 md:grid-cols-7 gap-4 p-3 grid-flow-row"
           ref={ref}
         >
           {technologies.map((tech) => (
             <GsapMagnetic key={tech?.name}>
-              <div
-                className={`flex flex-col  border-[0.5px] border-zinc-400 rounded-3xl h-28 w-28 items-center justify-center gap-2`}
-              >
-                <Image
-                  src={tech?.icon}
-                  alt=""
-                  className=""
-                  width={20}
-                  height={20}
-                />
-                <p className="text-xs text-gray-300">{tech?.name}</p>
+              <div>
+                {/* Mobile */}
+                <div
+                  className={`md:hidden flex flex-col  border-[0.5px] border-zinc-400 rounded-3xl h-24 w-24 items-center justify-center gap-2 backdrop-blur-sm`}
+                >
+                  <Image
+                    src={tech?.icon}
+                    alt=""
+                    className=""
+                    width={30}
+                    height={30}
+                  />
+                  <p className="text-xs text-gray-300">{tech?.name}</p>
+                </div>
+
+                {/* Desktop */}
+                <div
+                  className={`hidden md:flex 2xl:hidden flex-col  border-[0.5px] border-zinc-400 rounded-3xl h-28 w-28 items-center justify-center gap-2  backdrop-blur-sm`}
+                >
+                  <Image
+                    src={tech?.icon}
+                    alt=""
+                    className=""
+                    width={20}
+                    height={20}
+                  />
+                  <p className="text-xs text-gray-300">{tech?.name}</p>
+                </div>
+
+                {/* Desktop - 2xl */}
+                <div
+                  className={`hidden md:hidden lg:hidden 2xl:flex flex-col  border-[0.5px] border-zinc-400 rounded-3xl h-36 w-36 items-center justify-center gap-2 backdrop-blur-sm`}
+                >
+                  <Image
+                    src={tech?.icon}
+                    alt=""
+                    className=""
+                    width={36}
+                    height={36}
+                  />
+                  <p className="text-xs text-gray-300">{tech?.name}</p>
+                </div>
               </div>
             </GsapMagnetic>
           ))}

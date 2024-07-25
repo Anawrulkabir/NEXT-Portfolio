@@ -1,61 +1,3 @@
-// const Header = () => {
-//   return (
-//     <div className="bg-black">
-//       <div className="navbar flex px-11 py-[22px]">
-//         <div className="navbar-start  ">
-//           <div className="dropdown">
-//             <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-//               <svg
-//                 xmlns="http://www.w3.org/2000/svg"
-//                 className="h-5 w-5"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth="2"
-//                   d="M4 6h16M4 12h8m-8 6h16"
-//                 />
-//               </svg>
-//             </div>
-//             <ul
-//               tabIndex={0}
-//               className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-//             >
-//               <li>
-//                 <a className="text-white text-xs">PROJECTS</a>
-//               </li>
-//               <li>
-//                 <a className="text-white text-xs">ABOUT</a>
-//               </li>
-//             </ul>
-//           </div>
-//           <a className="text-[36px] text-white font-normal">FAHAD K.</a>
-//         </div>
-//         <div className="navbar-center hidden lg:flex ">
-//           <ul className="menu menu-horizontal px-1">
-//             <li>
-//               <a className="text-white text-xs">PROJECTS</a>
-//             </li>
-//             <li>
-//               <a className="text-white text-xs">ABOUT</a>
-//             </li>
-//           </ul>
-//         </div>
-//         <div className="navbar-end ">
-//           <div className="border border-white px-3 py-1  rounded-full">
-//             <a className="text-white text-xs">AVAILABLE FOR HIRED</a>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-// export default Header
-
 import Link from 'next/link'
 import { CircleUser, Menu, Package2, Search } from 'lucide-react'
 
@@ -75,7 +17,9 @@ import { RxHamburgerMenu } from 'react-icons/rx'
 
 export default function Header() {
   return (
-    <header className="sticky top-0 flex h-16 items-center gap-4   px-4 md:px-6 bg-black bg-opacity-5 z-50">
+    <header className="sticky  top-0 flex h-16 items-center gap-4   px-4 md:px-6 bg-black bg-opacity-5  z-[999] backdrop-blur-sm">
+      {/* <div className="w-full h-16 absolute top-0 left-0 bg-black opacity-50  z-[-1]"></div> */}
+
       {/* for desktop view */}
       <nav className="hidden flex-col justify-between gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:justify-between md:gap-5 md:text-sm lg:gap-6  w-full">
         <div>
@@ -110,7 +54,7 @@ export default function Header() {
             <div className="border border-white px-3 py-2  rounded-full text-white hover:bg-white hover:text-black">
               {/* <p className="text-white text-sm">AVAILABLE FOR HIRED</p> */}
               <TextAnimation
-                text="AVAILABLE &nbsp;FOR &nbsp;HIRED"
+                text="AVAILABLE &nbsp;TO &nbsp;HIRED"
                 size={'sm'}
                 font={'light'}
               />
