@@ -11,7 +11,10 @@ const page = ({ params }) => {
         {params.projectName}
       </p> */}
       <div className="">
-        <img
+        <Image
+          alt=""
+          height={1080}
+          width={1920}
           src={project[0].snapshots[0].src}
           className="w-full m-12 rounded-xl"
         />
