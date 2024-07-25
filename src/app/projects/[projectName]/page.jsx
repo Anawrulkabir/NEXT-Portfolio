@@ -19,7 +19,7 @@ const page = ({ params }) => {
 
       {project[0]?.snapshots?.map((snap) => (
         <div className="flex items-center gap-6 m-5">
-          <Image src={snap.src} alt="" />
+          <Image width={1920} height={1080} src={snap.src} alt="" />
         </div>
       ))}
     </div>
