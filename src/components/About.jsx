@@ -21,17 +21,13 @@ const About = () => {
         </div>
         <div className=" text-sm  flex items-center justify-center my-12">
           {/* bio */}
-          <p className="   relative z-20 bg-clip-text text-transparent bg-gradient-to-tr from-neutral-200 to-neutral-500">
+          <p className="   ">
             HELLO, MY NAME IS FAHAD. I&apos;M A JUNIOR <br />
-            <span className="   relative z-20 bg-clip-text text-transparent bg-gradient-to-tl from-neutral-200 to-neutral-500">
+            <span className="  ">
               FRONT-END DEVELOPER SPECIALIZE IN&nbsp;REACT.
             </span>
-            <p className="  relative z-20 bg-clip-text text-transparent bg-gradient-to-br from-neutral-200 to-neutral-500">
-              I CREATE FULL STACK WEB APPLICATION USING
-            </p>
-            <p className=" text-right  relative z-20 bg-clip-text text-transparent bg-gradient-to-bl from-neutral-200 to-neutral-500">
-              MONGODB, EXPRES, REACT, NODEJS.
-            </p>
+            <p className=" ">I CREATE FULL STACK WEB APPLICATION USING</p>
+            <p className=" text-right">MONGODB, EXPRES, REACT, NODEJS.</p>
           </p>
         </div>
 
@@ -45,7 +41,7 @@ const About = () => {
           />
           <div className="absolute bottom-0 w-full flex justify-end translate-y-1/2">
             <Marquee speed={200}>
-              <p className="text-7xl font-extrabold overflow-hidden relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-purple-200 to-neutral-500">
+              <p className="text-7xl font-extrabold overflow-hidden ">
                 MD ANAWRUL KABIR FAHAD&nbsp;MD ANAWRUL KABIR FAHAD&nbsp;MD
                 ANAWRUL KABIR FAHAD&nbsp;
               </p>

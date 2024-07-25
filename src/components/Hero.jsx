@@ -24,17 +24,17 @@ const Hero = () => {
         </p>
         <div className="my-20">
           <Marquee speed={45}>
-            <p className="text-7xl font-semibold overflow-hidden relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500">
+            <p className="text-7xl font-semibold overflow-hidden ">
               MULTI&nbsp;-&nbsp;MULTI&nbsp;-&nbsp;
             </p>
           </Marquee>
           <Marquee speed={40} direction="right">
-            <p className="text-7xl font-semibold overflow-hidden relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500">
+            <p className="text-7xl font-semibold overflow-hidden ">
               DISCLIPLINARY&nbsp;-&nbsp;DISCLIPLINARY&nbsp;-&nbsp;
             </p>
           </Marquee>
           <Marquee speed={35}>
-            <p className="text-7xl font-semibold overflow-hidden relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500">
+            <p className="text-7xl font-semibold overflow-hidden ">
               ENGINEER&nbsp;-&nbsp;ENGINEER&nbsp;-&nbsp;
             </p>
           </Marquee>
@@ -42,21 +42,13 @@ const Hero = () => {
 
         <div className="flex justify-center">
           <div className="text-base font-normal  text-white  px-4  space-y-1 ">
-            <p className="text-right  relative z-20 bg-clip-text text-transparent bg-gradient-to-r from-neutral-200 to-neutral-500 hover:bg-gradient-to-l transition-color duration-900">
-              CREATIVE THINKING AND PROBLEM
-            </p>
+            <p className="text-right  ">CREATIVE THINKING AND PROBLEM</p>
 
-            <p className="text-right  relative z-20 bg-clip-text text-transparent bg-gradient-to-l from-neutral-200 to-neutral-500">
-              SOLVING ARE WHERE MY MIND WANDERS,
-            </p>
+            <p className="text-right  ">SOLVING ARE WHERE MY MIND WANDERS,</p>
 
-            <p className="text-right  relative z-20 bg-clip-text text-transparent bg-gradient-to-r from-neutral-200 to-neutral-500">
-              USING MY KNOWLEDGE AND PASSION FOR
-            </p>
+            <p className="text-right  ">USING MY KNOWLEDGE AND PASSION FOR</p>
 
-            <p className=" relative z-20 bg-clip-text text-transparent bg-gradient-to-l from-neutral-200 to-neutral-500">
-              PROGRAMMING AS MY MEDIUM.
-            </p>
+            <p className=" ">PROGRAMMING AS MY MEDIUM.</p>
           </div>
         </div>
 
@@ -67,9 +59,7 @@ const Hero = () => {
             className="flex justify-center items-center border-b-2 border-neutral-200 rounded-full"
           >
             <div className="text-center border border-purple-700 hover:border-purple-800 rounded-full px-4 py-1  flex flex-row items-center justify-center gap-2 ">
-              <p className=" relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500">
-                RESUME
-              </p>
+              <p className=" ">RESUME</p>
               <HiOutlineDownload />
             </div>
           </a>

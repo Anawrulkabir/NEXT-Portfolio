@@ -151,7 +151,7 @@ const Projects = () => {
       <div className="flex flex-col-reverse md:flex-row items-center justify-between mt-4  md:mt-12 md:mx-8 mx-4">
         <div className="hidden md:block">
           <GsapAnimate>
-            <div className=" border rounded-full h-24 md:h-32 w-24  md:w-32  flex flex-col items-center justify-center text-xs md:text-base relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500">
+            <div className=" border rounded-full h-24 md:h-32 w-24  md:w-32  flex flex-col items-center justify-center text-xs md:text-base md:relative md:z-20 md:bg-clip-text md:text-transparent md:bg-gradient-to-b md:from-neutral-200 md:to-neutral-500">
               <p className="mr-6  leading-none">VIEW ALL</p>
               <p className="ml-6  leading-none">PROJECTS</p>
             </div>
@@ -166,11 +166,11 @@ const Projects = () => {
         </div>
 
         {/* for mobile device */}
-        <div className=" md:hidden text-sm md:text-4xl font-normal mb-4 text-center relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500">
+        <div className=" md:hidden text-sm md:text-4xl font-normal mb-4 text-center">
           <p className="text-right ">
-            Here are some projects that showcase my passion in the field of
-            programming & urge to
-            <p className="text-left ml-2"> learn new tech every morning.</p>
+            Here are some projects that showcase my <br /> passion in the field
+            of programming & urge to
+            <p className="text-left "> learn new tech every morning.</p>
           </p>
         </div>
       </div>
@@ -250,7 +250,7 @@ const Projects = () => {
       </Carousel>
       <div className="flex items-center justify-center my-12 md:hidden ">
         <GsapAnimate>
-          <div className=" border rounded-full h-24 md:h-32 w-24  md:w-32  flex flex-col items-center justify-center text-xs md:text-base relative z-20 bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-500">
+          <div className=" border rounded-full h-24 md:h-32 w-24  md:w-32  flex flex-col items-center justify-center text-xs md:text-base ">
             <p className="mr-6  leading-none">VIEW ALL</p>
             <p className="ml-6  leading-none">PROJECTS</p>
           </div>
