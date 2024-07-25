@@ -1,9 +1,9 @@
 'use client'
+import Image from 'next/image'
 import React from 'react'
 
 const page = ({ params }) => {
-  const project =
-    cards.filter((card) => card.name === params.projectName) 
+  const project = cards.filter((card) => card.name === params.projectName)
 
   return (
     <div>
@@ -14,12 +14,12 @@ const page = ({ params }) => {
         <img
           src={project[0].snapshots[0].src}
           className="w-full m-12 rounded-xl"
-        />  
+        />
       </div>
-   
+
       {project[0]?.snapshots?.map((snap) => (
         <div className="flex items-center gap-6 m-5">
-          <img src={snap.src} alt="" />
+          <Image src={snap.src} alt="" />
         </div>
       ))}
     </div>
