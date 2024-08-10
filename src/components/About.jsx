@@ -96,9 +96,9 @@ const About = () => {
         <p>/04</p>
       </div>
 
-      <div className="hidden md:flex  justify-center gap-10 mt-8">
+      <div className="hidden md:flex  justify-center md:gap-8 2xl:gap-10 mt-8">
         {/* bio text */}
-        <div className=" flex flex-col items-start  2xl:text-2xl">
+        <div className=" flex flex-col items-start   2xl:text-2xl border">
           {/* bio */}
           <p className="text-right w-full mt-16 relative z-20 bg-clip-text text-transparent bg-gradient-to-tr from-neutral-200 to-neutral-500">
             HELLO, MY NAME IS FAHAD. I&apos;M A JUNIOR
