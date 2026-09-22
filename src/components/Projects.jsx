@@ -127,12 +127,12 @@ const Projects = () => {
   ]
 
   return (
-    <div className="mx-4 md:mx-8 text-white my-12 md:my-32 ">
+    <div id="projects" className="mx-4 md:mx-8 text-white my-12 md:my-32 ">
       <div className="border-t border-white md:mx-5"></div>
 
       <div className="flex items-center justify-between py-4 text-white  md:mx-8 ">
         <div className="flex flex-row justify-around  w-1/2">
-          <p>03/</p>
+          <p>04/</p>
 
           <div className="flex gap-1">
             {/* <Link href="#">PROJECTS</Link> */}
@@ -145,7 +145,7 @@ const Projects = () => {
           </div>
         </div>
 
-        <p className=" flex  w-1/2 justify-end pr-12">/04</p>
+        <p className=" flex  w-1/2 justify-end pr-12">/05</p>
       </div>
 
       <div className="flex flex-col-reverse md:flex-row items-center justify-between mt-4  md:mt-12 md:mx-8 mx-4">

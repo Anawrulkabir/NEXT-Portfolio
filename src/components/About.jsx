@@ -17,17 +17,19 @@ const About = () => {
           <div>02/</div>
           <div>ABOUT</div>
           <div>EM/&nbsp;GH/&nbsp;FB/&nbsp;LD</div>
-          <div>/04</div>
+          <div>/05</div>
         </div>
         <div className=" text-sm  flex items-center justify-center my-12">
           {/* bio */}
           <p className="   ">
-            HELLO, MY NAME IS FAHAD. I&apos;M A JUNIOR <br />
+            HELLO, MY NAME IS FAHAD. I&apos;M A SOFTWARE <br />
             <span className="  ">
-              FRONT-END DEVELOPER SPECIALIZE IN&nbsp;REACT.
+              ENGINEER BUILDING GPU CLOUD PLATFORMS&nbsp;ON&nbsp;KUBERNETES.
             </span>
-            <p className=" ">I CREATE FULL STACK WEB APPLICATION USING</p>
-            <p className=" text-right">MONGODB, EXPRES, REACT, NODEJS.</p>
+            <p className=" ">I ALSO RESEARCH PHYSICS-INFORMED NEURAL</p>
+            <p className=" text-right">
+              NETWORKS AS A FINAL-YEAR MECHANICAL ENGINEER.
+            </p>
           </p>
         </div>
 
@@ -101,7 +103,7 @@ const About = () => {
             <TextAnimation text="LINKEDIN" size={'normal'} font={'light'} />
           </Link>
         </div>
-        <p>/04</p>
+        <p>/05</p>
       </div>
 
       <div className="hidden md:flex  justify-center md:gap-8 2xl:gap-10 mt-8">
@@ -109,19 +111,18 @@ const About = () => {
         <div className=" flex flex-col items-start   2xl:text-2xl ">
           {/* bio */}
           <p className="text-right w-full mt-16 relative z-20 bg-clip-text text-transparent bg-gradient-to-tr from-neutral-200 to-neutral-500">
-            HELLO, MY NAME IS FAHAD. I&apos;M A JUNIOR
+            HELLO, MY NAME IS FAHAD. I&apos;M A SOFTWARE
           </p>
 
           <p className="relative z-20 bg-clip-text text-transparent bg-gradient-to-tl from-neutral-200 to-neutral-500">
-            FRONTEND DEVELOPER SPECIALIZE IN REACTJS.
+            ENGINEER BUILDING GPU CLOUD PLATFORMS ON KUBERNETES.
           </p>
           <p className="relative z-20 bg-clip-text text-transparent bg-gradient-to-br from-neutral-200 to-neutral-500">
-            I CREATE FULL STACK WEB APPLICATION USING
+            I RESEARCH PHYSICS-INFORMED NEURAL NETWORKS AS A
           </p>
           <p className="relative z-20 bg-clip-text text-transparent bg-gradient-to-bl from-neutral-200 to-neutral-500">
-            MONGODB, EXPRES, REACT, NODEJS.
+            FINAL-YEAR MECHANICAL ENGINEER AT CUET.
           </p>
-          {/* <p>PASSIONATE IN SOFTWARE ENGINEERING & IoT.</p> */}
         </div>
 
         {/* Image */}

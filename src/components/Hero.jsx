@@ -1,6 +1,7 @@
 import { FaArrowDown } from 'react-icons/fa'
 import { IoMdArrowDown } from 'react-icons/io'
 import About from './About'
+import Experience from './Experience'
 import Projects from './Projects'
 import Skills from './Skills'
 import GsapAnimate from './animation/GsapAnimate'
@@ -20,7 +21,7 @@ const Hero = () => {
       {/* For mobile */}
       <div className=" md:hidden lg:hidden text-white h-screen">
         <p className="flex gap-1 items-center text-xs my-12 mx-5">
-          01/04 - SCROLL <FaArrowDown />
+          01/05 - SCROLL <FaArrowDown />
         </p>
         <div className="my-20">
           <Marquee speed={45}>
@@ -83,7 +84,7 @@ const Hero = () => {
       <div className="relative hidden md:block">
         <div className="absolute top-[20%] left-[5%] z-[99]">
           <div className="flex items-center justify-center text-white text-xs leading-[26px] gap-1">
-            01//04 - SCROLL
+            01//05 - SCROLL
             <span>
               <FaArrowDown />
             </span>
@@ -119,7 +120,7 @@ const Hero = () => {
             <div className="flex gap-52">
               <div className="flex items-start ">
                 <div className="flex justify-center items-center text-white text-xs leading-[26px] gap-1">
-                  01//04 - SCROLL
+                  01//05 - SCROLL
                   <span>
                     <FaArrowDown />
                   </span>
@@ -194,6 +195,7 @@ const Hero = () => {
 
       {/*  */}
       <About />
+      <Experience />
       <Projects />
       <Skills />
       {/* <Review /> */}
