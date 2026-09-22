@@ -1,30 +1,86 @@
 'use client'
 import Image from 'next/image'
+import Link from 'next/link'
 import React from 'react'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import { IoMdArrowBack } from 'react-icons/io'
 
 const page = ({ params }) => {
-  const project = cards.filter((card) => card.name === params.projectName)
+  const project = cards.find((card) => card.name === params.projectName)
+
+  if (!project) {
+    return (
+      <div className="prevent-select">
+        <Header />
+        <div className="min-h-[60vh] flex flex-col items-center justify-center text-white gap-6">
+          <p className="text-3xl font-semibold">Project not found</p>
+          <Link
+            href="/projects"
+            className="border border-purple-700 hover:border-purple-800 rounded-full px-4 py-2 text-sm"
+          >
+            BACK TO PROJECTS
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  const snapshots =
+    project.snapshots && project.snapshots.length > 0
+      ? project.snapshots
+      : [{ serial: 1, src: project.image }]
 
   return (
-    <div>
-      {/* <p className={'text-6xl text-white text-center mt-20'}>
-        {params.projectName}
-      </p> */}
-      <div className="">
+    <div className="prevent-select">
+      <Header />
+      <div className="mx-4 md:mx-8 mt-8">
+        <Link
+          href="/projects"
+          className="inline-flex items-center gap-2 text-white text-sm hover:opacity-70"
+        >
+          <IoMdArrowBack /> BACK TO PROJECTS
+        </Link>
+        <h1 className="text-white text-4xl md:text-6xl font-semibold mt-4">
+          {project.name}
+        </h1>
+        <div className="flex items-center gap-3 mt-4 flex-wrap">
+          {project?.tech?.map((icon) => (
+            <div
+              key={icon.name}
+              className="flex items-center gap-2 border border-zinc-700 rounded-full px-3 py-1"
+            >
+              <Image
+                src={icon.icon}
+                alt={icon.name}
+                width={16}
+                height={16}
+                className="rounded-full"
+              />
+              <p className="text-white text-xs">{icon.name}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
         <Image
-          alt=""
+          alt={project.name}
           height={1080}
           width={1920}
-          src={project[0].snapshots[0].src}
-          className="w-full m-12 rounded-xl"
+          src={snapshots[0].src}
+          className="w-full m-4 md:m-12 rounded-xl"
         />
       </div>
 
-      {project[0]?.snapshots?.map((snap) => (
+      {snapshots.slice(1).map((snap) => (
         <div key={snap.serial} className="flex items-center gap-6 m-5">
-          <Image width={1920} height={1080} src={snap.src} alt="" />
+          <Image width={1920} height={1080} src={snap.src} alt={project.name} />
         </div>
       ))}
+
+      <Footer />
     </div>
   )
 }
@@ -101,6 +157,12 @@ const cards = [
     id: 2,
     name: 'Sitemark',
     image: '/images/projects/project-2.png',
+    snapshots: [
+      {
+        serial: 1,
+        src: '/images/projects/project-2.png',
+      },
+    ],
     tech: [
       {
         name: 'Tailwind CSS',
@@ -136,6 +198,12 @@ const cards = [
     id: 3,
     name: 'Craftpaper',
     image: '/images/projects/project-3.png',
+    snapshots: [
+      {
+        serial: 1,
+        src: '/images/projects/project-3.png',
+      },
+    ],
     tech: [
       {
         name: 'Tailwind CSS',

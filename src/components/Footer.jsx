@@ -4,7 +4,7 @@ import { IoMdArrowDown } from 'react-icons/io'
 
 const Footer = () => {
   return (
-    <div className="mx-4">
+    <div id="contact" className="mx-4">
       {/* mobile device  */}
       <div className="md:hidden">
         <div className="border-[0.5px] border-gray-600 rounded-3xl px-12 py-8 md:p-24 flex flex-col items-center  text-white space-y-1 gap-6 ">

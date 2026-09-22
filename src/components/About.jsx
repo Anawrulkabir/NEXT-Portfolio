@@ -8,7 +8,7 @@ import { TextAnimation } from './animation/TextAnimation'
 
 const About = () => {
   return (
-    <div className="text-white mx-4 md:mx-8 relative ">
+    <div id="about" className="text-white mx-4 md:mx-8 relative ">
       <div className="border-t border-white md:mx-5"></div>
 
       {/* for mobile  */}
@@ -66,28 +66,36 @@ const About = () => {
         </p>
         <div className="flex gap-1">
           <Link
-            href="#"
+            href="https://mail.google.com/mail/u/0/?fs=1&tf=cm&source=mailto&to=mdanawrulkabirfahad123@gmail.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center text-white hover:text-white"
           >
             <TextAnimation text="EMAIL" size={'normal'} font={'light'} />
           </Link>
           <p>/</p>
           <Link
-            href="#"
+            href="https://github.com/Anawrulkabir"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center text-white hover:text-white"
           >
             <TextAnimation text="GITHUB" size={'normal'} font={'light'} />
           </Link>
           <p>/</p>
           <Link
-            href="#"
+            href="https://www.facebook.com/profile.php?id=100073283195770"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center text-white hover:text-white"
           >
             <TextAnimation text="FACEBOOK" size={'normal'} font={'light'} />
           </Link>
           <p>/</p>
           <Link
-            href="#"
+            href="https://www.linkedin.com/in/anawrulkabir/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center text-white hover:text-white"
           >
             <TextAnimation text="LINKEDIN" size={'normal'} font={'light'} />
