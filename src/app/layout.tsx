@@ -5,6 +5,7 @@ import { profile } from '@/content'
 import { SkipLink } from '@/components/chrome/SkipLink'
 import { QuickViewBar } from '@/components/chrome/QuickViewBar'
 import { Footer } from '@/components/chrome/Footer'
+import { motionBootScript } from '@/lib/motion'
 
 const pixelFont = Pixelify_Sans({
   subsets: ['latin'],
@@ -69,7 +70,11 @@ const personJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${pixelFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${pixelFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
+      <head>
+        {/* Restores the reduce-motion toggle before first paint (I-17). */}
+        <script dangerouslySetInnerHTML={{ __html: motionBootScript }} />
+      </head>
       <body className="font-sans bg-night text-parchment">
         <script
           type="application/ld+json"

@@ -1,24 +1,12 @@
 'use client'
 import Link from 'next/link'
 import { Menu } from 'lucide-react'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import type { Link as ContentLink } from '@/content/types'
 
 type NavItem = { label: string; href: string }
 
-export function MobileMenu({
-  navItems,
-  links,
-}: {
-  navItems: NavItem[]
-  links: ContentLink[]
-}) {
+export function MobileMenu({ navItems, links }: { navItems: NavItem[]; links: ContentLink[] }) {
   return (
     <Sheet>
       <SheetTrigger asChild>

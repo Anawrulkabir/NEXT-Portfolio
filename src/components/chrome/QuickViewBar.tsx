@@ -30,10 +30,7 @@ export function QuickViewBar() {
       </nav>
 
       <div className="hidden lg:flex items-center gap-3 ml-auto">
-        <Link
-          href={profile.cv.viewHref}
-          className="pixel-focus pixel-btn-primary pixel-frame px-3 py-1.5 text-sm"
-        >
+        <Link href={profile.cv.viewHref} className="pixel-focus pixel-btn-primary pixel-frame px-3 py-1.5 text-sm">
           View CV
         </Link>
         <Link href="/contact" className="pixel-focus text-parchment text-sm hover:text-amber">

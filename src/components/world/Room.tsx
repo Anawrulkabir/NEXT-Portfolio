@@ -38,7 +38,8 @@ const layout: Record<RoomId, { wall: string; name: string; objects: Placed[]; sc
 }
 
 // Certificate frames: up to 5 × 2 on the archive wall (§05.2 Room R1).
-const FRAME = { x0: 36, y0: 26, w: 46, h: 36, gap: 6, cols: 5 }
+// y0 leaves room for the "Back outside" button above the frames at any scale.
+const FRAME = { x0: 36, y0: 46, w: 46, h: 36, gap: 6, cols: 5 }
 
 /**
  * Archive Room / Field Office (§05.2, §09 I-07). A separate interior scene,

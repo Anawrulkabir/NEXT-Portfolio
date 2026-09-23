@@ -16,6 +16,7 @@ import { PixelSprite } from '@/components/pixel/PixelSprite'
 import { Panel } from '@/components/panels/Panel'
 import { ObjectCard } from '@/components/panels/ObjectCard'
 import { Room, type RoomId } from './Room'
+import { onMotionChange, prefersReducedMotion } from '@/lib/motion'
 import { routeLabel } from './RouteStrip'
 
 const refById: Record<string, WorldObjectRef> = Object.fromEntries(
@@ -188,7 +189,8 @@ export default function SceneDeck() {
 
   // Size, reduced motion, first-view labels, deep links — once on mount.
   useEffect(() => {
-    reduced.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    reduced.current = prefersReducedMotion()
+    const offMotion = onMotionChange(() => (reduced.current = prefersReducedMotion()))
     const measure = () => wrapRef.current && setK(deckScale(wrapRef.current.clientWidth))
     measure()
     const ro = new ResizeObserver(measure)
@@ -221,7 +223,10 @@ export default function SceneDeck() {
       const i = deckScenes.findIndex((s) => s.zone === at)
       if (i >= 0) requestAnimationFrame(() => goTo(i, true))
     }
-    return () => ro.disconnect()
+    return () => {
+      ro.disconnect()
+      offMotion()
+    }
   }, [goTo, n])
 
   // Hero "Explore the world" (§04.2): on phones, focus the current scene's first object.

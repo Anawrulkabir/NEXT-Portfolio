@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Map as MapIcon, X } from 'lucide-react'
+import { Keyboard, Map as MapIcon, X } from 'lucide-react'
 import { journeyChapters, profile } from '@/content'
 import type { WorldObjectRef, ZoneId } from '@/content/types'
 import { Field } from '@/components/content/Field'
@@ -36,6 +36,8 @@ import { ZoneSign } from './ZoneSign'
 import { RouteStrip } from './RouteStrip'
 import { Room, type RoomId } from './Room'
 import { MapOverlay } from './MapOverlay'
+import { WorldControls } from './WorldControls'
+import { onMotionChange, prefersReducedMotion } from '@/lib/motion'
 
 const objectById: Record<string, PlacedObject> = Object.fromEntries(placedObjects.map((o) => [o.ref.objectId, o]))
 /** Every object's content ref — placed in the world or inside a room. */
@@ -82,6 +84,7 @@ export default function WorldViewport() {
   const [room, setRoom] = useState<RoomId | null>(null)
   const [iris, setIris] = useState<'closing' | 'opening' | null>(null)
   const [mapOpen, setMapOpen] = useState(false)
+  const [controlsOpen, setControlsOpen] = useState(false)
   // Zone under the camera centre while the intro pans (lights the route strip, bakes terrain ahead).
   const [camZone, setCamZone] = useState<ZoneId | null>(null)
   const irisTimers = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -113,6 +116,8 @@ export default function WorldViewport() {
     nearest: null as string | null,
     keyboardWalk: false,
     reduced: false,
+    contrast: false, // prefers-contrast: more → no parallax (§15.9)
+    lastSaid: { text: '', at: 0 },
     sky: '',
   })
 
@@ -125,8 +130,8 @@ export default function WorldViewport() {
         layerRef.current.style.transform = `translate3d(${-Math.round(h.camX * s)}px,0,0)`
       }
       if (farRef.current) {
-        // Reduced motion: no parallax — the far layer holds still.
-        const fx = h.reduced ? 0 : Math.round(h.camX * PARALLAX) * s
+        // Reduced motion or more contrast: no parallax — the far layer holds still.
+        const fx = h.reduced || h.contrast ? 0 : Math.round(h.camX * PARALLAX) * s
         farRef.current.style.transform = `translate3d(${-fx}px,0,0)`
       }
       const vp = viewportRef.current
@@ -202,7 +207,13 @@ export default function WorldViewport() {
         h.nearest = best
         dispatch({ type: 'nearest', id: best })
         if (best && h.keyboardWalk && liveRef.current) {
-          liveRef.current.textContent = `${objectById[best].ref.tooltip}. Press E to open.`
+          // Throttled: at most one announcement per 800 ms, never the same twice in a row.
+          const text = `${objectById[best].ref.tooltip}. Press E to open.`
+          const now = performance.now()
+          if (text !== h.lastSaid.text && now - h.lastSaid.at > 800) {
+            liveRef.current.textContent = text
+            h.lastSaid = { text, at: now }
+          }
         }
       }
     }
@@ -396,7 +407,7 @@ export default function WorldViewport() {
   useEffect(() => {
     const h = hot.current
     const tall = window.matchMedia('(min-height: 1000px)')
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const contrast = window.matchMedia('(prefers-contrast: more)')
     const applyScale = () => {
       h.scale = tall.matches ? 3 : 2
       setScale(h.scale)
@@ -404,12 +415,15 @@ export default function WorldViewport() {
       engine.paint()
     }
     const applyReduced = () => {
-      h.reduced = reduced.matches
+      h.reduced = prefersReducedMotion()
+      h.contrast = contrast.matches
+      engine.paint()
     }
     applyScale()
     applyReduced()
     tall.addEventListener('change', applyScale)
-    reduced.addEventListener('change', applyReduced)
+    const offMotion = onMotionChange(applyReduced)
+    contrast.addEventListener('change', applyReduced)
 
     const ro = new ResizeObserver(() => {
       if (!viewportRef.current) return
@@ -472,7 +486,8 @@ export default function WorldViewport() {
 
     return () => {
       tall.removeEventListener('change', applyScale)
-      reduced.removeEventListener('change', applyReduced)
+      offMotion()
+      contrast.removeEventListener('change', applyReduced)
       window.removeEventListener('world:focus', onExternalFocus)
       skipEvents.forEach((ev) => window.removeEventListener(ev, skipIntro))
       ro.disconnect()
@@ -556,6 +571,11 @@ export default function WorldViewport() {
     if (k === 'm' || k === 'M') {
       e.preventDefault()
       setMapOpen(true)
+      return
+    }
+    if (k === '?') {
+      e.preventDefault()
+      setControlsOpen(true)
       return
     }
     if (room) return // no walking inside a room
@@ -773,18 +793,28 @@ export default function WorldViewport() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMapOpen(true)}
-          className="absolute right-3 top-3 z-20 pixel-focus inline-flex items-center gap-1.5 bg-parchment text-ink border-2 border-loam px-2.5 py-1 text-xs"
-          aria-keyshortcuts="M"
-        >
-          <MapIcon className="h-3.5 w-3.5" aria-hidden="true" /> Map
-        </button>
+        <div className="absolute right-3 top-3 z-20 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setControlsOpen(true)}
+            className="pixel-focus inline-flex items-center gap-1.5 bg-parchment text-ink border-2 border-loam px-2.5 py-1 text-xs"
+            aria-keyshortcuts="Shift+/"
+          >
+            <Keyboard className="h-3.5 w-3.5" aria-hidden="true" /> Controls
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapOpen(true)}
+            className="pixel-focus inline-flex items-center gap-1.5 bg-parchment text-ink border-2 border-loam px-2.5 py-1 text-xs"
+            aria-keyshortcuts="M"
+          >
+            <MapIcon className="h-3.5 w-3.5" aria-hidden="true" /> Map
+          </button>
+        </div>
 
         {hint && (
           <div className="absolute left-3 bottom-3 flex items-center gap-2 bg-parchment/95 text-ink border-2 border-loam px-3 py-1.5 text-xs">
-            <span>{'← →'} to walk · click anything glowing · M for map</span>
+            <span>{'← →'} to walk · click anything glowing · M for map · ? for controls</span>
             <button
               type="button"
               onClick={() => setHint(false)}
@@ -804,6 +834,8 @@ export default function WorldViewport() {
       </div>
 
       <RouteStrip current={camZone ?? state.zone} visited={state.visited} onJump={engine.jumpToZone} />
+
+      <WorldControls open={controlsOpen} onOpenChange={setControlsOpen} />
 
       <MapOverlay
         open={mapOpen}

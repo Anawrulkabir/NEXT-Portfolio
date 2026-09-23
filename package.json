@@ -9,7 +9,8 @@
     "lint": "next lint",
     "gaps": "tsx scripts/content-gaps.ts",
     "gaps:check": "tsx scripts/content-gaps.ts --check-blockers",
-    "optimize-images": "tsx scripts/optimize-images.ts"
+    "optimize-images": "tsx scripts/optimize-images.ts",
+    "a11y": "tsx scripts/a11y-audit.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.1",
@@ -23,11 +24,13 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@types/node": "^20.19.43",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "eslint": "^8",
     "eslint-config-next": "14.2.4",
+    "playwright-core": "^1.63.0",
     "postcss": "^8",
     "sharp": "^0.33.5",
     "tailwindcss": "^3.4.1",

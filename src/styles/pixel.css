@@ -74,6 +74,8 @@
   image-rendering: crisp-edges;
 }
 
+/* Reduced motion: the OS setting, or the site toggle (I-17), which sets
+   html[data-motion='reduce']. Every reduced-motion rule below exists in both forms. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -83,6 +85,14 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+html[data-motion='reduce'] *,
+html[data-motion='reduce'] *::before,
+html[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* ---------- World (docs/PORTFOLIO_REDESIGN.md §05, §07.2) ---------- */
@@ -100,7 +110,7 @@
     height: calc(100vw * 248 / 360 + 150px);
   }
 }
-@media (min-height: 1000px) {
+@media (min-width: 768px) and (min-height: 1000px) {
   .world-frame {
     height: 576px;
   }
@@ -395,6 +405,36 @@
     visibility: hidden;
   }
 }
+html[data-motion='reduce'] .deck-pan {
+    transition: none;
+  }
+html[data-motion='reduce'] .map-pin,
+html[data-motion='reduce'] .iris-closing,
+html[data-motion='reduce'] .iris-opening {
+    animation: none;
+  }
+html[data-motion='reduce'] .cert-wall-frame {
+    transition: none;
+  }
+html[data-motion='reduce'] .overlook-in,
+html[data-motion='reduce'] .lora-chip {
+    animation: none;
+  }
+html[data-motion='reduce'] .world-led {
+    animation: none;
+  }
+html[data-motion='reduce'] .outfit-swap {
+    animation: none;
+  }
+html[data-motion='reduce'] .world-obj .obj-overlay {
+    transition: none;
+  }
+html[data-motion='reduce'] .px-anim[data-frame='idle'] g[data-f='1'],
+html[data-motion='reduce'] .px-tick g[data-f='1'] {
+    animation: none !important;
+    visibility: hidden;
+  }
+
 
 /* Print (the /hire brief is meant to be printable, §10): paper colours, no
    chrome, external links spelled out. */
@@ -418,5 +458,24 @@
   a[href^='http']::after {
     content: ' (' attr(href) ')';
     font-size: 0.85em;
+  }
+}
+
+/* prefers-contrast: more (§15.9): heavier panel borders, full-strength text.
+   (Parallax is switched off in WorldViewport.) */
+@media (prefers-contrast: more) {
+  .pixel-panel,
+  .pixel-frame,
+  [role='dialog'] {
+    border-width: 3px !important;
+  }
+  .text-parchment\/70,
+  .text-parchment\/80,
+  .text-parchment\/85 {
+    color: var(--parchment) !important;
+  }
+  .opacity-70,
+  .opacity-80 {
+    opacity: 1 !important;
   }
 }
