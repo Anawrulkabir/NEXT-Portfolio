@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
-  evidenceLabel,
   experience,
   experienceHighlights,
   hireSnapshot,
@@ -11,11 +10,11 @@ import {
   skillGroups,
   skillsByGroup,
   visibleLinks,
-  type Skill,
 } from '@/content'
 import { CopyEmailButton } from '@/components/content/CopyEmailButton'
 import { ExperienceBlock } from '@/components/experience/ExperienceBlock'
 import { ProjectCompact } from '@/components/panels/ProjectCompact'
+import { evidenceLink } from '@/components/skills/SkillWorkshop'
 import { isLiveRoute } from '@/lib/routes'
 import { shortInstitution } from '@/lib/format'
 
@@ -23,14 +22,6 @@ export const metadata: Metadata = {
   title: 'Hiring brief',
   description:
     'One-minute recruiter brief: experience at Poridhi.io on GPU infrastructure (Kubernetes, HAMi, AWS), skills, projects and CV.',
-}
-
-/** Where a skill's first piece of evidence lives, if that page exists yet. */
-function evidenceHref(e: Skill['evidence'][number]): string | null {
-  if (e.type === 'experience') return '/experience'
-  if (e.type === 'research') return `/research/${e.id}`
-  if (e.type === 'project') return '/projects'
-  return null
 }
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
@@ -114,8 +105,9 @@ export default function HirePage() {
                   <ul className="flex flex-wrap gap-x-3 gap-y-1">
                     {skills.map((skill, i) => {
                       const ev = skill.evidence[0]
-                      const label = ev ? evidenceLabel(ev) : null
-                      const href = ev ? evidenceHref(ev) : null
+                      const link = ev ? evidenceLink(ev) : null
+                      const label = link?.label
+                      const href = link?.href
                       return (
                         <li key={skill.id}>
                           {skill.name}

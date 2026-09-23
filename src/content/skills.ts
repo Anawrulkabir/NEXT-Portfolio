@@ -1,7 +1,7 @@
 /**
  * Skills — see docs/PORTFOLIO_REDESIGN.md §06.4
  * Grouped into six "workshops", each skill carrying evidence (where it was
- * actually used) rather than a numeric proficiency level. `verify: true`
+ * actually used), never a numeric proficiency. `verify: true`
  * skills render only once the author confirms them.
  */
 import type { Skill, SkillGroup } from './types'
@@ -61,10 +61,12 @@ export const skills: Skill[] = [
   { id: 'nextjs', name: 'Next.js', group: 'software', evidence: [], verify: true },
   { id: 'postgresql', name: 'PostgreSQL', group: 'software', evidence: [{ type: 'experience', id: 'poridhi' }] },
   { id: 'redis', name: 'Redis', group: 'software', evidence: [{ type: 'project', id: 'ride-sharing-microservices' }] },
-  { id: 'mongodb', name: 'MongoDB', group: 'software', evidence: [{ type: 'project', id: 'luca' }] },
+  { id: 'mongodb', name: 'MongoDB', group: 'software', evidence: [{ type: 'project', id: 'luca' }, { type: 'project', id: 'sitemark' }] },
   { id: 'rest-apis', name: 'REST APIs', group: 'software', evidence: [{ type: 'experience', id: 'poridhi' }] },
   { id: 'rabbitmq', name: 'RabbitMQ', group: 'software', evidence: [{ type: 'project', id: 'ride-sharing-microservices' }] },
-  { id: 'git', name: 'Git', group: 'software', evidence: [] },
+  { id: 'git', name: 'Git', group: 'software', evidence: [], verify: true },
+  { id: 'stripe', name: 'Stripe', group: 'software', evidence: [{ type: 'project', id: 'luca' }, { type: 'project', id: 'sitemark' }, { type: 'project', id: 'craftpaper' }], verify: true },
+  { id: 'firebase', name: 'Firebase Auth', group: 'software', evidence: [{ type: 'project', id: 'craftpaper' }], verify: true },
   { id: 'express', name: 'Express', group: 'software', evidence: [], verify: true },
 
   // Infrastructure

@@ -1,11 +1,13 @@
-import { events, isPending, type Project } from '@/content'
+import Link from 'next/link'
+import { events, isPending, projectTitle, type Project } from '@/content'
 import { Field } from '@/components/content/Field'
 import { LinkRow } from '@/components/content/LinkRow'
 import { MediaSlot } from '@/components/content/MediaSlot'
 import { TechChips } from '@/components/content/TechChips'
 import { formatDate } from '@/lib/format'
+import { isLiveRoute } from '@/lib/routes'
 
-/** Compact project card — world artifacts, and later the /projects shelves. */
+/** Project card for world objects and /journey; /projects has its own shelf card. */
 export function ProjectCard({ project }: { project: Project }) {
   const event = events.find((e) => e.relatedProjectId === project.id)
   const result = project.result !== undefined && !isPending(project.result) ? project.result : null
@@ -13,7 +15,8 @@ export function ProjectCard({ project }: { project: Project }) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Field as="h3" value={project.name} className="font-display text-lg" />
+        {projectTitle(project) && <h3 className="font-display text-lg">{projectTitle(project)}</h3>}
+        {isPending(project.name) && <Field value={project.name} />}
         {project.verify && process.env.NODE_ENV !== 'production' && (
           <span className="text-[10px] border border-dashed border-amber text-amber px-1.5">VERIFY</span>
         )}
@@ -58,6 +61,13 @@ export function ProjectCard({ project }: { project: Project }) {
         <MediaSlot key={img.id} image={img} />
       ))}
       <LinkRow links={project.links} />
+      {isLiveRoute(`/projects/${project.id}`) && (
+        <p className="text-sm">
+          <Link href={`/projects/${project.id}`} className="pixel-focus underline underline-offset-2">
+            Project page {'→'}
+          </Link>
+        </p>
+      )}
     </div>
   )
 }

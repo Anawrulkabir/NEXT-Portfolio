@@ -124,7 +124,24 @@ export const projects: Project[] = [
       { kind: 'demo', label: 'Live', href: 'https://user-email-password-auth-8dfb6.web.app', verify: true },
       { kind: 'repo', label: 'GitHub', href: 'https://github.com/Anawrulkabir/Luca' },
     ],
-    images: [],
+    images: [
+      {
+        id: 'luca-pages',
+        src: '/media/projects/luca/pages.png',
+        alt: 'Luca screenshots: the homepage, tour package cards, the overview tab and a package gallery, on desktop and mobile',
+        width: 1920,
+        height: 1080,
+        kind: 'screenshot',
+      },
+      {
+        id: 'luca-blog-auth',
+        src: '/media/projects/luca/blog-auth.png',
+        alt: 'Luca screenshots: blog layouts and the login and sign-up forms',
+        width: 1920,
+        height: 1080,
+        kind: 'screenshot',
+      },
+    ],
     verify: true,
   },
   {
@@ -142,7 +159,16 @@ export const projects: Project[] = [
       { kind: 'repo', label: 'Client', href: 'https://github.com/Anawrulkabir/Sitemark-client' },
       { kind: 'repo', label: 'Server', href: 'https://github.com/Anawrulkabir/Sitemark-server' },
     ],
-    images: [],
+    images: [
+      {
+        id: 'sitemark-home',
+        src: '/media/projects/sitemark/home.png',
+        alt: 'Sitemark homepage: navigation with blog sections, a sign-up hero and a sample dashboard preview',
+        width: 1166,
+        height: 959,
+        kind: 'screenshot',
+      },
+    ],
     verify: true,
   },
   {
@@ -160,7 +186,16 @@ export const projects: Project[] = [
       { kind: 'repo', label: 'Client', href: 'https://github.com/Anawrulkabir/Craftpaper-client' },
       { kind: 'repo', label: 'Server', href: 'https://github.com/Anawrulkabir/Craftpaper-server' },
     ],
-    images: [],
+    images: [
+      {
+        id: 'craftpaper-home',
+        src: '/media/projects/craftpaper/home.png',
+        alt: 'Craftpaper homepage: search bar with categories, a sign-up hero with woven jute baskets, and category links',
+        width: 1166,
+        height: 959,
+        kind: 'screenshot',
+      },
+    ],
     verify: true,
   },
 ]

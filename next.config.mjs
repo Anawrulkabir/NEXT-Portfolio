@@ -1,23 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // All images are local (public/media); no remote hosts (§15.7).
     formats: ['image/avif', 'image/webp'],
-    // TODO(Phase 6): remove this wildcard once Projects/AllProjects stop
-    // hotlinking external tech-icon images (see docs/PORTFOLIO_REDESIGN.md §15.7).
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
   },
   async redirects() {
     return [
       { source: '/resume', destination: '/cv', permanent: true },
       { source: '/animate', destination: '/', permanent: true },
       { source: '/review', destination: '/', permanent: true },
-      // TODO(Phase 6): /projects/Luca -> /projects/luca (and Sitemark,
-      // Craftpaper) once /projects/[slug] replaces /projects/[projectName].
+      // Old capitalised project URLs (/projects/Luca etc.) are lowercased in
+      // src/middleware.ts — config redirects match case-insensitively and
+      // would loop.
     ]
   },
 }

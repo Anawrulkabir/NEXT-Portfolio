@@ -4,17 +4,14 @@ import { MobileMenu } from './MobileMenu'
 
 /**
  * Quick View bar — see docs/PORTFOLIO_REDESIGN.md §03.3.
- *
- * The full nav is Home/About/Experience/Research/Projects/Skills/View CV/
- * Contact, but Skills only gets added here once its route lands (Phase 6) — a nav item that 404s is worse than a
- * short nav. Never remove an item below without confirming its route
- * exists.
+ * About · Experience · Research · Projects · Skills · View CV · Contact.
  */
 const navItems = [
   { label: 'About', href: '/about' },
   { label: 'Experience', href: '/experience' },
   { label: 'Research', href: '/research' },
   { label: 'Projects', href: '/projects' },
+  { label: 'Skills', href: '/skills' },
 ]
 
 export function QuickViewBar() {

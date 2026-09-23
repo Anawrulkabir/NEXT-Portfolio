@@ -6,7 +6,15 @@ import { isPending, type ImageAsset } from '@/content'
  * An image, or — while the author hasn't supplied it — a dev-only dashed
  * placeholder. Never a fake photo; renders nothing in production (§13.3).
  */
-export function MediaSlot({ image, className }: { image: ImageAsset; className?: string }) {
+export function MediaSlot({
+  image,
+  className,
+  sizes = '(min-width: 768px) 760px, 100vw',
+}: {
+  image: ImageAsset
+  className?: string
+  sizes?: string
+}) {
   if (isPending(image.src)) {
     if (process.env.NODE_ENV === 'production') return null
     return (
@@ -26,6 +34,7 @@ export function MediaSlot({ image, className }: { image: ImageAsset; className?:
         alt={image.alt}
         width={image.width ?? 800}
         height={image.height ?? 600}
+        sizes={sizes}
         className="w-full h-auto pixel-frame"
       />
       {image.caption && <figcaption className="text-xs mt-1 opacity-70">{image.caption}</figcaption>}
