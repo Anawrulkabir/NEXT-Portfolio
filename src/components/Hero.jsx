@@ -1,7 +1,7 @@
 import { FaArrowDown } from 'react-icons/fa'
 import { IoMdArrowDown } from 'react-icons/io'
 import About from './About'
-import Experience from './Experience'
+import Journey from './Journey'
 import Projects from './Projects'
 import Skills from './Skills'
 import GsapAnimate from './animation/GsapAnimate'
@@ -14,6 +14,7 @@ import {
 } from './animation/AnimatedTooltipMain'
 import { HiOutlineDownload } from 'react-icons/hi'
 import { TextAnimation } from './animation/TextAnimation'
+import Hero3D from './three/Hero3D'
 const Hero = () => {
   return (
     <>
@@ -193,9 +194,18 @@ const Hero = () => {
         </div>
       </div>
 
-      {/*  */}
+      {/* 3D signature visual */}
+      <div className="relative w-full h-[55vh] md:h-[80vh] my-4 md:my-12">
+        <Hero3D className="absolute inset-0" />
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 md:pb-16 pointer-events-none px-4">
+          <p className="text-white text-[10px] md:text-sm tracking-[0.3em] text-center">
+            CLOUD-NATIVE &middot; GPU-ACCELERATED &middot; ENGINEERED FOR SCALE
+          </p>
+        </div>
+      </div>
+
       <About />
-      <Experience />
+      <Journey />
       <Projects />
       <Skills />
       {/* <Review /> */}
