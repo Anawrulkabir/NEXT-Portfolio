@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { profile } from '@/content'
+import { profile, visibleLinks } from '@/content'
 
 export function Footer() {
   return (
@@ -9,7 +9,7 @@ export function Footer() {
           {profile.name} {'·'} last updated {profile.cv.updated}
         </p>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm" aria-label="Footer">
-          {profile.links.map((link) => (
+          {visibleLinks(profile.links).map((link) => (
             <a
               key={link.kind}
               href={link.href}

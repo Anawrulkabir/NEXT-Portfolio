@@ -95,7 +95,15 @@ export const projects: Project[] = [
     status: 'archived',
     date: pending('VERIFY exact dates — CV-old says May–Jun 2022'),
     links: [],
-    images: [], // photos land in /public/media/journey/workshop/ — see §13.4
+    // Photos land in /public/media/journey/workshop/ — see §13.4
+    images: [
+      {
+        id: 'soccer-bot-photo',
+        src: pending('ADD SOCCER BOT PHOTOS'),
+        alt: 'The Soccer Bot built for the 2022 robosoccer competition',
+        kind: 'photo',
+      },
+    ],
     verify: true,
   },
   {

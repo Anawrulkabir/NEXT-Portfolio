@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { profile } from '@/content'
+import { profile, visibleLinks } from '@/content'
 import { MobileMenu } from './MobileMenu'
 
 /**
@@ -52,7 +52,7 @@ export function QuickViewBar() {
         </Link>
         <MobileMenu
           navItems={[{ label: 'Home', href: '/' }, ...navItems, { label: 'Contact', href: '/contact' }]}
-          links={profile.links}
+          links={visibleLinks(profile.links)}
         />
       </div>
     </header>

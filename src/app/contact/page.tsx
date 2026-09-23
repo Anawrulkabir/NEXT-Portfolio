@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { profile } from '@/content'
+import { profile, visibleLinks } from '@/content'
 import { CopyEmailButton } from '@/components/content/CopyEmailButton'
 
 export const metadata: Metadata = { title: 'Contact' }
@@ -23,7 +23,7 @@ export default function ContactPage() {
       )}
 
       <nav className="mt-8 flex flex-col gap-3" aria-label="Other links">
-        {profile.links
+        {visibleLinks(profile.links)
           .filter((l) => l.kind !== 'email')
           .map((link) => (
             <a

@@ -84,3 +84,91 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- World (docs/PORTFOLIO_REDESIGN.md §05, §07.2) ---------- */
+
+/* Height reserved from first paint so the world never shifts layout. Must
+   match the integer scale chosen in WorldViewport (2 normally, 3 on tall
+   viewports): 192 source px × scale. */
+.world-frame {
+  height: 384px;
+}
+@media (min-height: 1000px) {
+  .world-frame {
+    height: 576px;
+  }
+}
+
+.world-sky {
+  background: linear-gradient(#1b2230 0%, #34404d 38%, #6d6862 62%, #a07f64 75%, #a07f64 100%);
+}
+
+.world-obj {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+.world-obj svg {
+  display: block;
+}
+.world-obj:hover svg,
+.world-obj:focus-visible svg,
+.world-obj[data-near='true'] svg {
+  filter: drop-shadow(2px 0 0 var(--amber)) drop-shadow(-2px 0 0 var(--amber))
+    drop-shadow(0 2px 0 var(--amber)) drop-shadow(0 -2px 0 var(--amber));
+}
+.world-obj:focus-visible {
+  outline: 3px dashed var(--amber);
+  outline-offset: 6px;
+}
+
+/* Multi-frame sprites: every frame is an <svg><g data-f="n">; the wrapper's
+   data-frame picks which one shows. No React re-render per frame. */
+.px-anim g[data-f] {
+  display: none;
+}
+.px-anim[data-frame='idle'] g[data-f='0'],
+.px-anim[data-frame='2'] g[data-f='2'],
+.px-anim[data-frame='3'] g[data-f='3'],
+.px-anim[data-frame='4'] g[data-f='4'],
+.px-anim[data-frame='5'] g[data-f='5'] {
+  display: inline;
+}
+.px-anim[data-frame='idle'] g[data-f='1'] {
+  display: inline;
+  visibility: hidden;
+  animation: px-blink 4s steps(1, end) infinite;
+}
+.px-tick g[data-f='1'] {
+  visibility: hidden;
+  animation: px-tick 3s steps(1, end) infinite;
+}
+@keyframes px-blink {
+  0%,
+  96% {
+    visibility: hidden;
+  }
+  97%,
+  100% {
+    visibility: visible;
+  }
+}
+@keyframes px-tick {
+  0%,
+  88% {
+    visibility: hidden;
+  }
+  89%,
+  100% {
+    visibility: visible;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .px-anim[data-frame='idle'] g[data-f='1'],
+  .px-tick g[data-f='1'] {
+    animation: none !important;
+    visibility: hidden;
+  }
+}

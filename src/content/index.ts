@@ -23,7 +23,16 @@ import { projects } from './projects'
 import { certifications } from './certifications'
 import { events } from './events'
 import { skillGroups, skills } from './skills'
-import type { Certification, EventItem, Experience, JourneyChapter, Project, Research, Skill } from './types'
+import type {
+  Certification,
+  EventItem,
+  Experience,
+  JourneyChapter,
+  Link,
+  Project,
+  Research,
+  Skill,
+} from './types'
 
 const byId = <T extends { id: string }>(items: T[]): Record<string, T> =>
   Object.fromEntries(items.map((item) => [item.id, item]))
@@ -70,6 +79,13 @@ export const filledCertifications: Certification[] = certifications.filter(isCer
 /** Projects grouped by shelf, in declared order — see §03.6. */
 export const projectsByShelf = (shelf: Project['shelf']): Project[] =>
   projects.filter((p) => p.shelf === shelf)
+
+/**
+ * Links marked `verify` (e.g. Codeforces/CodeChef handles from the old CV)
+ * are shown while developing but hidden in production until confirmed (§14).
+ */
+export const visibleLinks = (links: Link[]): Link[] =>
+  process.env.NODE_ENV === 'production' ? links.filter((l) => !l.verify) : links
 
 /** Journey chapters in path order (zones only, excludes overlook/rooms). */
 export const zoneChapters: JourneyChapter[] = journeyChapters

@@ -3,19 +3,34 @@
  * Palette is intentionally muted: deep greens/earth tones for the world,
  * cyan reserved for "computation", amber reserved for "you can interact
  * with this". Never used decoratively.
+ *
+ * Each colour is stored as space-separated RGB channels so Tailwind's
+ * opacity modifiers (bg-parchment/95, text-parchment/70) work.
  */
 :root {
-  --night: #161a17; /* page background */
-  --slate: #232a25; /* raised surfaces on dark */
-  --moss: #2f4a34; /* deep green — primary brand surface */
-  --fern: #4f7a4a; /* forest green — grass, decorative surfaces */
-  --fern-button: #375c34; /* darker fern for small button text — meets WCAG AA against parchment */
-  --loam: #6b5238; /* earth — timber, borders on light panels */
-  --parchment: #e7e1d1; /* warm off-white — panels, light text on dark */
-  --ink: #1e211d; /* text on parchment */
-  --signal: #6fb7b9; /* muted cyan — computation only */
-  --amber: #e0a23c; /* interaction highlight only */
-  --ember: #c9663a; /* under-review / in-progress accents, copper */
+  --night-rgb: 22 26 23; /* page background */
+  --slate-rgb: 35 42 37; /* raised surfaces on dark */
+  --moss-rgb: 47 74 52; /* deep green — primary brand surface */
+  --fern-rgb: 79 122 74; /* forest green — grass, decorative surfaces */
+  --fern-button-rgb: 55 92 52; /* darker fern for small button text — WCAG AA on parchment */
+  --loam-rgb: 107 82 56; /* earth — timber, borders on light panels */
+  --parchment-rgb: 231 225 209; /* warm off-white — panels, light text on dark */
+  --ink-rgb: 30 33 29; /* text on parchment */
+  --signal-rgb: 111 183 185; /* muted cyan — computation only */
+  --amber-rgb: 224 162 60; /* interaction highlight only */
+  --ember-rgb: 201 102 58; /* under-review / in-progress accents, copper */
+
+  --night: rgb(var(--night-rgb));
+  --slate: rgb(var(--slate-rgb));
+  --moss: rgb(var(--moss-rgb));
+  --fern: rgb(var(--fern-rgb));
+  --fern-button: rgb(var(--fern-button-rgb));
+  --loam: rgb(var(--loam-rgb));
+  --parchment: rgb(var(--parchment-rgb));
+  --ink: rgb(var(--ink-rgb));
+  --signal: rgb(var(--signal-rgb));
+  --amber: rgb(var(--amber-rgb));
+  --ember: rgb(var(--ember-rgb));
 
   /* zone key colours (route strip + zone tints) */
   --zone-workshop: var(--fern);
