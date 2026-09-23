@@ -1,7 +1,10 @@
 import Link from 'next/link'
-import { eventById, experienceById, noteById, projectById, type WorldObjectRef } from '@/content'
+import { eventById, experienceById, noteById, projectById, researchById, stripPending, type WorldObjectRef } from '@/content'
 import { RoleBlock } from '@/components/experience/RoleBlock'
 import { ToolDrawer } from '@/components/skills/ToolDrawer'
+import { AirfoilDemo } from '@/components/research/AirfoilDemo'
+import { ResearchCard } from '@/components/research/ResearchCard'
+import { ResearchPipeline } from '@/components/research/ResearchPipeline'
 import { isLiveRoute } from '@/lib/routes'
 import { ChapterCard } from './ChapterCard'
 import { EventCard } from './EventCard'
@@ -49,6 +52,19 @@ export function ObjectCard({ object: objectRef }: { object: WorldObjectRef }) {
           )}
         </div>
       )
+    }
+    case 'research': {
+      const r = researchById[opens.id]
+      if (!r) return null
+      if (opens.view === 'pipeline' && r.pipeline?.length) return <ResearchPipeline research={stripPending(r)} />
+      if (opens.view === 'demo')
+        return (
+          <div className="space-y-5">
+            <ResearchCard research={r} />
+            <AirfoilDemo />
+          </div>
+        )
+      return <ResearchCard research={r} />
     }
     case 'skills':
       return (

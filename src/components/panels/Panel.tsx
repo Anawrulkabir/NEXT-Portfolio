@@ -14,6 +14,7 @@ export function Panel({
   children,
   footer,
   onCloseAutoFocus,
+  wide = false,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -21,6 +22,8 @@ export function Panel({
   children: React.ReactNode
   footer?: React.ReactNode
   onCloseAutoFocus?: (e: Event) => void
+  /** Wide mode (640px) for the research pipeline and airfoil demo (I-09, I-10). */
+  wide?: boolean
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -29,12 +32,12 @@ export function Panel({
         <Dialog.Content
           onCloseAutoFocus={onCloseAutoFocus}
           aria-describedby={undefined}
-          className="fixed z-50 flex flex-col bg-parchment text-ink border-loam pixel-shadow
+          className={`fixed z-50 flex flex-col bg-parchment text-ink border-loam pixel-shadow
             inset-x-0 bottom-0 max-h-[88vh] border-t-2
-            md:inset-x-auto md:right-0 md:top-0 md:bottom-0 md:max-h-none md:w-[440px] md:border-t-0 md:border-l-2
+            md:inset-x-auto md:right-0 md:top-0 md:bottom-0 md:max-h-none ${wide ? 'md:w-[640px]' : 'md:w-[440px]'} md:border-t-0 md:border-l-2
             data-[state=open]:animate-in data-[state=closed]:animate-out duration-200
             data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom
-            md:data-[state=open]:slide-in-from-right md:data-[state=closed]:slide-out-to-right"
+            md:data-[state=open]:slide-in-from-right md:data-[state=closed]:slide-out-to-right`}
         >
           <div className="pixel-panel-header flex items-center justify-between gap-3 px-5 py-3 shrink-0">
             <Dialog.Title className="font-display text-base">{title}</Dialog.Title>

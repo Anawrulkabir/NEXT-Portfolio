@@ -4,8 +4,7 @@
  *   workshop: work apron, safety goggles pushed up on the forehead
  *   hoodie:   hoodie, laptop under the arm (Dungeon, Garage)
  *   lanyard:  shirt, lanyard badge, headset around the neck (Software, Data Center)
- * The lab-coat outfit lands with the labs (Phase 5); until then later zones
- * keep the lanyard.
+ *   labcoat:  lab coat over the hoodie, clipboard (both labs, Overlook)
  *
  * Physical traits are placeholders pending the author's choice
  * [NEEDS CONFIRMATION]: neutral dark hair, no glasses, mid skin tone.
@@ -37,6 +36,8 @@ const palette = {
   w: '#c9cfd2',
   L: '#8a9199',
   r: '#c9663a',
+  c: '#dfe3e0',
+  C: '#b7bec4',
 }
 
 const head = (eye: string, goggles: boolean): Grid => [
@@ -82,6 +83,16 @@ const lanyardTorso: Grid = [
   '.....TTTTTTTT.....',
 ]
 
+const labcoatTorso: Grid = [
+  '.....cuuuuuuc.....',
+  '....ccCuuuuCcc....',
+  '....cCcuuuucCc....',
+  '....cCcuuuucCaws..',
+  '....sscuuuucCaws..',
+  '.....cccccccc.....',
+  '.....CCCCCCCC.....',
+]
+
 const legsStand: Grid = [
   '......pppppp......',
   '......pp..pp......',
@@ -125,16 +136,29 @@ function outfit(torso: Grid, goggles: boolean) {
   )
 }
 
-export type OutfitId = 'workshop' | 'hoodie' | 'lanyard'
+export type OutfitId = 'workshop' | 'hoodie' | 'lanyard' | 'labcoat'
 
 export const avatarOutfits: Record<OutfitId, ReturnType<typeof sprite>> = {
   workshop: outfit(apronTorso, true),
   hoodie: outfit(hoodieTorso, false),
   lanyard: outfit(lanyardTorso, false),
+  labcoat: outfit(labcoatTorso, false),
 }
 
-export const outfitForZone = (zone: ZoneId): OutfitId =>
-  zone === 'workshop' ? 'workshop' : zone === 'dungeon' || zone === 'garage' ? 'hoodie' : 'lanyard'
+const outfitByZone: Record<ZoneId, OutfitId> = {
+  workshop: 'workshop',
+  dungeon: 'hoodie',
+  garage: 'hoodie',
+  software: 'lanyard',
+  datacenter: 'lanyard',
+  'physics-lab': 'labcoat',
+  'thermal-lab': 'labcoat',
+  overlook: 'labcoat',
+  archive: 'labcoat',
+  contact: 'labcoat',
+}
+
+export const outfitForZone = (zone: ZoneId): OutfitId => outfitByZone[zone]
 
 /** Default (Workshop) outfit. */
 export const avatarSprite = avatarOutfits.workshop

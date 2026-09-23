@@ -15,30 +15,17 @@ import {
   dungeonScenery,
   garageScenery,
   objectCenterX,
+  overlookScenery,
+  physicsScenery,
   placedObjects,
   softwareScenery,
+  thermalScenery,
   workshopScenery,
   zones,
 } from '../layout'
 import { blendColor, tilesets, type Tile } from '../tilesets'
 import { gateSprite, wallScreenSprite } from '../sprites/dungeon'
 import { coffeeSprite, serverDoorSprite } from '../sprites/software'
-
-// Canvas can't read CSS variables, so placeholder zones use literal hexes
-// matching the zone key colours in src/styles/tokens.css.
-const placeholderHex: Record<string, string> = {
-  'physics-lab': '#a9c4d9',
-  'thermal-lab': '#c9663a',
-  overlook: '#2f4a34',
-}
-
-function shade(hex: string, factor: number) {
-  const n = parseInt(hex.slice(1), 16)
-  const r = Math.round(((n >> 16) & 255) * factor)
-  const g = Math.round(((n >> 8) & 255) * factor)
-  const b = Math.round((n & 255) * factor)
-  return `rgb(${Math.min(r, 255)},${Math.min(g, 255)},${Math.min(b, 255)})`
-}
 
 /** Deterministic PRNG so scenery is identical on every render. */
 function rng(seed: number) {
@@ -454,18 +441,172 @@ function drawDatacenter(ctx: CanvasRenderingContext2D, width: number, zoneStart:
   ctx.fillRect(airlock + 17, 66, 1, 30)
 }
 
-/** Phase 2 placeholder: flat colour blocks at the zone's real width (§16). */
-function drawPlaceholder(ctx: CanvasRenderingContext2D, width: number, hex: string) {
-  ctx.fillStyle = shade(hex, 0.28)
-  ctx.fillRect(0, 96, width, GROUND_Y - 96)
-  ctx.fillStyle = shade(hex, 0.36)
-  for (let x = 0; x < width; x += 32) ctx.fillRect(x, 96, 1, GROUND_Y - 96)
-  ctx.fillStyle = shade(hex, 0.75)
-  ctx.fillRect(0, GROUND_Y, width, 2)
-  ctx.fillStyle = shade(hex, 0.5)
-  ctx.fillRect(0, GROUND_Y + 2, width, TILE - 2)
-  ctx.fillStyle = shade(hex, 0.35)
-  ctx.fillRect(0, GROUND_Y + TILE, width, WORLD_HEIGHT - GROUND_Y - TILE)
+/** Copper pipe run with brackets and the odd valve. */
+function copperRun(ctx: CanvasRenderingContext2D, x0: number, x1: number, y: number) {
+  ctx.fillStyle = '#8a5a2b'
+  ctx.fillRect(x0, y, x1 - x0, 3)
+  ctx.fillStyle = '#b87333'
+  ctx.fillRect(x0, y, x1 - x0, 1)
+  for (let x = x0 + 10; x < x1; x += 40) {
+    ctx.fillStyle = '#4f575c'
+    ctx.fillRect(x, y - 1, 2, 5)
+  }
+  for (let x = x0 + 30; x < x1; x += 90) {
+    ctx.fillStyle = '#b5523a'
+    ctx.fillRect(x, y - 3, 5, 2)
+    ctx.fillStyle = '#4f575c'
+    ctx.fillRect(x + 2, y - 1, 1, 1)
+  }
+}
+
+function drawPhysics(ctx: CanvasRenderingContext2D, width: number) {
+  const { windows, benches, corridor } = physicsScenery
+  // Clean lab: pale blue-grey walls, strip lights, big night windows.
+  ctx.fillStyle = '#7f929c'
+  ctx.fillRect(0, 40, corridor, GROUND_Y - 40)
+  ctx.fillStyle = '#6f828c'
+  ctx.fillRect(0, 116, corridor, GROUND_Y - 116)
+  ctx.fillStyle = '#9fb0b8'
+  ctx.fillRect(0, 115, corridor, 1)
+  ctx.fillStyle = '#4f5c63'
+  ctx.fillRect(0, 40, width, 4)
+  for (let x = 20; x < corridor - 20; x += 72) {
+    ctx.fillStyle = '#dff3f3'
+    ctx.fillRect(x, 44, 24, 2)
+    ctx.fillStyle = 'rgba(223,243,243,0.05)'
+    ctx.fillRect(x - 8, 46, 40, GROUND_Y - 46)
+  }
+  for (const wx of windows) {
+    windowHole(ctx, wx, 54, 40, 26, '#b9c6cd')
+    ctx.fillStyle = '#b9c6cd'
+    ctx.fillRect(wx + 19, 54, 2, 26)
+  }
+  // A lab bench with glassware.
+  for (const bx of benches) {
+    ctx.fillStyle = '#b9c6cd'
+    ctx.fillRect(bx, GROUND_Y - 22, 48, 3)
+    ctx.fillStyle = '#6f7f88'
+    ctx.fillRect(bx + 2, GROUND_Y - 19, 44, 19)
+    ctx.fillStyle = '#4f5c63'
+    ctx.fillRect(bx + 2, GROUND_Y - 12, 44, 1)
+    ctx.fillStyle = 'rgba(169,196,217,0.8)'
+    ctx.fillRect(bx + 8, GROUND_Y - 30, 4, 8)
+    ctx.fillRect(bx + 16, GROUND_Y - 28, 6, 6)
+    ctx.fillStyle = '#6fb7b9'
+    ctx.fillRect(bx + 16, GROUND_Y - 25, 6, 3)
+  }
+  // Corridor to the thermal lab: darker, with copper pipe runs.
+  ctx.fillStyle = '#5f6b72'
+  ctx.fillRect(corridor, 48, width - corridor, GROUND_Y - 48)
+  ctx.fillStyle = '#4f5c63'
+  ctx.fillRect(corridor, 44, width - corridor, 4)
+  copperRun(ctx, corridor, width, 70)
+  copperRun(ctx, corridor, width, 80)
+  ctx.fillStyle = '#3b4043'
+  ctx.fillRect(corridor, GROUND_Y - 2, width - corridor, 2)
+}
+
+function drawThermal(ctx: CanvasRenderingContext2D, width: number) {
+  const { cylinders, plotsDesk, backDoor } = thermalScenery
+  ctx.fillStyle = '#66706a'
+  ctx.fillRect(0, 44, width, GROUND_Y - 44)
+  ctx.fillStyle = '#4f5a54'
+  ctx.fillRect(0, 44, width, 4)
+  for (const wx of [3 * TILE, 18 * TILE]) {
+    windowHole(ctx, wx, 54, 30, 16, '#9fa69a')
+  }
+  // Pipework continues from the corridor and drops to the rigs.
+  copperRun(ctx, 0, backDoor - 8, 58)
+  ctx.fillStyle = '#8a5a2b'
+  for (const x of [5 * TILE + 36, 15 * TILE + 36]) ctx.fillRect(x, 61, 3, 52)
+  // Refrigerant cylinders — generic, unlabelled.
+  for (const [dx, c, h] of [
+    [0, '#6f8fa6', 34],
+    [12, '#7d8488', 38],
+    [24, '#6f8fa6', 30],
+  ] as const) {
+    const x = cylinders + dx
+    const top = GROUND_Y - h
+    ctx.fillStyle = c
+    ctx.fillRect(x, top + 3, 10, h - 3)
+    ctx.fillRect(x + 1, top + 1, 8, 2)
+    ctx.fillStyle = '#4f575c'
+    ctx.fillRect(x + 3, top - 3, 4, 4)
+    ctx.fillStyle = 'rgba(255,255,255,0.25)'
+    ctx.fillRect(x + 2, top + 4, 1, h - 8)
+  }
+  // Desk with printed plots.
+  ctx.fillStyle = '#a8845a'
+  ctx.fillRect(plotsDesk, GROUND_Y - 22, 56, 3)
+  ctx.fillStyle = '#6b5238'
+  ctx.fillRect(plotsDesk + 3, GROUND_Y - 19, 3, 19)
+  ctx.fillRect(plotsDesk + 50, GROUND_Y - 19, 3, 19)
+  for (const [dx, tilt] of [
+    [6, 0],
+    [22, 1],
+    [38, 0],
+  ] as const) {
+    ctx.fillStyle = '#e7e1d1'
+    ctx.fillRect(plotsDesk + dx, GROUND_Y - 24 - tilt, 12, 2)
+    ctx.fillStyle = '#3b3f42'
+    ctx.fillRect(plotsDesk + dx + 2, GROUND_Y - 24 - tilt, 8, 1)
+  }
+  // Pinned plots on the wall above the desk.
+  for (const dx of [4, 22]) {
+    ctx.fillStyle = '#e7e1d1'
+    ctx.fillRect(plotsDesk + dx, 78, 16, 12)
+    ctx.fillStyle = '#4f7a8c'
+    for (let i = 0; i < 12; i += 2) ctx.fillRect(plotsDesk + dx + 2 + i, 87 - Math.floor(i / 2), 1, 1)
+    ctx.fillStyle = '#3b3f42'
+    ctx.fillRect(plotsDesk + dx + 1, 88, 14, 1)
+    ctx.fillRect(plotsDesk + dx + 1, 80, 1, 9)
+  }
+  // Back door to the roof, with first light spilling in.
+  ctx.fillStyle = '#4f5a54'
+  ctx.fillRect(backDoor, 76, 28, GROUND_Y - 76)
+  ctx.fillStyle = 'rgba(208,161,116,0.35)'
+  ctx.fillRect(backDoor + 3, 79, 22, GROUND_Y - 79)
+  ctx.fillStyle = '#e7e1d1'
+  ctx.fillRect(backDoor + 10, 70, 8, 3)
+  ctx.fillStyle = '#3b4043'
+  ctx.fillRect(0, GROUND_Y - 2, backDoor, 2)
+}
+
+function drawOverlook(ctx: CanvasRenderingContext2D, width: number) {
+  const { shed } = overlookScenery
+  // The whole journey behind, as a dim silhouette strip (zones 1-7 in miniature).
+  ctx.fillStyle = 'rgba(20,24,30,0.55)'
+  const strip = [
+    [0, 8, 6], // hills
+    [8, 10, 5],
+    [18, 12, 14], // keep
+    [30, 10, 10], // garage
+    [40, 10, 12], // office
+    [50, 14, 16], // racks
+    [64, 12, 12], // labs
+  ]
+  for (const [x, w, h] of strip) ctx.fillRect(40 + x * 2, 118 - h, w * 2, h + 8)
+  for (let x = 40 + 18 * 2; x < 40 + 30 * 2; x += 4) ctx.fillRect(x, 102, 2, 3) // crenellations
+  // Roof access housing at the left (we came up through it).
+  ctx.fillStyle = '#4f5a54'
+  ctx.fillRect(0, 88, 30, GROUND_Y - 88)
+  ctx.fillStyle = '#3b4043'
+  ctx.fillRect(0, 86, 32, 3)
+  ctx.fillStyle = 'rgba(208,161,116,0.35)'
+  ctx.fillRect(8, 104, 16, GROUND_Y - 104)
+  // Parapet along the far edge; railing posts.
+  ctx.fillStyle = '#5a5550'
+  ctx.fillRect(30, 132, width - 30, 12)
+  ctx.fillStyle = '#8a847c'
+  ctx.fillRect(30, 132, width - 30, 1)
+  ctx.fillStyle = '#6d6862'
+  for (let x = 40; x < width; x += 24) ctx.fillRect(x, 120, 2, 12)
+  ctx.fillRect(30, 120, width - 30, 1)
+  // Rooftop shed with the two room doors.
+  ctx.fillStyle = '#5f6b72'
+  ctx.fillRect(shed.x, 96, shed.w, GROUND_Y - 96)
+  ctx.fillStyle = '#3b4043'
+  ctx.fillRect(shed.x - 2, 92, shed.w + 4, 4)
 }
 
 export function bakeZone(canvas: HTMLCanvasElement, zone: ZoneLayout) {
@@ -481,7 +622,9 @@ export function bakeZone(canvas: HTMLCanvasElement, zone: ZoneLayout) {
   else if (zone.id === 'garage') drawGarage(ctx, width)
   else if (zone.id === 'software') drawSoftware(ctx, width)
   else if (zone.id === 'datacenter') drawDatacenter(ctx, width, zone.startX)
-  else drawPlaceholder(ctx, width, placeholderHex[zone.id] ?? '#4f7a4a')
+  else if (zone.id === 'physics-lab') drawPhysics(ctx, width)
+  else if (zone.id === 'thermal-lab') drawThermal(ctx, width)
+  else if (zone.id === 'overlook') drawOverlook(ctx, width)
   drawGround(ctx, zone, width)
 }
 

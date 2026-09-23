@@ -195,7 +195,7 @@ export const journeyChapters: JourneyChapter[] = [
       {
         objectId: 'wind-tunnel',
         tooltip: 'Thesis: PINN for airfoil flow',
-        opens: { type: 'research', id: 'pinn-naca0012-thesis' },
+        opens: { type: 'research', id: 'pinn-naca0012-thesis', view: 'demo' },
       },
       {
         objectId: 'chalkboard',
@@ -244,7 +244,12 @@ export const journeyChapters: JourneyChapter[] = [
     order: 8,
     name: 'The Overlook',
     summary: "This is where I'm going: AI × Mechanical Engineering × Computational Research.",
-    objects: [],
+    // Doors to the two rooms. Until the rooms land (Phase 7, I-07) they open
+    // the rooms' page twins.
+    objects: [
+      { objectId: 'door-archive', tooltip: 'Archive', opens: { type: 'route', href: '/archive' } },
+      { objectId: 'door-contact', tooltip: 'Field Office', opens: { type: 'route', href: '/contact' } },
+    ],
   },
   {
     id: 'archive',

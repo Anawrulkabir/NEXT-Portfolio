@@ -65,7 +65,8 @@ export const research: Research[] = [
       },
       {
         stage: 'Measurements',
-        text: pending('ADD dataset size & operating ranges'),
+        text: 'A relatively small experimental dataset.',
+        detail: pending('ADD dataset size & operating ranges'),
       },
       {
         stage: 'Physics-based features',
@@ -73,7 +74,8 @@ export const research: Research[] = [
       },
       {
         stage: 'Machine learning',
-        text: pending('ADD full model list (gradient boosting confirmed; others?)'),
+        text: 'Gradient-boosting models.',
+        detail: pending('ADD full model list (gradient boosting confirmed; others?)'),
       },
       {
         stage: 'Validation',
@@ -113,3 +115,21 @@ export const research: Research[] = [
     updated: '2026-07',
   },
 ]
+
+/**
+ * Research interests — SOP §10 condensed to six plain statements (§03.5).
+ * No equations, no claims of results.
+ */
+export const researchInterests: string[] = [
+  'Machine learning for engineering systems.',
+  'Physics-informed and physics-guided machine learning.',
+  'Computational modeling of fluid and thermal systems.',
+  'Data-driven prediction of how engineering systems behave.',
+  'AI-assisted engineering analysis, including low-cost intelligent systems.',
+  'Heat transfer and refrigeration, especially low-GWP refrigerants.',
+]
+
+/** /academic header line (§11.1) — wording awaits the author. */
+export const academicLine = pending(
+  'CONFIRM /academic line: "Mechanical engineering researcher working on machine learning for engineering systems"'
+)

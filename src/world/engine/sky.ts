@@ -24,7 +24,11 @@ const DUSK = sky('#1f2340', '#4f3a58', '#9a5d48')
 const NIGHT = sky('#0e1220', '#172033', '#263247')
 const FIRST_LIGHT = sky('#28324f', '#6f6a82', '#d0a174')
 
-/** One stop at the centre of each zone. */
+/**
+ * One stop at the centre of each zone — except the Overlook, whose stop sits
+ * at its entrance: the camera clamps at the world's end, so its centre never
+ * reaches the Overlook's middle, and first light should be complete on arrival.
+ */
 const plan: [ZoneId, Sky][] = [
   ['workshop', DAWN],
   ['dungeon', MORNING],
@@ -38,7 +42,7 @@ const plan: [ZoneId, Sky][] = [
 
 const stops = plan.map(([id, s]) => {
   const z = zoneById[id]
-  return { x: (z.startX + z.endX) / 2, sky: s }
+  return { x: id === 'overlook' ? z.startX : (z.startX + z.endX) / 2, sky: s }
 })
 
 const lerp = (a: RGB, b: RGB, t: number) =>

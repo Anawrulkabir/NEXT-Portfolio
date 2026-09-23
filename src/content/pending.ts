@@ -22,3 +22,24 @@ export const isPending = (v: unknown): v is Pending =>
   (v as Pending).__pending === true
 
 export type Maybe<T> = T | Pending
+
+/**
+ * Deep copy with every pending value removed — for props handed to client
+ * components, so placeholder labels never reach production HTML or the RSC
+ * payload. In development values pass through so the gap chips still show.
+ */
+export function stripPending<T>(value: T): T {
+  if (process.env.NODE_ENV !== 'production') return value
+  const walk = (v: unknown): unknown => {
+    if (isPending(v)) return undefined
+    if (Array.isArray(v)) return v.filter((x) => !isPending(x)).map(walk)
+    if (v && typeof v === 'object')
+      return Object.fromEntries(
+        Object.entries(v as Record<string, unknown>)
+          .filter(([, x]) => !isPending(x))
+          .map(([k, x]) => [k, walk(x)])
+      )
+    return v
+  }
+  return walk(value) as T
+}

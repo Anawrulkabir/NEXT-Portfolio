@@ -6,7 +6,6 @@ import { ExploreButton } from './ExploreButton'
  * Above-the-fold identity block (§04.1-04.2). Plain server-rendered HTML —
  * it's the LCP element and must never wait on the world.
  *
- * "Academic? See research" joins the hiring link once /academic exists (Phase 5).
  */
 export function HeroIdentity() {
   return (
@@ -22,9 +21,12 @@ export function HeroIdentity() {
           View CV
         </Link>
       </div>
-      <p className="mt-4 text-sm">
+      <p className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
         <Link href="/hire" className="pixel-focus text-parchment/85 underline underline-offset-2 hover:text-amber">
           Hiring? Read the 1-minute brief {'→'}
+        </Link>
+        <Link href="/academic" className="pixel-focus text-parchment/85 underline underline-offset-2 hover:text-amber">
+          Academic? See research {'→'}
         </Link>
       </p>
     </div>

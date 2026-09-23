@@ -1,8 +1,11 @@
 'use client'
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
+import { profile } from '@/content'
 import type { ZoneId } from '@/content/types'
+import { Field } from '@/components/content/Field'
 import { AVATAR_H, AVATAR_W, GROUND_Y, PROXIMITY, WALK_SPEED } from '@/world/constants'
 import {
   AVATAR_START_X,
@@ -10,6 +13,7 @@ import {
   PIPELINE,
   WORLD_WIDTH,
   datacenterLeds,
+  overlookScenery,
   objectCenterX,
   placedObjects,
   routeZones,
@@ -502,6 +506,31 @@ export default function WorldViewport() {
               {o.overlay && <PixelSprite sprite={o.overlay} scale={s} frame={0} className="obj-overlay" />}
             </button>
           ))}
+          {state.zone === 'overlook' && (
+            // I-15: the destination, rendered in the scene on arrival.
+            <section
+              aria-labelledby="overlook-h"
+              className="overlook-in absolute z-10 max-w-[560px] bg-night/85 border-2 border-parchment/40 px-5 py-4 text-parchment"
+              style={{ left: (zoneById.overlook.startX + overlookScenery.panelX) * s, top: 12 * s }}
+            >
+              <h2 id="overlook-h" className="font-display text-xl md:text-2xl">
+                {profile.destination.heading}
+              </h2>
+              <Field as="p" value={profile.destination.line} className="mt-2 text-lg md:text-2xl text-signal" />
+              <p className="mt-2 text-sm md:text-base leading-relaxed">{profile.destination.sentence}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href="/research" className="pixel-btn-primary pixel-frame pixel-focus px-3 py-1.5 text-sm">
+                  See research
+                </Link>
+                <Link href={profile.cv.viewHref} className="pixel-btn-secondary pixel-frame pixel-focus px-3 py-1.5 text-sm">
+                  View CV
+                </Link>
+                <Link href="/contact" className="pixel-btn-secondary pixel-frame pixel-focus px-3 py-1.5 text-sm">
+                  Get in touch
+                </Link>
+              </div>
+            </section>
+          )}
           <div
             ref={packetRef}
             className="absolute left-0 pointer-events-none opacity-0"
@@ -564,6 +593,7 @@ export default function WorldViewport() {
           }
         }}
         title={openObj?.ref.tooltip ?? ''}
+        wide={openObj?.ref.opens.type === 'research' && !!openObj.ref.opens.view && openObj.ref.opens.view !== 'card'}
         onCloseAutoFocus={(e) => {
           e.preventDefault()
           ;(invokerRef.current ?? viewportRef.current)?.focus({ preventScroll: true })

@@ -85,7 +85,7 @@ export type WorldObjectRef = {
   tooltip: string
   opens:
     | { type: 'experience'; id: string; highlight?: string[] }
-    | { type: 'research'; id: string; view?: 'pipeline' | 'card' }
+    | { type: 'research'; id: string; view?: 'pipeline' | 'card' | 'demo' }
     | { type: 'project'; id: string }
     | { type: 'event'; id: string }
     | { type: 'note'; id: string } // short-form notes in journey.ts
@@ -164,7 +164,7 @@ export type Research = {
   method: Maybe<string>[]
   investigating: Maybe<string>[]
   findings: Maybe<string>[] // only author-supplied
-  pipeline?: { stage: string; text: Maybe<string> }[]
+  pipeline?: { stage: string; text: Maybe<string>; detail?: Maybe<string> }[]
   supervisor?: Maybe<string>
   authors?: Maybe<string>
   venue?: Maybe<string> // journal/conference; hidden while under review unless author opts in

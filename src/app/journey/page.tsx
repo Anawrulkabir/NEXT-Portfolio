@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 }
 
 const onMap = new Set(placedObjects.map((o) => o.ref.objectId))
-const carded = new Set(['project', 'note', 'event', 'experience', 'skills'])
+const carded = new Set(['project', 'note', 'event', 'experience', 'skills', 'research'])
 
 function JourneyObject({ object }: { object: WorldObjectRef }) {
   const { opens } = object
@@ -38,10 +38,7 @@ function JourneyObject({ object }: { object: WorldObjectRef }) {
       </li>
     )
   }
-  if (!carded.has(opens.type)) {
-    // Research cards land with the labs (Phase 5).
-    return <li className="text-sm">{object.tooltip}</li>
-  }
+  if (!carded.has(opens.type)) return <li className="text-sm">{object.tooltip}</li>
   return (
     <li className="pixel-panel pixel-frame p-5">
       {(opens.type === 'project' || opens.type === 'event') && (

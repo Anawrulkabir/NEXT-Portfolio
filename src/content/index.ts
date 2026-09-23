@@ -2,14 +2,14 @@
  * Content index — re-exports + derived lookups.
  * See docs/PORTFOLIO_REDESIGN.md §06.3.
  */
-export { pending, isPending } from './pending'
+export { pending, isPending, stripPending } from './pending'
 export type { Maybe, Pending } from './pending'
 export * from './types'
 
 export { profile } from './profile'
 export { journeyChapters, journeyNotes } from './journey'
 export { experience, experienceHighlights, hireSnapshot, bulletAnchor } from './experience'
-export { research } from './research'
+export { research, researchInterests, academicLine } from './research'
 export { projects } from './projects'
 export { certifications } from './certifications'
 export { events } from './events'

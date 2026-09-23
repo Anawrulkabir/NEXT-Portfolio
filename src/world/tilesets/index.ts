@@ -111,6 +111,46 @@ const steelFill: Grid = paint(TILE, TILE, (p) => {
   p.hline(4, 9, 8, 'h')
 })
 
+const labPalette: Palette = { L: '#d6dfe4', l: '#b9c6cd', d: '#8fa0a8', j: '#6f7f88', k: '#4f5c63' }
+
+// Clean lab floor tiles (Physics lab), with a warmer epoxy variant (Thermal lab).
+const labTop: Grid = paint(TILE, TILE, (p) => {
+  p.rect(0, 0, TILE, TILE, 'd')
+  p.rect(0, 0, TILE, 5, 'l')
+  p.hline(0, 0, TILE, 'L')
+  p.vline(7, 0, 5, 'd')
+  p.vline(15, 0, 5, 'd')
+  p.hline(0, 5, TILE, 'j')
+})
+
+const labFill: Grid = paint(TILE, TILE, (p) => {
+  p.rect(0, 0, TILE, TILE, 'j')
+  p.hline(0, 8, TILE, 'k')
+  p.vline(7, 0, 8, 'k')
+  p.vline(15, 9, 7, 'k')
+})
+
+const epoxyPalette: Palette = { L: '#b9bfb3', l: '#9fa69a', d: '#7d8479', j: '#62685f', k: '#4a4f47' }
+
+const roofPalette: Palette = { R: '#8a847c', r: '#6d6862', d: '#5a5550', j: '#47433f', k: '#353230' }
+
+// Roof membrane with gravel.
+const roofTop: Grid = paint(TILE, TILE, (p) => {
+  p.rect(0, 0, TILE, TILE, 'd')
+  p.rect(0, 0, TILE, 4, 'r')
+  p.hline(0, 0, TILE, 'R')
+  speckle(61, 'R', 5)(p, 1)
+  speckle(67, 'j', 8)(p, 4)
+})
+
+const roofFill: Grid = paint(TILE, TILE, (p) => {
+  p.rect(0, 0, TILE, TILE, 'j')
+  p.hline(0, 7, TILE, 'k')
+  p.hline(0, 15, TILE, 'k')
+  p.vline(4, 0, 7, 'k')
+  p.vline(12, 8, 7, 'k')
+})
+
 export const tilesets: Partial<Record<ZoneId, Tileset>> = {
   workshop: {
     top: { key: 'grass', grid: grassTile, palette: groundPalette },
@@ -131,6 +171,18 @@ export const tilesets: Partial<Record<ZoneId, Tileset>> = {
   datacenter: {
     top: { key: 'steel', grid: steelTop, palette: steelPalette },
     fill: { key: 'plenum', grid: steelFill, palette: steelPalette },
+  },
+  'physics-lab': {
+    top: { key: 'lab', grid: labTop, palette: labPalette },
+    fill: { key: 'lab-fill', grid: labFill, palette: labPalette },
+  },
+  'thermal-lab': {
+    top: { key: 'epoxy', grid: labTop, palette: epoxyPalette },
+    fill: { key: 'epoxy-fill', grid: labFill, palette: epoxyPalette },
+  },
+  overlook: {
+    top: { key: 'roof', grid: roofTop, palette: roofPalette },
+    fill: { key: 'roof-fill', grid: roofFill, palette: roofPalette },
   },
 }
 

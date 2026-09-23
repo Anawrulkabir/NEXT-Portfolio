@@ -30,6 +30,17 @@ import {
   podSprite,
   reactorSprite,
 } from './sprites/datacenter'
+import {
+  archiveDoorSprite,
+  chalkboardSprite,
+  dataLoggerSprite,
+  interestsBoardSprite,
+  officeDoorSprite,
+  pheRigCoolSprite,
+  pheRigWarmSprite,
+  windTunnelSprite,
+  workstationSprite,
+} from './sprites/labs'
 
 export type ZoneLayout = {
   id: ZoneId
@@ -37,8 +48,7 @@ export type ZoneLayout = {
   widthTiles: number
   startX: number // source px
   endX: number // source px
-  keyColor: string // CSS var for placeholder ground + route strip
-  built: boolean // full art in place (vs. Phase 2 colour-block placeholder)
+  keyColor: string // CSS var for the route strip waypoint
 }
 
 export type PlacedObject = {
@@ -52,15 +62,15 @@ export type PlacedObject = {
   overlay?: Sprite
 }
 
-const zoneSpec: { id: ZoneId; widthTiles: number; keyColor: string; built: boolean }[] = [
-  { id: 'workshop', widthTiles: 40, keyColor: 'var(--zone-workshop)', built: true },
-  { id: 'dungeon', widthTiles: 40, keyColor: 'var(--zone-dungeon)', built: true },
-  { id: 'garage', widthTiles: 40, keyColor: 'var(--zone-garage)', built: true },
-  { id: 'software', widthTiles: 40, keyColor: 'var(--zone-software)', built: true },
-  { id: 'datacenter', widthTiles: 40, keyColor: 'var(--zone-datacenter)', built: true },
-  { id: 'physics-lab', widthTiles: 40, keyColor: 'var(--zone-physics-lab)', built: false },
-  { id: 'thermal-lab', widthTiles: 40, keyColor: 'var(--zone-thermal-lab)', built: false },
-  { id: 'overlook', widthTiles: 24, keyColor: 'var(--moss)', built: false },
+const zoneSpec: { id: ZoneId; widthTiles: number; keyColor: string }[] = [
+  { id: 'workshop', widthTiles: 40, keyColor: 'var(--zone-workshop)' },
+  { id: 'dungeon', widthTiles: 40, keyColor: 'var(--zone-dungeon)' },
+  { id: 'garage', widthTiles: 40, keyColor: 'var(--zone-garage)' },
+  { id: 'software', widthTiles: 40, keyColor: 'var(--zone-software)' },
+  { id: 'datacenter', widthTiles: 40, keyColor: 'var(--zone-datacenter)' },
+  { id: 'physics-lab', widthTiles: 40, keyColor: 'var(--zone-physics-lab)' },
+  { id: 'thermal-lab', widthTiles: 40, keyColor: 'var(--zone-thermal-lab)' },
+  { id: 'overlook', widthTiles: 24, keyColor: 'var(--moss)' },
 ]
 
 const chapterById = Object.fromEntries(journeyChapters.map((c) => [c.id, c]))
@@ -99,6 +109,9 @@ const d = zoneById.dungeon.startX
 const g = zoneById.garage.startX
 const sw = zoneById.software.startX
 const dc = zoneById.datacenter.startX
+const pl = zoneById['physics-lab'].startX
+const tl = zoneById['thermal-lab'].startX
+const ov = zoneById.overlook.startX
 
 type Placement = Omit<PlacedObject, 'ref' | 'zone' | 'y'> & { y?: number; objectId: string }
 
@@ -113,10 +126,7 @@ const place = (zone: ZoneId, items: Placement[]): PlacedObject[] =>
 /** Top of the Garage trophy shelf (source px). */
 export const GARAGE_SHELF_Y = 104
 
-/**
- * Placed objects in path order. Zones 6-7 get their objects in Phase 5;
- * until then they are colour-block placeholders with a sign.
- */
+/** Placed objects in path order. */
 export const placedObjects: PlacedObject[] = [
   ...place('workshop', [
     { objectId: 'cuet-signpost', x: w + 3 * TILE, sprite: signpostSprite },
@@ -158,6 +168,21 @@ export const placedObjects: PlacedObject[] = [
     { objectId: 'workspace-pod', x: dc + 27.5 * TILE, sprite: podSprite },
     { objectId: 'cloud-gate', x: dc + 32 * TILE, sprite: cloudGateSprite },
     { objectId: 'toolbox-infra', x: dc + 36.5 * TILE, sprite: toolboxSteelSprite },
+  ]),
+  ...place('physics-lab', [
+    { objectId: 'wind-tunnel', x: pl + 5 * TILE, sprite: windTunnelSprite },
+    { objectId: 'chalkboard', x: pl + 14 * TILE, y: 64, sprite: chalkboardSprite },
+    { objectId: 'workstation-physics', x: pl + 20 * TILE, sprite: workstationSprite },
+  ]),
+  ...place('thermal-lab', [
+    { objectId: 'phe-rig-r455a', x: tl + 5 * TILE, sprite: pheRigCoolSprite },
+    { objectId: 'data-logger', x: tl + 10 * TILE, sprite: dataLoggerSprite },
+    { objectId: 'phe-rig-r1336', x: tl + 15 * TILE, sprite: pheRigWarmSprite },
+    { objectId: 'interests-board', x: tl + 29 * TILE, y: 66, sprite: interestsBoardSprite },
+  ]),
+  ...place('overlook', [
+    { objectId: 'door-archive', x: ov + 18 * TILE, sprite: archiveDoorSprite },
+    { objectId: 'door-contact', x: ov + 20.5 * TILE, sprite: officeDoorSprite },
   ]),
 ]
 
@@ -227,6 +252,24 @@ export const datacenterLeds: { x: number; y: number; color: string; delay: numbe
   }
   return leds
 })()
+
+export const physicsScenery = {
+  windows: [2 * TILE, 11 * TILE, 18 * TILE],
+  benches: [24 * TILE],
+  corridor: 28 * TILE,
+}
+
+export const thermalScenery = {
+  cylinders: 20.5 * TILE,
+  plotsDesk: 24 * TILE,
+  backDoor: 36 * TILE,
+}
+
+export const overlookScenery = {
+  roofAccess: 0,
+  shed: { x: 17 * TILE, w: 6 * TILE },
+  panelX: 3 * TILE, // in-scene destination panel (I-15)
+}
 
 export const garageScenery = {
   roofY: 44,
