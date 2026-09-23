@@ -21,7 +21,7 @@ export function QuickViewBar() {
         {profile.shortName}
       </Link>
 
-      <nav className="hidden md:flex items-center gap-5 text-sm flex-1" aria-label="Site">
+      <nav className="hidden lg:flex items-center gap-5 text-sm flex-1" aria-label="Site">
         {navItems.map((item) => (
           <Link key={item.href} href={item.href} className="pixel-focus text-parchment hover:text-amber">
             {item.label}
@@ -29,7 +29,7 @@ export function QuickViewBar() {
         ))}
       </nav>
 
-      <div className="hidden md:flex items-center gap-3 ml-auto">
+      <div className="hidden lg:flex items-center gap-3 ml-auto">
         <Link
           href={profile.cv.viewHref}
           className="pixel-focus pixel-btn-primary pixel-frame px-3 py-1.5 text-sm"
@@ -41,15 +41,21 @@ export function QuickViewBar() {
         </Link>
       </div>
 
-      <div className="ml-auto md:hidden flex items-center gap-2">
+      <div className="ml-auto lg:hidden flex items-center gap-2">
         <Link
           href={profile.cv.viewHref}
-          className="pixel-focus pixel-btn-primary pixel-frame px-3 py-1.5 text-xs"
+          className="pixel-focus pixel-btn-primary pixel-frame inline-flex items-center min-h-[44px] px-3 text-xs"
         >
           CV
         </Link>
         <MobileMenu
-          navItems={[{ label: 'Home', href: '/' }, ...navItems, { label: 'Contact', href: '/contact' }]}
+          navItems={[
+            { label: 'Home', href: '/' },
+            ...navItems,
+            { label: 'Journey', href: '/journey' },
+            { label: 'Archive', href: '/archive' },
+            { label: 'Contact', href: '/contact' },
+          ]}
           links={visibleLinks(profile.links)}
         />
       </div>

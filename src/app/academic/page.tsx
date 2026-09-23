@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { MobileActionBar } from '@/components/chrome/MobileActionBar'
 import {
   academicLine,
   events,
@@ -46,7 +47,8 @@ export default function AcademicPage() {
   const scholarly = profile.links.filter((l) => ['scholar', 'orcid', 'linkedin'].includes(l.kind))
 
   return (
-    <div className="max-w-[960px] mx-auto px-4 md:px-6 py-12 md:py-16">
+    <div className="max-w-[960px] mx-auto px-4 md:px-6 pt-12 pb-28 md:py-16">
+      <MobileActionBar />
       {/* 1. Header */}
       <header>
         <h1 className="font-display text-3xl md:text-4xl">{profile.name}</h1>

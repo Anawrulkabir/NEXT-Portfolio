@@ -93,6 +93,13 @@
 .world-frame {
   height: 384px;
 }
+/* Below 768 px the world becomes the Scene Deck (§12): reserve a scene's
+   height (360×248, scaled to the width) plus the pager and caption. */
+@media (max-width: 767px) {
+  .world-frame {
+    height: calc(100vw * 248 / 360 + 150px);
+  }
+}
 @media (min-height: 1000px) {
   .world-frame {
     height: 576px;
@@ -262,6 +269,44 @@
   }
 }
 
+/* Scene Deck (§12). */
+.deck-scroller {
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.deck-scroller::-webkit-scrollbar {
+  display: none;
+}
+.deck-pan {
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.deck-obj {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Touch has no hover, so deck objects always carry a quiet amber outline. */
+.deck-obj svg:not(.obj-overlay) {
+  display: block;
+  filter: drop-shadow(1px 0 0 rgb(var(--amber-rgb) / 0.8)) drop-shadow(-1px 0 0 rgb(var(--amber-rgb) / 0.8))
+    drop-shadow(0 -1px 0 rgb(var(--amber-rgb) / 0.8));
+}
+.deck-obj .obj-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.deck-obj:active .obj-overlay,
+.deck-obj:focus-visible .obj-overlay {
+  opacity: 1;
+}
+.deck-obj:focus-visible {
+  outline: 3px dashed var(--amber);
+  outline-offset: 2px;
+}
+
 /* Outfit change at a zone boundary: a 2-frame shimmer (§09 I-02). */
 .outfit-swap {
   animation: outfit-swap 160ms steps(2, end);
@@ -320,6 +365,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .deck-pan {
+    transition: none;
+  }
   .map-pin,
   .iris-closing,
   .iris-opening {

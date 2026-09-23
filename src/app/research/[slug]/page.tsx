@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { isPending, profile, research, researchById, stripPending, visibleLinks, type Maybe } from '@/content'
+import { MobileActionBar } from '@/components/chrome/MobileActionBar'
 import { Breadcrumbs } from '@/components/chrome/Breadcrumbs'
 import { Field } from '@/components/content/Field'
 import { LinkRow } from '@/components/content/LinkRow'
@@ -57,7 +58,8 @@ export default function ResearchDetailPage({ params }: { params: { slug: string 
   const email = profile.links.find((l) => l.kind === 'email')!.href
 
   return (
-    <article className="max-w-[860px] mx-auto px-4 md:px-6 py-16">
+    <article className="max-w-[860px] mx-auto px-4 md:px-6 pt-16 pb-28 md:pb-16">
+      <MobileActionBar />
       <Breadcrumbs items={[{ label: 'Research', href: '/research' }, { label: r.shortTitle }]} />
       <StatusBadge status={r.status} />
       <h1 className="mt-3 font-display text-2xl md:text-3xl leading-snug">{researchTitle(r)}</h1>

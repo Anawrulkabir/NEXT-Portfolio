@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { MobileActionBar } from '@/components/chrome/MobileActionBar'
 import {
   experience,
   experienceHighlights,
@@ -41,7 +42,8 @@ export default function HirePage() {
   const projects = [...projectsByShelf('systems'), ...projectsByShelf('hackathon')].slice(0, 5)
 
   return (
-    <div className="hire max-w-[960px] mx-auto px-4 md:px-6 py-12 md:py-16">
+    <div className="hire max-w-[960px] mx-auto px-4 md:px-6 pt-12 pb-28 md:py-16">
+      <MobileActionBar />
       {/* 1. Header */}
       <header>
         <h1 className="font-display text-3xl md:text-4xl">{profile.name}</h1>

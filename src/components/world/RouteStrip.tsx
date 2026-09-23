@@ -24,7 +24,7 @@ export function RouteStrip({
 }) {
   return (
     <nav aria-label="Journey" className="h-14 border-t-2 border-loam bg-slate/80 overflow-x-auto">
-      <ol className="flex items-center h-full min-w-max px-3 gap-1 md:justify-center">
+      <ol className="flex items-center h-full w-max min-w-full px-3 gap-1 justify-start lg:justify-center">
         {routeZones.map((zone, i) => {
           const isCurrent = zone.id === current
           const isVisited = isCurrent || visited?.includes(zone.id)
@@ -42,7 +42,7 @@ export function RouteStrip({
           )
           return (
             <li key={zone.id} className="flex items-center">
-              {i > 0 && <span className="w-3 md:w-5 h-px bg-parchment/30 mr-1" aria-hidden="true" />}
+              {i > 0 && <span className="hidden lg:block w-5 h-px bg-parchment/30 mr-1" aria-hidden="true" />}
               {onJump ? (
                 <button
                   type="button"

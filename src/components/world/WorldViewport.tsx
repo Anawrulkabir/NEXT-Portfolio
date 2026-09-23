@@ -319,6 +319,14 @@ export default function WorldViewport() {
       h.raf = 0
     }
 
+    /** Tap-to-walk (§08.8): walk to a point on the ground, source px. */
+    const walkTo = (x: number) => {
+      h.dir = 0
+      h.camGoal = null
+      h.target = { x: clampX(x - AVATAR_W / 2) }
+      startLoop()
+    }
+
     /** Put the avatar at a room's door on the Overlook (entering or leaving it). */
     const standAtDoor = (r: RoomId) => {
       const door = doorFor(r)
@@ -373,6 +381,7 @@ export default function WorldViewport() {
       jumpToZone,
       openObject,
       standAtDoor,
+      walkTo,
       playIntro,
       endIntro,
       introRunning: () => intro.raf !== 0,
@@ -598,6 +607,12 @@ export default function WorldViewport() {
         className="world-frame bg-black relative overflow-hidden outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-amber focus-visible:outline-offset-[-3px]"
         onKeyDown={onKeyDown}
         onKeyUp={onKeyUp}
+        onPointerDown={(e) => {
+          // Tap/click on open ground walks there; objects, links and the room ignore it.
+          if (room || (e.target as HTMLElement).closest('button, a, [data-no-walk]')) return
+          const rect = viewportRef.current!.getBoundingClientRect()
+          engine.walkTo((e.clientX - rect.left) / hot.current.scale + hot.current.camX)
+        }}
         onBlur={onBlur}
         onFocus={(e) => {
           if (e.target === viewportRef.current) showHint()
@@ -686,6 +701,7 @@ export default function WorldViewport() {
               // I-15: the destination, rendered in the scene on arrival.
               <section
                 aria-labelledby="overlook-h"
+                data-no-walk
                 className="overlook-in absolute z-10 max-w-[560px] bg-night/85 border-2 border-parchment/40 px-5 py-4 text-parchment"
                 style={{ left: (zoneById.overlook.startX + overlookScenery.panelX) * s, top: 12 * s }}
               >
