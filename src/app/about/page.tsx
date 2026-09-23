@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { profile, isPending } from '@/content'
+import { mediaMeta } from '@/lib/media'
 
 export const metadata: Metadata = { title: 'About' }
 
@@ -28,9 +29,11 @@ export default function AboutPage() {
           <Image
             src={profile.portrait.src as string}
             alt={profile.portrait.alt}
-            width={280}
-            height={280}
-            className="pixel-frame"
+            width={mediaMeta(profile.portrait.src as string).width}
+            height={mediaMeta(profile.portrait.src as string).height}
+            sizes="280px"
+            priority
+            className="pixel-frame w-[240px] md:w-[280px] h-auto"
           />
         )}
       </div>

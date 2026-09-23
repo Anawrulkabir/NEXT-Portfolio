@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { Camera } from 'lucide-react'
 import { isPending, type ImageAsset } from '@/content'
+import { mediaMeta } from '@/lib/media'
 
 /**
  * An image, or — while the author hasn't supplied it — a dev-only dashed
@@ -27,13 +28,16 @@ export function MediaSlot({
       </div>
     )
   }
+  const meta = mediaMeta(image.src, image.width, image.height)
   return (
     <figure className={className}>
       <Image
         src={image.src}
         alt={image.alt}
-        width={image.width ?? 800}
-        height={image.height ?? 600}
+        width={meta.width}
+        height={meta.height}
+        placeholder={meta.blur ? 'blur' : 'empty'}
+        blurDataURL={meta.blur}
         sizes={sizes}
         className="w-full h-auto pixel-frame"
       />

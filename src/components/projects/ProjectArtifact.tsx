@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { isPending, projectTitle, type Project } from '@/content'
 import { LinkRow } from '@/components/content/LinkRow'
 import { TechChips } from '@/components/content/TechChips'
+import { mediaMeta } from '@/lib/media'
 
 export const projectStatusLabel: Record<string, string> = {
   production: 'In production',
@@ -21,17 +22,20 @@ export function ProjectArtifact({ project, headingLevel = 3 }: { project: Projec
   if (!title) return null
   const H = `h${headingLevel}` as 'h3' | 'h4'
   const cover = project.images.find((i) => !isPending(i.src))
+  const meta = cover && !isPending(cover.src) ? mediaMeta(cover.src, cover.width, cover.height) : null
   const status = typeof project.status === 'string' ? projectStatusLabel[project.status] : null
   const result = project.result && !isPending(project.result) ? project.result.split(' — ')[0] : null
 
   return (
     <article className="pixel-panel pixel-frame h-full flex flex-col">
-      {cover && !isPending(cover.src) && (
+      {cover && meta && !isPending(cover.src) && (
         <Image
           src={cover.src}
           alt={cover.alt}
-          width={cover.width ?? 800}
-          height={cover.height ?? 600}
+          width={meta.width}
+          height={meta.height}
+          placeholder={meta.blur ? 'blur' : 'empty'}
+          blurDataURL={meta.blur}
           sizes="(min-width: 1024px) 360px, (min-width: 768px) 50vw, 100vw"
           className="w-full h-40 object-cover object-top border-b-2 border-loam"
         />

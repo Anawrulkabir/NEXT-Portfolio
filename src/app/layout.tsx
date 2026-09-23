@@ -33,7 +33,15 @@ export const metadata: Metadata = {
     template: `%s — ${profile.shortName}`,
   },
   description: profile.sentence,
-  icons: { icon: '/favicon.ico' },
+  metadataBase: new URL('https://fahadkabir.com'),
+  openGraph: {
+    type: 'website',
+    siteName: profile.name,
+    locale: 'en_US',
+    title: `${profile.name} — ${profile.positioning}`,
+    description: profile.sentence,
+  },
+  twitter: { card: 'summary_large_image' },
 }
 
 const personJsonLd = {
@@ -43,6 +51,9 @@ const personJsonLd = {
   jobTitle: profile.positioning,
   description: profile.sentence,
   url: 'https://fahadkabir.com',
+  image: typeof profile.portrait === 'object' && 'src' in profile.portrait
+    ? `https://fahadkabir.com${String(profile.portrait.src).replace(/\.webp$/, '.jpg')}`
+    : undefined,
   alumniOf: {
     '@type': 'CollegeOrUniversity',
     name: 'Chittagong University of Engineering & Technology',

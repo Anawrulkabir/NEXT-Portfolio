@@ -94,6 +94,7 @@ export type WorldObjectRef = {
     | { type: 'events-map' }
     | { type: 'contact' }
     | { type: 'route'; href: string }
+    | { type: 'room'; id: 'archive' | 'contact'; href: string } // href: the room's page twin
 }
 
 export type JourneyChapter = {
@@ -202,6 +203,8 @@ export type Certification = {
   credentialUrl?: Maybe<string>
   image: ImageAsset // image.src pending until uploaded
   category?: 'cloud' | 'ml' | 'engineering' | 'programming' | 'other'
+  kind?: 'award' | 'participation' // award = a placement (Champion, Finalist…)
+  eventId?: string // the event the certificate came from
 }
 
 export type EventItem = {

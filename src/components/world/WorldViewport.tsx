@@ -2,9 +2,9 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { X } from 'lucide-react'
-import { profile } from '@/content'
-import type { ZoneId } from '@/content/types'
+import { Map as MapIcon, X } from 'lucide-react'
+import { journeyChapters, profile } from '@/content'
+import type { WorldObjectRef, ZoneId } from '@/content/types'
 import { Field } from '@/components/content/Field'
 import { AVATAR_H, AVATAR_W, GROUND_Y, PROXIMITY, WALK_SPEED } from '@/world/constants'
 import {
@@ -34,15 +34,25 @@ import { ObjectCard } from '@/components/panels/ObjectCard'
 import { TerrainCanvas } from './TerrainCanvas'
 import { ZoneSign } from './ZoneSign'
 import { RouteStrip } from './RouteStrip'
+import { Room, type RoomId } from './Room'
+import { MapOverlay } from './MapOverlay'
 
-const objectById: Record<string, PlacedObject> = Object.fromEntries(
-  placedObjects.map((o) => [o.ref.objectId, o])
+const objectById: Record<string, PlacedObject> = Object.fromEntries(placedObjects.map((o) => [o.ref.objectId, o]))
+/** Every object's content ref — placed in the world or inside a room. */
+const refById: Record<string, WorldObjectRef> = Object.fromEntries(
+  journeyChapters.flatMap((c) => c.objects.map((o) => [o.objectId, o]))
 )
+const ROOMS: RoomId[] = ['archive', 'contact']
+const roomOf = (objectId: string): RoomId | undefined =>
+  ROOMS.find((r) => journeyChapters.find((c) => c.id === r)?.objects.some((o) => o.objectId === objectId))
+const doorFor = (room: RoomId) => placedObjects.find((o) => o.ref.opens.type === 'room' && o.ref.opens.id === room)!
 const zoneIndex = (id: ZoneId) => zones.findIndex((z) => z.id === id)
 const clampX = (x: number) => Math.max(0, Math.min(x, WORLD_WIDTH - AVATAR_W))
 /** Where the avatar stands to use an object: just to its left, facing it. */
 const standXFor = (o: PlacedObject) => clampX(o.x - AVATAR_W - 4)
 const HINT_KEY = 'world:hint-seen'
+const INTRO_KEY = 'world:intro-seen'
+const INTRO_MS = 2200
 
 function syncUrl(params: { at?: ZoneId; open?: string | null }) {
   const url = new URL(window.location.href)
@@ -64,10 +74,19 @@ export default function WorldViewport() {
   const avatarRef = useRef<HTMLDivElement>(null)
   const liveRef = useRef<HTMLDivElement>(null)
   const invokerRef = useRef<HTMLElement | null>(null)
+  const sceneRef = useRef<HTMLDivElement>(null)
 
   const [scale, setScale] = useState(2)
   const [hint, setHint] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [room, setRoom] = useState<RoomId | null>(null)
+  const [iris, setIris] = useState<'closing' | 'opening' | null>(null)
+  const [mapOpen, setMapOpen] = useState(false)
+  // Zone under the camera centre while the intro pans (lights the route strip, bakes terrain ahead).
+  const [camZone, setCamZone] = useState<ZoneId | null>(null)
+  const irisTimers = useRef<ReturnType<typeof setTimeout>[]>([])
+  // Room transitions live in React state; the engine reaches them through this ref.
+  const roomApi = useRef({ enter: (_: RoomId) => {}, exit: () => {}, inRoom: false })
   const [state, dispatch] = useReducer(worldReducer, {
     zone: 'workshop',
     nearestId: null,
@@ -153,10 +172,14 @@ export default function WorldViewport() {
     }
 
     const openObject = (id: string) => {
-      const o = objectById[id]
-      if (!o) return
-      if (o.ref.opens.type === 'route') {
-        routerRef.current.push(o.ref.opens.href)
+      const ref = refById[id]
+      if (!ref) return
+      if (ref.opens.type === 'route') {
+        routerRef.current.push(ref.opens.href)
+        return
+      }
+      if (ref.opens.type === 'room') {
+        roomApi.current.enter(ref.opens.id)
         return
       }
       dispatch({ type: 'open', id })
@@ -282,6 +305,7 @@ export default function WorldViewport() {
     }
 
     const jumpToZone = (id: ZoneId) => {
+      if (roomApi.current.inRoom) roomApi.current.exit()
       h.dir = 0
       h.target = null
       h.avatarX = clampX(zoneEntranceX(id))
@@ -295,7 +319,68 @@ export default function WorldViewport() {
       h.raf = 0
     }
 
-    return { paint, startLoop, activate, focusObject, jumpToZone, openObject, stop }
+    /** Put the avatar at a room's door on the Overlook (entering or leaving it). */
+    const standAtDoor = (r: RoomId) => {
+      const door = doorFor(r)
+      h.avatarX = standXFor(door)
+      h.facing = 1
+      h.camGoal = centeredCameraX(objectCenterX(door), h.vw, WORLD_WIDTH)
+      startLoop()
+    }
+
+    /**
+     * Intro rewind (§09 I-01): the camera starts at the Overlook and pans back
+     * to the Workshop in 2.2 s. Any key, click, scroll or touch skips to the end.
+     */
+    const intro = { raf: 0, onZone: (_: ZoneId | null) => {} }
+    const playIntro = (onZone: (z: ZoneId | null) => void) => {
+      intro.onZone = onZone
+      const from = clampCamera(WORLD_WIDTH, h.vw, WORLD_WIDTH)
+      const to = desiredCameraX(h.avatarX, 0, h.vw, WORLD_WIDTH)
+      let t0 = 0
+      let last: ZoneId | null = null
+      const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2)
+      const step = (t: number) => {
+        if (!t0) t0 = t
+        const k = Math.min(1, (t - t0) / INTRO_MS)
+        h.camX = from + (to - from) * ease(k)
+        const z = zoneAt(h.camX + h.vw / 2).id
+        if (z !== last) {
+          last = z
+          onZone(z)
+        }
+        paint()
+        if (k < 1) intro.raf = requestAnimationFrame(step)
+        else endIntro()
+      }
+      h.camX = from
+      paint()
+      intro.raf = requestAnimationFrame(step)
+    }
+    const endIntro = () => {
+      if (intro.raf) cancelAnimationFrame(intro.raf)
+      intro.raf = 0
+      h.camX = desiredCameraX(h.avatarX, 0, h.vw, WORLD_WIDTH)
+      paint()
+      intro.onZone(null)
+    }
+
+    return {
+      paint,
+      startLoop,
+      activate,
+      focusObject,
+      jumpToZone,
+      openObject,
+      standAtDoor,
+      playIntro,
+      endIntro,
+      introRunning: () => intro.raf !== 0,
+      stop: () => {
+        stop()
+        if (intro.raf) cancelAnimationFrame(intro.raf)
+      },
+    }
   }, [])
 
   // Scale, viewport width, reduced motion, deep links — once on mount.
@@ -332,7 +417,17 @@ export default function WorldViewport() {
     const params = new URLSearchParams(window.location.search)
     const at = params.get('at') as ZoneId | null
     const open = params.get('open')
-    if (open && objectById[open]) {
+    const openRoom = open ? roomOf(open) : undefined
+    if (openRoom || (at && (ROOMS as string[]).includes(at))) {
+      // Rooms: arrive inside, without the iris (§03.1 deep links).
+      const r = openRoom ?? (at as RoomId)
+      engine.standAtDoor(r)
+      h.camX = h.camGoal ?? h.camX
+      setRoom(r)
+      if (open && openRoom) {
+        dispatch({ type: 'open', id: open })
+      }
+    } else if (open && objectById[open]) {
       const o = objectById[open]
       h.avatarX = standXFor(o)
       h.camGoal = centeredCameraX(objectCenterX(o), h.vw, WORLD_WIDTH)
@@ -345,6 +440,21 @@ export default function WorldViewport() {
     }
     engine.paint()
 
+    // First visit only, never with a deep link, reduced motion or on small screens.
+    let introSeen = true
+    try {
+      introSeen = !!localStorage.getItem(INTRO_KEY)
+      localStorage.setItem(INTRO_KEY, '1')
+    } catch {
+      // storage blocked — treat as seen so it can't replay on every load
+    }
+    const skipIntro = () => engine.introRunning() && engine.endIntro()
+    const skipEvents = ['keydown', 'pointerdown', 'wheel', 'touchstart'] as const
+    if (!introSeen && !open && !at && !h.reduced && window.innerWidth >= 768) {
+      engine.playIntro(setCamZone)
+      skipEvents.forEach((ev) => window.addEventListener(ev, skipIntro, { passive: true, once: true }))
+    }
+
     const onExternalFocus = () => {
       viewportRef.current?.focus({ preventScroll: true })
       showHint()
@@ -355,11 +465,59 @@ export default function WorldViewport() {
       tall.removeEventListener('change', applyScale)
       reduced.removeEventListener('change', applyReduced)
       window.removeEventListener('world:focus', onExternalFocus)
+      skipEvents.forEach((ev) => window.removeEventListener(ev, skipIntro))
       ro.disconnect()
       engine.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engine])
+
+  // Door transition (I-07): iris shut → swap scene → iris open. Instant under reduced motion.
+  useEffect(() => {
+    const later = (ms: number, fn: () => void) => irisTimers.current.push(setTimeout(fn, ms))
+    const swap = (fn: () => void) => {
+      irisTimers.current.forEach(clearTimeout)
+      irisTimers.current = []
+      if (hot.current.reduced) {
+        fn()
+        setIris(null)
+        return
+      }
+      setIris('closing')
+      later(200, () => {
+        fn()
+        setIris('opening')
+        later(200, () => setIris(null))
+      })
+    }
+    roomApi.current.enter = (r: RoomId) =>
+      swap(() => {
+        dispatch({ type: 'close' })
+        engine.standAtDoor(r)
+        setRoom(r)
+        syncUrl({ at: r, open: null })
+      })
+    roomApi.current.exit = () =>
+      swap(() => {
+        setRoom((r) => {
+          if (r) {
+            syncUrl({ at: 'overlook', open: null })
+            // Back on the roof, focus returns to the door we came through.
+            requestAnimationFrame(() =>
+              document
+                .querySelector<HTMLElement>(`[data-object-id="${doorFor(r).ref.objectId}"]`)
+                ?.focus({ preventScroll: true })
+            )
+          }
+          return null
+        })
+      })
+    return () => irisTimers.current.forEach(clearTimeout)
+  }, [engine])
+
+  useEffect(() => {
+    roomApi.current.inRoom = room !== null
+  }, [room])
 
   // Repaint when the integer scale changes (element sizes change with it).
   useEffect(() => {
@@ -386,6 +544,12 @@ export default function WorldViewport() {
   const onKeyDown = (e: React.KeyboardEvent) => {
     const h = hot.current
     const k = e.key
+    if (k === 'm' || k === 'M') {
+      e.preventDefault()
+      setMapOpen(true)
+      return
+    }
+    if (room) return // no walking inside a room
     if (k === 'ArrowRight' || k === 'd' || k === 'D') {
       e.preventDefault()
       h.dir = 1
@@ -418,6 +582,7 @@ export default function WorldViewport() {
   const tooltipHint =
     tooltipId === state.focusedId ? 'Enter to open' : tooltipId === hoveredId ? 'Click to open' : 'E to open'
 
+  const openRef = state.openObjectId ? refById[state.openObjectId] : null
   const openObj = state.openObjectId ? objectById[state.openObjectId] : null
   const openZoneIdx = openObj ? routeZones.findIndex((z) => z.id === openObj.zone) : -1
   const nextZone = openZoneIdx >= 0 ? routeZones[openZoneIdx + 1] : undefined
@@ -430,7 +595,7 @@ export default function WorldViewport() {
         role="region"
         aria-label="Interactive journey map"
         aria-describedby="world-help"
-        className="world-frame world-sky relative overflow-hidden outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-amber focus-visible:outline-offset-[-3px]"
+        className="world-frame bg-black relative overflow-hidden outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-amber focus-visible:outline-offset-[-3px]"
         onKeyDown={onKeyDown}
         onKeyUp={onKeyUp}
         onBlur={onBlur}
@@ -438,162 +603,230 @@ export default function WorldViewport() {
           if (e.target === viewportRef.current) showHint()
         }}
       >
-        <canvas
-          ref={farRef}
-          aria-hidden="true"
-          className="absolute top-0 left-0 pixelated will-change-transform"
-          style={{ width: farWidth(WORLD_WIDTH) * s, height: '100%' }}
-        />
         <div
-          ref={layerRef}
-          className="absolute inset-y-0 left-0 will-change-transform"
-          style={{ width: WORLD_WIDTH * s }}
+          ref={sceneRef}
+          className={`absolute inset-0 world-sky ${iris === 'closing' ? 'iris-closing' : iris === 'opening' ? 'iris-opening' : ''}`}
         >
-          {zones.map((z, i) => (
-            <TerrainCanvas key={z.id} zone={z} scale={s} near={Math.abs(i - current) <= 1} />
-          ))}
-          {/* Rack LEDs sit on the terrain, under every object. */}
-          {Math.abs(current - zoneIndex('datacenter')) <= 1 && (
-            <svg
-              className="absolute top-0 pointer-events-none"
-              style={{ left: zoneById.datacenter.startX * s }}
-              width={(zoneById.datacenter.endX - zoneById.datacenter.startX) * s}
-              height={GROUND_Y * s}
-              viewBox={`0 0 ${zoneById.datacenter.endX - zoneById.datacenter.startX} ${GROUND_Y}`}
-              shapeRendering="crispEdges"
-              aria-hidden="true"
-            >
-              {datacenterLeds.map((led, i) => (
-                <rect
-                  key={i}
-                  className="world-led"
-                  x={led.x}
-                  y={led.y}
-                  width={1}
-                  height={1}
-                  fill={led.color}
-                  style={{ animationDelay: `${-led.delay}ms` }}
-                />
-              ))}
-            </svg>
-          )}
-          {zones.map((z) => (
-            <ZoneSign key={z.id} zone={z} scale={s} />
-          ))}
-          {placedObjects.map((o) => (
-            <button
-              key={o.ref.objectId}
-              type="button"
-              className="world-obj absolute"
-              style={{ left: o.x * s, top: o.y * s }}
-              aria-label={o.ref.tooltip}
-              data-near={state.nearestId === o.ref.objectId}
-              onClick={(e) => engine.activate(o, e.currentTarget)}
-              onFocus={() => {
-                dispatch({ type: 'focus', id: o.ref.objectId })
-                engine.focusObject(o)
-              }}
-              onBlur={() => dispatch({ type: 'focus', id: null })}
-              onMouseEnter={() => setHoveredId(o.ref.objectId)}
-              onMouseLeave={() => setHoveredId(null)}
-            >
-              <PixelSprite
-                sprite={o.sprite}
-                scale={s}
-                frame={o.animate ? undefined : 0}
-                className={o.animate === 'tick' ? 'px-tick' : undefined}
-              />
-              {o.overlay && <PixelSprite sprite={o.overlay} scale={s} frame={0} className="obj-overlay" />}
-            </button>
-          ))}
-          {state.zone === 'overlook' && (
-            // I-15: the destination, rendered in the scene on arrival.
-            <section
-              aria-labelledby="overlook-h"
-              className="overlook-in absolute z-10 max-w-[560px] bg-night/85 border-2 border-parchment/40 px-5 py-4 text-parchment"
-              style={{ left: (zoneById.overlook.startX + overlookScenery.panelX) * s, top: 12 * s }}
-            >
-              <h2 id="overlook-h" className="font-display text-xl md:text-2xl">
-                {profile.destination.heading}
-              </h2>
-              <Field as="p" value={profile.destination.line} className="mt-2 text-lg md:text-2xl text-signal" />
-              <p className="mt-2 text-sm md:text-base leading-relaxed">{profile.destination.sentence}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link href="/research" className="pixel-btn-primary pixel-frame pixel-focus px-3 py-1.5 text-sm">
-                  See research
-                </Link>
-                <Link href={profile.cv.viewHref} className="pixel-btn-secondary pixel-frame pixel-focus px-3 py-1.5 text-sm">
-                  View CV
-                </Link>
-                <Link href="/contact" className="pixel-btn-secondary pixel-frame pixel-focus px-3 py-1.5 text-sm">
-                  Get in touch
-                </Link>
-              </div>
-            </section>
-          )}
-          <div
-            ref={packetRef}
-            className="absolute left-0 pointer-events-none opacity-0"
-            style={{ top: (CABLE_Y - 1) * s, width: 8 * s, height: 3 * s, marginLeft: -4 * s, background: '#dff3f3' }}
+          <canvas
+            ref={farRef}
             aria-hidden="true"
+            className={`absolute top-0 left-0 pixelated will-change-transform ${room ? 'invisible' : ''}`}
+            style={{ width: farWidth(WORLD_WIDTH) * s, height: '100%' }}
           />
           <div
-            ref={avatarRef}
-            className="absolute left-0 top-0 px-anim pointer-events-none"
-            data-frame="idle"
-            style={{ transformOrigin: 'center' }}
-            aria-hidden="true"
+            ref={layerRef}
+            className={`absolute inset-y-0 left-0 will-change-transform ${room ? 'invisible' : ''}`}
+            style={{ width: WORLD_WIDTH * s }}
+            aria-hidden={room ? true : undefined}
           >
-            <div key={outfit} className="outfit-swap">
-              <PixelSprite sprite={avatarOutfits[outfit]} scale={s} />
-            </div>
-          </div>
-          {tooltipObj && (
+            {zones.map((z, i) => (
+              <TerrainCanvas
+                key={z.id}
+                zone={z}
+                scale={s}
+                near={Math.abs(i - current) <= 1 || (camZone !== null && Math.abs(i - zoneIndex(camZone)) <= 1)}
+              />
+            ))}
+            {/* Rack LEDs sit on the terrain, under every object. */}
+            {Math.abs(current - zoneIndex('datacenter')) <= 1 && (
+              <svg
+                className="absolute top-0 pointer-events-none"
+                style={{ left: zoneById.datacenter.startX * s }}
+                width={(zoneById.datacenter.endX - zoneById.datacenter.startX) * s}
+                height={GROUND_Y * s}
+                viewBox={`0 0 ${zoneById.datacenter.endX - zoneById.datacenter.startX} ${GROUND_Y}`}
+                shapeRendering="crispEdges"
+                aria-hidden="true"
+              >
+                {datacenterLeds.map((led, i) => (
+                  <rect
+                    key={i}
+                    className="world-led"
+                    x={led.x}
+                    y={led.y}
+                    width={1}
+                    height={1}
+                    fill={led.color}
+                    style={{ animationDelay: `${-led.delay}ms` }}
+                  />
+                ))}
+              </svg>
+            )}
+            {zones.map((z) => (
+              <ZoneSign key={z.id} zone={z} scale={s} />
+            ))}
+            {placedObjects.map((o) => (
+              <button
+                key={o.ref.objectId}
+                type="button"
+                className="world-obj absolute"
+                style={{ left: o.x * s, top: o.y * s }}
+                aria-label={o.ref.tooltip}
+                data-object-id={o.ref.objectId}
+                data-near={state.nearestId === o.ref.objectId}
+                onClick={(e) => engine.activate(o, e.currentTarget)}
+                onFocus={() => {
+                  dispatch({ type: 'focus', id: o.ref.objectId })
+                  engine.focusObject(o)
+                }}
+                onBlur={() => dispatch({ type: 'focus', id: null })}
+                onMouseEnter={() => setHoveredId(o.ref.objectId)}
+                onMouseLeave={() => setHoveredId(null)}
+              >
+                <PixelSprite
+                  sprite={o.sprite}
+                  scale={s}
+                  frame={o.animate ? undefined : 0}
+                  className={o.animate === 'tick' ? 'px-tick' : undefined}
+                />
+                {o.overlay && <PixelSprite sprite={o.overlay} scale={s} frame={0} className="obj-overlay" />}
+              </button>
+            ))}
+            {state.zone === 'overlook' && (
+              // I-15: the destination, rendered in the scene on arrival.
+              <section
+                aria-labelledby="overlook-h"
+                className="overlook-in absolute z-10 max-w-[560px] bg-night/85 border-2 border-parchment/40 px-5 py-4 text-parchment"
+                style={{ left: (zoneById.overlook.startX + overlookScenery.panelX) * s, top: 12 * s }}
+              >
+                <h2 id="overlook-h" className="font-display text-xl md:text-2xl">
+                  {profile.destination.heading}
+                </h2>
+                <Field as="p" value={profile.destination.line} className="mt-2 text-lg md:text-2xl text-signal" />
+                <p className="mt-2 text-sm md:text-base leading-relaxed">{profile.destination.sentence}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link href="/research" className="pixel-btn-primary pixel-frame pixel-focus px-3 py-1.5 text-sm">
+                    See research
+                  </Link>
+                  <Link
+                    href={profile.cv.viewHref}
+                    className="pixel-btn-secondary pixel-frame pixel-focus px-3 py-1.5 text-sm"
+                  >
+                    View CV
+                  </Link>
+                  <Link href="/contact" className="pixel-btn-secondary pixel-frame pixel-focus px-3 py-1.5 text-sm">
+                    Get in touch
+                  </Link>
+                </div>
+              </section>
+            )}
             <div
-              className="absolute pointer-events-none z-10"
-              style={{
-                left: objectCenterX(tooltipObj) * s,
-                top: tooltipObj.y * s - 10,
-                transform: 'translate(-50%, -100%)',
-              }}
+              ref={packetRef}
+              className="absolute left-0 pointer-events-none opacity-0"
+              style={{ top: (CABLE_Y - 1) * s, width: 8 * s, height: 3 * s, marginLeft: -4 * s, background: '#dff3f3' }}
+              aria-hidden="true"
+            />
+            <div
+              ref={avatarRef}
+              className="absolute left-0 top-0 px-anim pointer-events-none"
+              data-frame="idle"
+              style={{ transformOrigin: 'center' }}
               aria-hidden="true"
             >
-              <div className="bg-parchment text-ink border-2 border-loam pixel-shadow px-2.5 py-1.5 whitespace-nowrap text-center">
-                <p className="font-display text-sm">{tooltipObj.ref.tooltip}</p>
-                <p className="text-[11px] opacity-70">{tooltipHint}</p>
+              <div key={outfit} className="outfit-swap">
+                <PixelSprite sprite={avatarOutfits[outfit]} scale={s} />
               </div>
             </div>
+            {tooltipObj && (
+              <div
+                className="absolute pointer-events-none z-10"
+                style={{
+                  left: objectCenterX(tooltipObj) * s,
+                  top: tooltipObj.y * s - 10,
+                  transform: 'translate(-50%, -100%)',
+                }}
+                aria-hidden="true"
+              >
+                <div className="bg-parchment text-ink border-2 border-loam pixel-shadow px-2.5 py-1.5 whitespace-nowrap text-center">
+                  <p className="font-display text-sm">{tooltipObj.ref.tooltip}</p>
+                  <p className="text-[11px] opacity-70">{tooltipHint}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          {room && (
+            <Room
+              id={room}
+              scale={s}
+              onOpen={(ref, invoker) => {
+                invokerRef.current = invoker
+                engine.openObject(ref.objectId)
+              }}
+              onExit={() => roomApi.current.exit()}
+            />
           )}
         </div>
 
+        <button
+          type="button"
+          onClick={() => setMapOpen(true)}
+          className="absolute right-3 top-3 z-20 pixel-focus inline-flex items-center gap-1.5 bg-parchment text-ink border-2 border-loam px-2.5 py-1 text-xs"
+          aria-keyshortcuts="M"
+        >
+          <MapIcon className="h-3.5 w-3.5" aria-hidden="true" /> Map
+        </button>
+
         {hint && (
           <div className="absolute left-3 bottom-3 flex items-center gap-2 bg-parchment/95 text-ink border-2 border-loam px-3 py-1.5 text-xs">
-            <span>{'← →'} to walk · click anything glowing</span>
-            <button type="button" onClick={() => setHint(false)} aria-label="Dismiss controls hint" className="pixel-focus">
+            <span>{'← →'} to walk · click anything glowing · M for map</span>
+            <button
+              type="button"
+              onClick={() => setHint(false)}
+              aria-label="Dismiss controls hint"
+              className="pixel-focus"
+            >
               <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           </div>
         )}
 
         <p id="world-help" className="sr-only">
-          Use the left and right arrow keys to walk. Tab moves between objects; Enter opens one. The same
-          content is on the Journey page as text.
+          Use the left and right arrow keys to walk. Tab moves between objects; Enter opens one. Press M for a map of
+          every place and object. The same content is on the Journey page as text.
         </p>
         <div ref={liveRef} aria-live="polite" className="sr-only" />
       </div>
 
-      <RouteStrip current={state.zone} visited={state.visited} onJump={engine.jumpToZone} />
+      <RouteStrip current={camZone ?? state.zone} visited={state.visited} onJump={engine.jumpToZone} />
+
+      <MapOverlay
+        open={mapOpen}
+        onOpenChange={setMapOpen}
+        avatarX={hot.current.avatarX}
+        onZone={(id) => {
+          setMapOpen(false)
+          invokerRef.current = viewportRef.current
+          if ((ROOMS as ZoneId[]).includes(id)) roomApi.current.enter(id as RoomId)
+          else engine.jumpToZone(id)
+        }}
+        onObject={(ref) => {
+          setMapOpen(false)
+          invokerRef.current = viewportRef.current
+          const r = roomOf(ref.objectId)
+          if (r) {
+            // Enter the room, then open the object once the iris has finished.
+            if (room !== r) roomApi.current.enter(r)
+            setTimeout(() => engine.openObject(ref.objectId), room === r || hot.current.reduced ? 0 : 450)
+          } else if (objectById[ref.objectId]) {
+            engine.jumpToZone(objectById[ref.objectId].zone)
+            engine.activate(objectById[ref.objectId], viewportRef.current)
+          }
+        }}
+      />
 
       <Panel
-        open={!!openObj}
+        open={!!openRef}
         onOpenChange={(open) => {
           if (!open) {
             dispatch({ type: 'close' })
             syncUrl({ open: null })
           }
         }}
-        title={openObj?.ref.tooltip ?? ''}
-        wide={openObj?.ref.opens.type === 'research' && !!openObj.ref.opens.view && openObj.ref.opens.view !== 'card'}
+        title={openRef?.tooltip ?? ''}
+        wide={
+          (openRef?.opens.type === 'research' && !!openRef.opens.view && openRef.opens.view !== 'card') ||
+          openRef?.opens.type === 'events-map'
+        }
         onCloseAutoFocus={(e) => {
           e.preventDefault()
           ;(invokerRef.current ?? viewportRef.current)?.focus({ preventScroll: true })
@@ -615,7 +848,7 @@ export default function WorldViewport() {
           ) : undefined
         }
       >
-        {openObj && <ObjectCard object={openObj.ref} />}
+        {openRef && <ObjectCard object={openRef} />}
       </Panel>
     </div>
   )

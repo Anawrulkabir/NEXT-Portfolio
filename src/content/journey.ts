@@ -75,7 +75,7 @@ export const journeyChapters: JourneyChapter[] = [
       },
       {
         objectId: 'laptop-api-avenger',
-        tooltip: 'API Avenger, CUET — Rising Team, 2025',
+        tooltip: 'API Avengers, CUET — Finalist, 2025',
         opens: { type: 'project', id: 'donation-backend' },
       },
       {
@@ -244,11 +244,10 @@ export const journeyChapters: JourneyChapter[] = [
     order: 8,
     name: 'The Overlook',
     summary: "This is where I'm going: AI × Mechanical Engineering × Computational Research.",
-    // Doors to the two rooms. Until the rooms land (Phase 7, I-07) they open
-    // the rooms' page twins.
+    // Doors to the two rooms (I-07); off the map they link to the page twins.
     objects: [
-      { objectId: 'door-archive', tooltip: 'Archive', opens: { type: 'route', href: '/archive' } },
-      { objectId: 'door-contact', tooltip: 'Field Office', opens: { type: 'route', href: '/contact' } },
+      { objectId: 'door-archive', tooltip: 'Archive', opens: { type: 'room', id: 'archive', href: '/archive' } },
+      { objectId: 'door-contact', tooltip: 'Field Office', opens: { type: 'room', id: 'contact', href: '/contact' } },
     ],
   },
   {
@@ -286,13 +285,14 @@ export const journeyNotes: Note[] = [
     title: 'Competitive programming',
     body: [
       'ICPC Preliminaries (2022, 2023). CUET IUPC (2022–2023). 300+ problems solved across 50+ contests.',
+      'ASRRO Robocoder Programming Contest, CUET (November 2022).',
       pending('VERIFY CUET Computer Club, Apr 2022 – Dec 2023'),
     ],
     links: [
       { kind: 'codeforces', label: 'Codeforces', href: 'https://codeforces.com/profile/fahadkabir123', verify: true },
       { kind: 'codechef', label: 'CodeChef', href: 'https://www.codechef.com/users/fahadkabir123', verify: true },
     ],
-    sources: ['CV-2026 (F22)', 'CV-old (F23, F25)'],
+    sources: ['CV-2026 (F22)', 'CV-old (F23, F25)', 'ASRRO certificate (Sep 2026 upload)'],
   },
   {
     id: 'algorithmic-thinking',

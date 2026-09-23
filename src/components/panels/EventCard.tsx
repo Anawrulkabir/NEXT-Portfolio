@@ -16,7 +16,19 @@ const typeLabel: Record<EventItem['type'], string> = {
  * Event card — world objects of type "event", /journey and /archive. Only
  * supplied fields render; a pending field is a dev-only chip (§06.1).
  */
-export function EventCard({ event, fallbackTitle }: { event: EventItem; fallbackTitle?: string }) {
+export function EventCard({
+  event,
+  fallbackTitle,
+  headingLevel = 3,
+  compact = false,
+}: {
+  event: EventItem
+  fallbackTitle?: string
+  headingLevel?: 3 | 4
+  compact?: boolean
+}) {
+  const H = `h${headingLevel}` as 'h3' | 'h4'
+  const hClass = compact ? 'font-display text-sm' : 'font-display text-lg'
   const filled = (v: EventItem['date'] | undefined): v is string => v !== undefined && !isPending(v)
   const related = event.relatedProjectId ? projectById[event.relatedProjectId] : undefined
 
@@ -24,15 +36,15 @@ export function EventCard({ event, fallbackTitle }: { event: EventItem; fallback
   const showType = title?.toLowerCase() !== typeLabel[event.type].toLowerCase()
 
   return (
-    <div className="space-y-3">
+    <div className={compact ? 'space-y-1.5' : 'space-y-3'}>
       {showType && <p className="text-xs uppercase tracking-wide opacity-80">{typeLabel[event.type]}</p>}
       {isPending(event.name) ? (
         <>
-          {fallbackTitle && <h3 className="font-display text-lg">{fallbackTitle}</h3>}
+          {fallbackTitle && <H className={hClass}>{fallbackTitle}</H>}
           <Field as="p" value={event.name} />
         </>
       ) : (
-        <h3 className="font-display text-lg">{event.name}</h3>
+        <H className={hClass}>{event.name}</H>
       )}
       {filled(event.result) && (
         <p className="inline-block text-xs border-2 border-moss bg-moss text-parchment px-2 py-0.5">
@@ -65,7 +77,12 @@ export function EventCard({ event, fallbackTitle }: { event: EventItem; fallback
         </p>
       )}
       {event.images.map((img) => (
-        <MediaSlot key={img.id} image={img} />
+        <MediaSlot
+          key={img.id}
+          image={img}
+          className={compact ? 'max-w-[160px]' : 'max-w-[280px]'}
+          sizes={compact ? '160px' : '280px'}
+        />
       ))}
       <LinkRow links={event.links} />
     </div>

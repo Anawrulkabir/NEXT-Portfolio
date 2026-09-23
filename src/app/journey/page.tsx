@@ -25,7 +25,7 @@ const carded = new Set(['project', 'note', 'event', 'experience', 'skills', 'res
 
 function JourneyObject({ object }: { object: WorldObjectRef }) {
   const { opens } = object
-  if (opens.type === 'route') {
+  if (opens.type === 'route' || opens.type === 'room') {
     return (
       <li className="text-sm">
         {isLiveRoute(opens.href) ? (

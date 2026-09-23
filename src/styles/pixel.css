@@ -181,6 +181,87 @@
   }
 }
 
+/* Rooms (§05.2 R1-R2) — interiors drawn in CSS, props are pixel sprites. */
+.room-archive {
+  background: repeating-linear-gradient(90deg, #5a4636 0 22px, #4f3d2f 22px 24px), #5a4636;
+}
+.room-office {
+  background: linear-gradient(#5f6b72 0 70%, #4f5a54 70% 100%);
+}
+.room-floor {
+  background: repeating-linear-gradient(90deg, #8a6a45 0 30px, #6b5238 30px 32px);
+  border-top: 4px solid #a8845a;
+}
+.room-obj {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.room-obj .room-tip {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translate(-50%, -6px);
+  white-space: nowrap;
+  background: var(--parchment);
+  color: var(--ink);
+  border: 2px solid var(--loam);
+  padding: 2px 8px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+}
+.room-obj:hover .room-tip,
+.room-obj:focus-visible .room-tip {
+  opacity: 1;
+}
+.room-obj:focus-visible {
+  outline: 3px dashed var(--amber);
+  outline-offset: 4px;
+}
+.cert-wall-frame {
+  border: 4px solid #8a6a45;
+  box-shadow: inset 0 0 0 2px #e7e1d1, 3px 3px 0 0 rgba(0, 0, 0, 0.35);
+  transition: transform 120ms;
+}
+.cert-wall-frame:hover,
+.cert-wall-frame:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 2px #e7e1d1, 3px 5px 0 0 rgba(0, 0, 0, 0.45), 0 0 0 2px var(--amber);
+}
+
+/* Door transition (I-07): the scene irises shut, swaps, and irises open. */
+.iris-closing {
+  animation: iris-close 200ms steps(5, end) forwards;
+}
+.iris-opening {
+  animation: iris-close 200ms steps(5, end) reverse;
+}
+@keyframes iris-close {
+  from {
+    clip-path: circle(75% at 50% 60%);
+  }
+  to {
+    clip-path: circle(0% at 50% 60%);
+  }
+}
+
+/* Events map pins drop in once, 40 ms apart (I-12). */
+.map-pin {
+  animation: pin-drop 240ms steps(3, end) both;
+}
+@keyframes pin-drop {
+  from {
+    opacity: 0;
+    margin-top: -12px;
+  }
+  to {
+    opacity: 1;
+    margin-top: 0;
+  }
+}
+
 /* Outfit change at a zone boundary: a 2-frame shimmer (§09 I-02). */
 .outfit-swap {
   animation: outfit-swap 160ms steps(2, end);
@@ -239,6 +320,14 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .map-pin,
+  .iris-closing,
+  .iris-opening {
+    animation: none;
+  }
+  .cert-wall-frame {
+    transition: none;
+  }
   .overlook-in,
   .lora-chip {
     animation: none;

@@ -1,5 +1,18 @@
 import Link from 'next/link'
-import { eventById, experienceById, noteById, projectById, researchById, stripPending, type WorldObjectRef } from '@/content'
+import {
+  events,
+  eventById,
+  experienceById,
+  filledCertifications,
+  noteById,
+  projectById,
+  researchById,
+  stripPending,
+  type WorldObjectRef,
+} from '@/content'
+import { CertificateWall } from '@/components/archive/CertificateWall'
+import { EventsMap } from '@/components/archive/EventsMap'
+import { ContactCard } from './ContactCard'
 import { RoleBlock } from '@/components/experience/RoleBlock'
 import { ToolDrawer } from '@/components/skills/ToolDrawer'
 import { AirfoilDemo } from '@/components/research/AirfoilDemo'
@@ -80,6 +93,22 @@ export function ObjectCard({ object: objectRef }: { object: WorldObjectRef }) {
           )}
         </div>
       )
+    case 'certificates':
+      return (
+        <div className="space-y-3">
+          <h3 className="font-display text-lg">Certificates</h3>
+          <CertificateWall certificates={stripPending(filledCertifications)} columns="grid-cols-2" />
+        </div>
+      )
+    case 'events-map':
+      return (
+        <div className="space-y-3">
+          <h3 className="font-display text-lg">Events</h3>
+          <EventsMap events={stripPending(events)} />
+        </div>
+      )
+    case 'contact':
+      return <ContactCard />
     default:
       return <p>{objectRef.tooltip}</p>
   }

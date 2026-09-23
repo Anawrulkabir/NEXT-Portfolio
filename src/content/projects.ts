@@ -58,14 +58,14 @@ export const projects: Project[] = [
   {
     id: 'donation-backend',
     shelf: 'hackathon',
-    name: pending('ADD PROJECT NAME (event: API Avenger, CUET)'),
-    oneLine: 'Donation backend with idempotent webhooks and async event handling, built for API Avenger (2025).',
+    name: pending('ADD PROJECT NAME (event: API Avengers, Televerse 1.0, CUET)'),
+    oneLine: 'Donation backend with idempotent webhooks and async event handling, built for API Avengers (2025).',
     problem: pending('ADD problem framing'),
     role: pending('ADD your specific role on the team'),
     contribution: [],
     tech: [],
     status: 'prototype',
-    result: 'Rising Team — API Avenger Microservice Hackathon, CUET (2025)',
+    result: 'Finalist · CUET Rising Team — API Avengers, Televerse 1.0, CUET (2025)',
     links: [],
     images: [],
   },
@@ -127,18 +127,14 @@ export const projects: Project[] = [
     images: [
       {
         id: 'luca-pages',
-        src: '/media/projects/luca/pages.png',
+        src: '/media/projects/luca/pages.webp',
         alt: 'Luca screenshots: the homepage, tour package cards, the overview tab and a package gallery, on desktop and mobile',
-        width: 1920,
-        height: 1080,
         kind: 'screenshot',
       },
       {
         id: 'luca-blog-auth',
-        src: '/media/projects/luca/blog-auth.png',
+        src: '/media/projects/luca/blog-auth.webp',
         alt: 'Luca screenshots: blog layouts and the login and sign-up forms',
-        width: 1920,
-        height: 1080,
         kind: 'screenshot',
       },
     ],
@@ -162,10 +158,8 @@ export const projects: Project[] = [
     images: [
       {
         id: 'sitemark-home',
-        src: '/media/projects/sitemark/home.png',
+        src: '/media/projects/sitemark/home.webp',
         alt: 'Sitemark homepage: navigation with blog sections, a sign-up hero and a sample dashboard preview',
-        width: 1166,
-        height: 959,
         kind: 'screenshot',
       },
     ],
@@ -189,10 +183,8 @@ export const projects: Project[] = [
     images: [
       {
         id: 'craftpaper-home',
-        src: '/media/projects/craftpaper/home.png',
+        src: '/media/projects/craftpaper/home.webp',
         alt: 'Craftpaper homepage: search bar with categories, a sign-up hero with woven jute baskets, and category links',
-        width: 1166,
-        height: 959,
         kind: 'screenshot',
       },
     ],

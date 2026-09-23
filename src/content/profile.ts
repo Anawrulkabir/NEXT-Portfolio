@@ -25,7 +25,13 @@ export const profile: Profile = {
     'I study Mechanical Engineering at CUET and work as a software engineer at Poridhi.io, where I build the GPU platform behind AI Studio. I started with robots — a remote-controlled soccer bot in 2022 — then spent two years on competitive programming before moving into backend and infrastructure work.',
     'My research brings that computing background back to engineering: a physics-informed neural network solver for airfoil flow in my thesis, and machine-learning models for heat transfer in low-GWP refrigerants. I am most interested in problems where physical understanding and learned models have to work together.',
   ],
-  portrait: pending('ADD PROFESSIONAL PORTRAIT or confirm reuse of fahad.jpg'),
+  // C5 resolved: new professional portrait supplied by the author (Sep 2026).
+  portrait: {
+    id: 'portrait',
+    src: '/media/portrait/fahad.webp',
+    alt: 'Portrait of Md Anawrul Kabir Fahad in a navy suit and glasses',
+    kind: 'portrait',
+  },
   education: [
     {
       id: 'cuet-bsc-me',
