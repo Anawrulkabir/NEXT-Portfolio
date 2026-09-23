@@ -99,8 +99,13 @@
   }
 }
 
+/* Time-of-day sky: WorldViewport interpolates these three stops from the
+   camera position (§05.1). Defaults are the Workshop's dawn. */
 .world-sky {
-  background: linear-gradient(#1b2230 0%, #34404d 38%, #6d6862 62%, #a07f64 75%, #a07f64 100%);
+  --sky-top: rgb(39 48 74);
+  --sky-mid: rgb(95 90 112);
+  --sky-low: rgb(185 138 108);
+  background: linear-gradient(var(--sky-top) 0%, var(--sky-mid) 42%, var(--sky-low) 72%, var(--sky-low) 100%);
 }
 
 .world-obj {
@@ -113,15 +118,43 @@
 .world-obj svg {
   display: block;
 }
-.world-obj:hover svg,
-.world-obj:focus-visible svg,
-.world-obj[data-near='true'] svg {
+.world-obj:hover svg:not(.obj-overlay),
+.world-obj:focus-visible svg:not(.obj-overlay),
+.world-obj[data-near='true'] svg:not(.obj-overlay) {
   filter: drop-shadow(2px 0 0 var(--amber)) drop-shadow(-2px 0 0 var(--amber))
     drop-shadow(0 2px 0 var(--amber)) drop-shadow(0 -2px 0 var(--amber));
 }
 .world-obj:focus-visible {
   outline: 3px dashed var(--amber);
   outline-offset: 6px;
+}
+/* Overlays (the maze's BFS path) appear only while the object is active. */
+.world-obj .obj-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 120ms steps(2, end);
+}
+.world-obj:hover .obj-overlay,
+.world-obj:focus-visible .obj-overlay,
+.world-obj[data-near='true'] .obj-overlay {
+  opacity: 1;
+}
+
+/* Outfit change at a zone boundary: a 2-frame shimmer (§09 I-02). */
+.outfit-swap {
+  animation: outfit-swap 160ms steps(2, end);
+}
+@keyframes outfit-swap {
+  0% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* Multi-frame sprites: every frame is an <svg><g data-f="n">; the wrapper's
@@ -166,6 +199,12 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .outfit-swap {
+    animation: none;
+  }
+  .world-obj .obj-overlay {
+    transition: none;
+  }
   .px-anim[data-frame='idle'] g[data-f='1'],
   .px-tick g[data-f='1'] {
     animation: none !important;

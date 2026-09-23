@@ -1,5 +1,6 @@
-import { noteById, projectById, type WorldObjectRef } from '@/content'
+import { eventById, noteById, projectById, type WorldObjectRef } from '@/content'
 import { ChapterCard } from './ChapterCard'
+import { EventCard } from './EventCard'
 import { ProjectCard } from './ProjectCard'
 
 /**
@@ -18,6 +19,10 @@ export function ObjectCard({ object: objectRef }: { object: WorldObjectRef }) {
     case 'note': {
       const note = noteById[opens.id]
       return note ? <ChapterCard note={note} /> : null
+    }
+    case 'event': {
+      const event = eventById[opens.id]
+      return event ? <EventCard event={event} fallbackTitle={objectRef.tooltip} /> : null
     }
     default:
       return <p>{objectRef.tooltip}</p>

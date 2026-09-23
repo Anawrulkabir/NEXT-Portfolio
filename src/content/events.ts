@@ -88,6 +88,7 @@ export const events: EventItem[] = [
     place: pending('ADD place'),
     role: pending('ADD team / idea / your role'),
     result: pending('ADD result'),
+    summary: 'Took part in a business competition.',
     images: [],
     links: [],
   },

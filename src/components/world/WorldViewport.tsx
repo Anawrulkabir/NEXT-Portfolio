@@ -17,8 +17,10 @@ import {
   type PlacedObject,
 } from '@/world/layout'
 import { centeredCameraX, clampCamera, desiredCameraX } from '@/world/engine/camera'
+import { PARALLAX, bakeFar, farWidth } from '@/world/engine/bake'
+import { skyAt } from '@/world/engine/sky'
 import { readVisited, worldReducer, writeVisited } from '@/world/state'
-import { avatarSprite } from '@/world/sprites/avatar'
+import { avatarOutfits, outfitForZone } from '@/world/sprites/avatar'
 import { PixelSprite } from '@/components/pixel/PixelSprite'
 import { Panel } from '@/components/panels/Panel'
 import { ObjectCard } from '@/components/panels/ObjectCard'
@@ -50,6 +52,7 @@ export default function WorldViewport() {
 
   const viewportRef = useRef<HTMLDivElement>(null)
   const layerRef = useRef<HTMLDivElement>(null)
+  const farRef = useRef<HTMLCanvasElement>(null)
   const avatarRef = useRef<HTMLDivElement>(null)
   const liveRef = useRef<HTMLDivElement>(null)
   const invokerRef = useRef<HTMLElement | null>(null)
@@ -83,6 +86,7 @@ export default function WorldViewport() {
     nearest: null as string | null,
     keyboardWalk: false,
     reduced: false,
+    sky: '',
   })
 
   const engine = useMemo(() => {
@@ -92,6 +96,22 @@ export default function WorldViewport() {
       const s = h.scale
       if (layerRef.current) {
         layerRef.current.style.transform = `translate3d(${-Math.round(h.camX * s)}px,0,0)`
+      }
+      if (farRef.current) {
+        // Reduced motion: no parallax — the far layer holds still.
+        const fx = h.reduced ? 0 : Math.round(h.camX * PARALLAX) * s
+        farRef.current.style.transform = `translate3d(${-fx}px,0,0)`
+      }
+      const vp = viewportRef.current
+      if (vp && h.vw) {
+        const sky = skyAt(h.camX + h.vw / 2)
+        const key = sky.top + sky.mid + sky.low
+        if (key !== h.sky) {
+          h.sky = key
+          vp.style.setProperty('--sky-top', sky.top)
+          vp.style.setProperty('--sky-mid', sky.mid)
+          vp.style.setProperty('--sky-low', sky.low)
+        }
       }
       if (avatarRef.current) {
         avatarRef.current.style.transform = `translate3d(${Math.round(h.avatarX * s)}px,${
@@ -279,6 +299,7 @@ export default function WorldViewport() {
     if (viewportRef.current) ro.observe(viewportRef.current)
 
     dispatch({ type: 'hydrateVisited', visited: readVisited() })
+    if (farRef.current) bakeFar(farRef.current, WORLD_WIDTH)
 
     // Deep links: ?at=<zone>&open=<objectId> (§03.1)
     const params = new URLSearchParams(window.location.search)
@@ -364,6 +385,7 @@ export default function WorldViewport() {
 
   const s = scale
   const current = zoneIndex(state.zone)
+  const outfit = outfitForZone(state.zone)
   const tooltipId = state.focusedId ?? hoveredId ?? state.nearestId
   const tooltipObj = tooltipId ? objectById[tooltipId] : null
   const tooltipHint =
@@ -389,6 +411,12 @@ export default function WorldViewport() {
           if (e.target === viewportRef.current) showHint()
         }}
       >
+        <canvas
+          ref={farRef}
+          aria-hidden="true"
+          className="absolute top-0 left-0 pixelated will-change-transform"
+          style={{ width: farWidth(WORLD_WIDTH) * s, height: '100%' }}
+        />
         <div
           ref={layerRef}
           className="absolute inset-y-0 left-0 will-change-transform"
@@ -423,6 +451,7 @@ export default function WorldViewport() {
                 frame={o.animate ? undefined : 0}
                 className={o.animate === 'tick' ? 'px-tick' : undefined}
               />
+              {o.overlay && <PixelSprite sprite={o.overlay} scale={s} frame={0} className="obj-overlay" />}
             </button>
           ))}
           <div
@@ -432,7 +461,9 @@ export default function WorldViewport() {
             style={{ transformOrigin: 'center' }}
             aria-hidden="true"
           >
-            <PixelSprite sprite={avatarSprite} scale={s} />
+            <div key={outfit} className="outfit-swap">
+              <PixelSprite sprite={avatarOutfits[outfit]} scale={s} />
+            </div>
           </div>
           {tooltipObj && (
             <div
@@ -463,7 +494,7 @@ export default function WorldViewport() {
 
         <p id="world-help" className="sr-only">
           Use the left and right arrow keys to walk. Tab moves between objects; Enter opens one. The same
-          content is available from the site navigation.
+          content is on the Journey page as text.
         </p>
         <div ref={liveRef} aria-live="polite" className="sr-only" />
       </div>

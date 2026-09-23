@@ -293,6 +293,9 @@ export const journeyNotes: Note[] = [
     id: 'algorithmic-thinking',
     title: 'Why this mattered',
     body: [
+      // Describes the maze itself, so it's true without confirmation; the
+      // framing sentence below waits on the author.
+      'The maze on the floor lights its shortest path, found with breadth-first search.',
       pending(
         'CONFIRM framing sentence: "Algorithmic thinking I still use in systems work: state machines, scheduling, resource allocation."'
       ),
@@ -302,8 +305,11 @@ export const journeyNotes: Note[] = [
   {
     id: 'team-contests',
     title: 'Team contests',
-    body: [pending('ADD team contest details — optional')],
-    sources: ['SOP §05'],
+    body: [
+      'ICPC Preliminaries and CUET IUPC are team contests, played in teams of three.',
+      pending('ADD team contest details — team name, members, results (optional)'),
+    ],
+    sources: ['SOP §05', 'CV-2026 (F22) — ICPC-format contests are team events'],
   },
   {
     id: 'physics-informed-ml',
