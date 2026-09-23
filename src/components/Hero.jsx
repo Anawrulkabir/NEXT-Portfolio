@@ -5,13 +5,8 @@ import Journey from './Journey'
 import Projects from './Projects'
 import Skills from './Skills'
 import GsapAnimate from './animation/GsapAnimate'
-import Review from './review/Review'
 import Marquee from 'react-fast-marquee'
 import { GridBackground } from '@/components/background/GridBackground'
-import {
-  AnimatedTooltip,
-  AnimatedTooltipMain,
-} from './animation/AnimatedTooltipMain'
 import { HiOutlineDownload } from 'react-icons/hi'
 import { TextAnimation } from './animation/TextAnimation'
 import Hero3D from './three/Hero3D'
@@ -56,7 +51,7 @@ const Hero = () => {
 
         <div className="w-full flex items-center justify-center mt-12">
           <a
-            href="/resume/Fahad Kabir's Resume(Updated).pdf"
+            href="/cv/Md-Anawrul-Kabir-Fahad-CV.pdf"
             download
             className="flex justify-center items-center border-b-2 border-neutral-200 rounded-full"
           >
@@ -168,7 +163,7 @@ const Hero = () => {
 
           <div className="w-full flex items-center justify-center mt-12">
             <a
-              href="/resume/Fahad Kabir's Resume(Updated).pdf"
+              href="/cv/Md-Anawrul-Kabir-Fahad-CV.pdf"
               download
               className="flex items-center justify-center"
             >
@@ -208,7 +203,6 @@ const Hero = () => {
       <Journey />
       <Projects />
       <Skills />
-      {/* <Review /> */}
     </>
   )
 }

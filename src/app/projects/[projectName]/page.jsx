@@ -11,7 +11,7 @@ const page = ({ params }) => {
 
   if (!project) {
     return (
-      <div className="prevent-select">
+      <div>
         <Header />
         <div className="min-h-[60vh] flex flex-col items-center justify-center text-white gap-6">
           <p className="text-3xl font-semibold">Project not found</p>
@@ -33,7 +33,7 @@ const page = ({ params }) => {
       : [{ serial: 1, src: project.image }]
 
   return (
-    <div className="prevent-select">
+    <div>
       <Header />
       <div className="mx-4 md:mx-8 mt-8">
         <Link

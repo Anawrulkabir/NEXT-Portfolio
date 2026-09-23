@@ -4,23 +4,22 @@ import { motion } from 'framer-motion'
 
 export const TextAnimation = ({ text, size, font }) => {
   return (
-    <section className="">
-      <FlipLink href="#" text={size} font={font}>
+    <span className="inline-block">
+      <FlipLink text={size} font={font}>
         {text}
       </FlipLink>
-    </section>
+    </span>
   )
 }
 
 const DURATION = 0.25
 const STAGGER = 0.025
 
-const FlipLink = ({ children, href, text, font, hover }) => {
+const FlipLink = ({ children, text, font, hover }) => {
   return (
-    <motion.a
+    <motion.span
       initial="initial"
       whileHover="hovered"
-      href={href}
       className={`relative block overflow-hidden whitespace-nowrap text-${text} font-${font} uppercase   hover:text-${
         hover === 'black'
       }  `}
@@ -74,6 +73,6 @@ const FlipLink = ({ children, href, text, font, hover }) => {
           </motion.span>
         ))}
       </div>
-    </motion.a>
+    </motion.span>
   )
 }
