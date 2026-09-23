@@ -39,7 +39,7 @@ export default function Header() {
             <TextAnimation text="PROJECTS" size={'sm'} font={'light'} />
           </Link>
           <Link
-            href="#"
+            href="/#about"
             className="text-foreground transition-colors hover:text-foreground  px-2 py-[4px] rounded-xl  hover:bg-white text-white"
           >
             {/* <p className="text-white hover:text-black text-sm">ABOUT</p> */}
@@ -48,7 +48,7 @@ export default function Header() {
         </div>
         <div>
           <Link
-            href="#"
+            href="/#contact"
             className="text-foreground transition-colors hover:text-foreground "
           >
             <div className="border border-white px-3 py-2  rounded-full text-white hover:bg-white hover:text-black">
@@ -84,30 +84,50 @@ export default function Header() {
 
         <SheetContent side="right">
           <nav className="grid gap-6 text-lg font-medium">
-            <Link href="#" className="hover:text-foreground">
+            <Link href="/" className="hover:text-foreground">
               Home
             </Link>
-            <Link href="#" className="hover:text-foreground">
+            <Link href="/projects" className="hover:text-foreground">
               Projects
             </Link>
-            <Link href="#" className="hover:text-foreground">
+            <Link href="/#about" className="hover:text-foreground">
               About
             </Link>
-            <Link href="#" className="hover:text-foreground">
+            <Link href="/#contact" className="hover:text-foreground">
               Hire Me
             </Link>
             <hr />
             <div className="flex justify-between ">
-              <Link href="#" className="hover:text-foreground">
+              <Link
+                href="https://github.com/Anawrulkabir"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground"
+              >
                 GH
               </Link>
-              <Link href="#" className="hover:text-foreground">
+              <Link
+                href="https://www.linkedin.com/in/anawrulkabir/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground"
+              >
                 LD
               </Link>
-              <Link href="#" className="hover:text-foreground">
+              <Link
+                href="https://www.facebook.com/profile.php?id=100073283195770"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground"
+              >
                 FB
               </Link>
-              <Link href="#" className="hover:text-foreground">
+              <Link
+                href="https://mail.google.com/mail/u/0/?fs=1&tf=cm&source=mailto&to=mdanawrulkabirfahad123@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground"
+              >
                 EM
               </Link>
             </div>
