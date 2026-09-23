@@ -115,12 +115,12 @@ export const journeyChapters: JourneyChapter[] = [
       {
         objectId: 'whiteboard-api',
         tooltip: 'Backends & APIs',
-        opens: { type: 'project', id: 'tensorcode' },
+        opens: { type: 'note', id: 'backends-apis' },
       },
       {
         objectId: 'monitor-frontend',
         tooltip: 'Frontend & docs',
-        opens: { type: 'project', id: 'tensorcode' },
+        opens: { type: 'note', id: 'frontend-docs' },
       },
       {
         objectId: 'toolbox-software',
@@ -140,22 +140,22 @@ export const journeyChapters: JourneyChapter[] = [
       {
         objectId: 'gpu-rack',
         tooltip: 'The GPU',
-        opens: { type: 'experience', id: 'poridhi', highlight: ['junior-software-engineer'] },
+        opens: { type: 'note', id: 'dc-gpu' },
       },
       {
         objectId: 'container-crate',
         tooltip: 'Container',
-        opens: { type: 'experience', id: 'poridhi', highlight: ['junior-software-engineer'] },
+        opens: { type: 'note', id: 'dc-container' },
       },
       {
         objectId: 'k8s-console',
         tooltip: 'Orchestration',
-        opens: { type: 'experience', id: 'poridhi', highlight: ['junior-software-engineer'] },
+        opens: { type: 'note', id: 'dc-orchestration' },
       },
       {
         objectId: 'workflow-conveyor',
         tooltip: 'Session lifecycle',
-        opens: { type: 'experience', id: 'poridhi', highlight: ['junior-software-engineer'] },
+        opens: { type: 'note', id: 'dc-session' },
       },
       {
         objectId: 'workspace-pod',
@@ -165,7 +165,7 @@ export const journeyChapters: JourneyChapter[] = [
       {
         objectId: 'cloud-gate',
         tooltip: 'Cloud',
-        opens: { type: 'experience', id: 'poridhi', highlight: ['junior-software-engineer'] },
+        opens: { type: 'note', id: 'dc-cloud' },
       },
       {
         objectId: 'tensor-reactor',
@@ -175,7 +175,7 @@ export const journeyChapters: JourneyChapter[] = [
       {
         objectId: 'ops-desk',
         tooltip: 'Operations',
-        opens: { type: 'experience', id: 'poridhi', highlight: ['junior-software-engineer'] },
+        opens: { type: 'note', id: 'dc-operations' },
       },
       {
         objectId: 'toolbox-infra',
@@ -328,5 +328,93 @@ export const journeyNotes: Note[] = [
       'With few experimental points, how features are built and how models are validated matters as much as the model itself.',
     ],
     sources: ['Restates F27’s stated focus'],
+  },
+
+  // ---- Software Workshop (§05.2 Zone 4) ----
+  {
+    id: 'backends-apis',
+    title: 'Backends & APIs',
+    body: [
+      'Built the Hono.js backend for TensorCode on Cloudflare’s edge stack — D1 storage, R2 file handling, KV session state — powering in-browser PyTorch and CUDA execution.',
+    ],
+    tech: ['hono', 'cloudflare-workers', 'cloudflare-d1', 'cloudflare-r2', 'cloudflare-kv'],
+    links: [{ kind: 'product', label: 'tensorcode.poridhi.io', href: 'https://tensorcode.poridhi.io' }],
+    more: { href: '/experience#junior-software-engineer', label: 'Full role on the Experience page' },
+    sources: ['CV-2026 (F16)'],
+  },
+  {
+    id: 'frontend-docs',
+    title: 'Frontend & docs',
+    body: [
+      'Developed React frontend components for TensorCode and authored the team’s architecture and deployment documentation, the onboarding reference for new engineers.',
+    ],
+    tech: ['react', 'typescript'],
+    more: { href: '/experience#junior-software-engineer', label: 'Full role on the Experience page' },
+    sources: ['CV-2026 (F17)'],
+  },
+
+  // ---- GPU Data Center pipeline (§05.2 Zone 5), in data-flow order ----
+  {
+    id: 'dc-gpu',
+    title: 'The GPU',
+    body: [
+      'Each RTX 4090 is partitioned into 6 × 8 GB VRAM slices with hard isolation, using HAMi GPU virtualization.',
+      'Why: Kubernetes time-slicing could not provide that isolation.',
+    ],
+    tech: ['hami', 'gpu-partitioning', 'kubernetes'],
+    more: { href: '/experience#junior-software-engineer', label: 'Full role on the Experience page' },
+    sources: ['CV-2026 (F12)'],
+  },
+  {
+    id: 'dc-container',
+    title: 'Container',
+    body: [
+      'GPU sessions run from ECR-hosted TensorFlow images, with sidecar containers for runtime isolation.',
+      'Multi-arch Docker builds go back to the internship’s authentication service.',
+    ],
+    tech: ['docker', 'aws-ecr'],
+    more: { href: '/experience#junior-software-engineer', label: 'Full role on the Experience page' },
+    sources: ['CV-2026 (F13, F9)'],
+  },
+  {
+    id: 'dc-orchestration',
+    title: 'Orchestration',
+    body: [
+      'Co-engineered the platform’s migration to a bare-metal Kubernetes cluster with HAMi GPU virtualization: GPU session launch time went from 10–15 min to 3–5 min, about 70% faster.',
+      'Least-privilege access with per-microservice Kubernetes RBAC.',
+      pending('CONFIRM which cluster used k3s — optional'),
+    ],
+    tech: ['kubernetes', 'hami', 'k8s-rbac'],
+    more: { href: '/experience#junior-software-engineer', label: 'Full role on the Experience page' },
+    sources: ['CV-2026 (F11, F15)'],
+  },
+  {
+    id: 'dc-session',
+    title: 'Session lifecycle',
+    body: [
+      'Designed the PostgreSQL schema and REST API governing GPU slice allocation and session lifecycle, with safe state transitions across concurrent Temporal workflows.',
+    ],
+    tech: ['postgresql', 'rest-apis', 'temporal'],
+    more: { href: '/experience#junior-software-engineer', label: 'Full role on the Experience page' },
+    sources: ['CV-2026 (F14)'],
+  },
+  {
+    id: 'dc-cloud',
+    title: 'Cloud',
+    body: [
+      'Architected the initial AWS stack for on-demand GPU sessions: g4dn EC2 instances with custom AMIs, ECR-hosted TensorFlow images, and JuiceFS-on-S3 session persistence.',
+      'Infrastructure as code with Pulumi and Terraform.',
+    ],
+    tech: ['aws-ec2', 'aws-s3', 'aws-ecr', 'juicefs', 'pulumi', 'terraform'],
+    more: { href: '/experience#junior-software-engineer', label: 'Full role on the Experience page' },
+    sources: ['CV-2026 (F13, F33)'],
+  },
+  {
+    id: 'dc-operations',
+    title: 'Operations',
+    body: ['Operated production cluster services: PostgreSQL, Temporal, and Headlamp monitoring.'],
+    tech: ['postgresql', 'temporal', 'headlamp'],
+    more: { href: '/experience#junior-software-engineer', label: 'Full role on the Experience page' },
+    sources: ['CV-2026 (F15)'],
   },
 ]

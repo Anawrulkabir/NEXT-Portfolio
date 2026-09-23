@@ -7,15 +7,26 @@ import type { ZoneId } from '@/content/types'
 import { GROUND_Y, TILE, WORLD_HEIGHT } from '../constants'
 import { drawGrid, type Sprite } from '../pixel'
 import type { ZoneLayout } from '../layout'
-import { GARAGE_SHELF_Y, dungeonScenery, garageScenery, workshopScenery, zones } from '../layout'
+import {
+  CABLE_Y,
+  GARAGE_SHELF_Y,
+  PIPELINE,
+  datacenterScenery,
+  dungeonScenery,
+  garageScenery,
+  objectCenterX,
+  placedObjects,
+  softwareScenery,
+  workshopScenery,
+  zones,
+} from '../layout'
 import { blendColor, tilesets, type Tile } from '../tilesets'
 import { gateSprite, wallScreenSprite } from '../sprites/dungeon'
+import { coffeeSprite, serverDoorSprite } from '../sprites/software'
 
 // Canvas can't read CSS variables, so placeholder zones use literal hexes
 // matching the zone key colours in src/styles/tokens.css.
 const placeholderHex: Record<string, string> = {
-  software: '#8fa3a8',
-  datacenter: '#6fb7b9',
   'physics-lab': '#a9c4d9',
   'thermal-lab': '#c9663a',
   overlook: '#2f4a34',
@@ -325,6 +336,124 @@ function drawGarage(ctx: CanvasRenderingContext2D, width: number) {
   ctx.fillRect(328, GROUND_Y - 3, 1, 1)
 }
 
+function drawSoftware(ctx: CanvasRenderingContext2D, width: number) {
+  const { ceilingY, windows, lights, coffee, serverDoor } = softwareScenery
+
+  // Painted office wall over a wainscot, flat ceiling with a cable tray.
+  ctx.fillStyle = '#66706a'
+  ctx.fillRect(0, ceilingY, width, GROUND_Y - ceilingY)
+  ctx.fillStyle = '#56605a'
+  ctx.fillRect(0, 112, width, GROUND_Y - 112)
+  ctx.fillStyle = '#7a847e'
+  ctx.fillRect(0, 111, width, 1)
+  ctx.fillStyle = '#3b4043'
+  ctx.fillRect(0, ceilingY, width, 5)
+  ctx.fillStyle = '#8a9199'
+  ctx.fillRect(0, ceilingY + 5, width, 2)
+  ctx.fillStyle = '#4f575c'
+  for (let x = 0; x < width; x += 12) ctx.fillRect(x, ceilingY + 5, 1, 2)
+
+  // Doorway from the Garage: the back wall opened into the office bay.
+  ctx.fillStyle = '#4d433c'
+  ctx.fillRect(0, ceilingY, 6, GROUND_Y - ceilingY)
+
+  for (const wx of windows) {
+    windowHole(ctx, wx, 58, 28, 22, '#e7e1d1')
+    ctx.fillStyle = '#e7e1d1'
+    ctx.fillRect(wx + 13, 58, 2, 22)
+    ctx.fillRect(wx, 68, 28, 1)
+  }
+
+  for (const lx of lights) {
+    ctx.fillStyle = '#3b4043'
+    ctx.fillRect(lx + 7, ceilingY + 7, 1, 6)
+    ctx.fillStyle = '#e7e1d1'
+    ctx.fillRect(lx, ceilingY + 13, 15, 2)
+    ctx.fillStyle = 'rgba(231,225,209,0.06)'
+    ctx.fillRect(lx - 8, ceilingY + 15, 31, GROUND_Y - ceilingY - 15)
+  }
+
+  // A potted plant between desks.
+  const px = 15 * TILE
+  ctx.fillStyle = '#8a6a45'
+  ctx.fillRect(px, GROUND_Y - 10, 10, 10)
+  ctx.fillStyle = '#4f7a4a'
+  ctx.fillRect(px + 1, GROUND_Y - 22, 8, 12)
+  ctx.fillStyle = '#6a9a5a'
+  ctx.fillRect(px + 3, GROUND_Y - 26, 4, 8)
+
+  drawSprite(ctx, coffeeSprite, coffee, GROUND_Y - 36)
+  ctx.fillStyle = '#8a6a45' // counter under the coffee machine
+  ctx.fillRect(coffee - 6, GROUND_Y - 14, 30, 3)
+  ctx.fillStyle = '#6b5238'
+  ctx.fillRect(coffee - 4, GROUND_Y - 11, 26, 11)
+
+  // Server closet at the back, glowing cyan (leads into the Data Center).
+  ctx.fillStyle = 'rgba(111,183,185,0.12)'
+  ctx.fillRect(serverDoor - 10, GROUND_Y - 60, serverDoor + 48 > width ? width - serverDoor + 10 : 48, 60)
+  drawSprite(ctx, serverDoorSprite, serverDoor, GROUND_Y - serverDoorSprite.h)
+
+  ctx.fillStyle = '#3b4043'
+  ctx.fillRect(0, GROUND_Y - 2, width, 2)
+}
+
+function drawDatacenter(ctx: CanvasRenderingContext2D, width: number, zoneStart: number) {
+  const { ceilingY, rackStep, airlock } = datacenterScenery
+  const rand = rng(53)
+
+  // Hall: dark walls, clerestory strip (sky shows through), cable trays.
+  ctx.fillStyle = '#20262a'
+  ctx.fillRect(0, ceilingY, width, GROUND_Y - ceilingY)
+  for (let x = 8; x < airlock - 20; x += 40) {
+    windowHole(ctx, x, ceilingY + 4, 28, 6, '#2c3033')
+  }
+  ctx.fillStyle = '#3b4043'
+  ctx.fillRect(0, ceilingY + 13, width, 3)
+  const cableColors = ['#6fb7b9', '#e0a23c', '#a9c4d9', '#4f7a8c']
+  cableColors.forEach((c, i) => {
+    ctx.fillStyle = c
+    for (let x = 0; x < width; x += 2) ctx.fillRect(x, ceilingY + 16 + i, 1, 1)
+  })
+
+  // Rack row with a lit front grille; the cloud gate's bay stays clear.
+  const gate = placedObjects.find((o) => o.ref.objectId === 'cloud-gate')!
+  const gateX = gate.x - zoneStart
+  for (let x = 4; x < airlock - 20; x += rackStep) {
+    if (x + 20 > gateX - 2 && x < gateX + gate.sprite.w + 2) continue
+    ctx.fillStyle = '#15191b'
+    ctx.fillRect(x, 56, 20, GROUND_Y - 56)
+    ctx.fillStyle = '#2c3033'
+    ctx.fillRect(x + 1, 57, 18, GROUND_Y - 58)
+    for (let y = 60; y < GROUND_Y - 4; y += 6) {
+      ctx.fillStyle = '#3b4043'
+      ctx.fillRect(x + 2, y, 16, 4)
+      ctx.fillStyle = rand() < 0.5 ? 'rgba(111,183,185,0.55)' : '#23282b'
+      ctx.fillRect(x + 3, y + 1, 1, 1)
+    }
+  }
+
+  // Loading-bay hole behind the cloud gate: the real sky shows through.
+  ctx.clearRect(gateX + 4, GROUND_Y - gate.sprite.h + 7, gate.sprite.w - 8, gate.sprite.h - 8)
+
+  // Pipeline cable, GPU → cloud (the packet in I-08 runs along it).
+  const first = placedObjects.find((o) => o.ref.objectId === PIPELINE[0])!
+  const last = placedObjects.find((o) => o.ref.objectId === PIPELINE[PIPELINE.length - 1])!
+  ctx.fillStyle = '#15191b'
+  ctx.fillRect(objectCenterX(first) - zoneStart, CABLE_Y - 1, objectCenterX(last) - objectCenterX(first), 3)
+  ctx.fillStyle = '#2f5f61'
+  ctx.fillRect(objectCenterX(first) - zoneStart, CABLE_Y, objectCenterX(last) - objectCenterX(first), 1)
+
+  // Airlock into the lab: glass doors, clean light beyond.
+  ctx.fillStyle = '#8a9199'
+  ctx.fillRect(airlock, 60, 30, GROUND_Y - 60)
+  ctx.fillStyle = 'rgba(169,196,217,0.55)'
+  ctx.fillRect(airlock + 3, 63, 11, GROUND_Y - 63)
+  ctx.fillRect(airlock + 16, 63, 11, GROUND_Y - 63)
+  ctx.fillStyle = 'rgba(223,243,243,0.5)'
+  ctx.fillRect(airlock + 4, 66, 1, 30)
+  ctx.fillRect(airlock + 17, 66, 1, 30)
+}
+
 /** Phase 2 placeholder: flat colour blocks at the zone's real width (§16). */
 function drawPlaceholder(ctx: CanvasRenderingContext2D, width: number, hex: string) {
   ctx.fillStyle = shade(hex, 0.28)
@@ -350,6 +479,8 @@ export function bakeZone(canvas: HTMLCanvasElement, zone: ZoneLayout) {
   if (zone.id === 'workshop') drawWorkshop(ctx, width)
   else if (zone.id === 'dungeon') drawDungeon(ctx, width)
   else if (zone.id === 'garage') drawGarage(ctx, width)
+  else if (zone.id === 'software') drawSoftware(ctx, width)
+  else if (zone.id === 'datacenter') drawDatacenter(ctx, width, zone.startX)
   else drawPlaceholder(ctx, width, placeholderHex[zone.id] ?? '#4f7a4a')
   drawGround(ctx, zone, width)
 }
@@ -389,6 +520,10 @@ export function bakeFar(canvas: HTMLCanvasElement, worldWidth: number) {
     const w = 8 + Math.floor(rand() * 10)
     ctx.fillStyle = 'rgba(14,18,24,0.55)'
     ctx.fillRect(x, GROUND_Y - 30 - h, w, h + 30)
+    // A few lit windows so the town reads at dusk and night.
+    ctx.fillStyle = 'rgba(232,217,160,0.55)'
+    for (let wy = GROUND_Y - 26 - h; wy < GROUND_Y - 34; wy += 5)
+      if (rand() < 0.35) ctx.fillRect(x + 2 + Math.floor(rand() * Math.max(1, w - 4)), wy, 1, 1)
   }
   band(98, 8, 'rgba(22,32,26,0.7)', 4)
 }

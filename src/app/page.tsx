@@ -1,6 +1,7 @@
 import { HeroIdentity } from '@/components/home/HeroIdentity'
 import { Spine } from '@/components/home/Spine'
 import { CredibilityStrip } from '@/components/home/CredibilityStrip'
+import { FastPaths } from '@/components/home/FastPaths'
 import { WorldSection } from '@/components/world/WorldSection'
 
 export default function HomePage() {
@@ -19,6 +20,7 @@ export default function HomePage() {
       <div id="after-world" tabIndex={-1} className="outline-none">
         <Spine />
         <CredibilityStrip />
+        <FastPaths />
       </div>
     </>
   )

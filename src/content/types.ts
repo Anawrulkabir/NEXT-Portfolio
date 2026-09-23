@@ -110,8 +110,10 @@ export type Note = {
   id: string
   title: string
   body: Maybe<string>[]
+  tech?: string[] // skill ids, shown as chips
   images?: ImageAsset[]
   links?: Link[]
+  more?: { href: string; label: string } // internal "open full page" link
   sources: string[]
 }
 

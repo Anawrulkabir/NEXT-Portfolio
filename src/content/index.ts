@@ -8,7 +8,7 @@ export * from './types'
 
 export { profile } from './profile'
 export { journeyChapters, journeyNotes } from './journey'
-export { experience } from './experience'
+export { experience, experienceHighlights, hireSnapshot, bulletAnchor } from './experience'
 export { research } from './research'
 export { projects } from './projects'
 export { certifications } from './certifications'
@@ -86,6 +86,38 @@ export const projectsByShelf = (shelf: Project['shelf']): Project[] =>
  */
 export const visibleLinks = (links: Link[]): Link[] =>
   process.env.NODE_ENV === 'production' ? links.filter((l) => !l.verify) : links
+
+/**
+ * A project's display title: its own name once supplied, otherwise the
+ * (verified) event it was built for — e.g. "Break The Monolith Hackathon".
+ */
+export const projectTitle = (project: Project): string | null => {
+  if (!isPending(project.name)) return project.name
+  const event = events.find((e) => e.relatedProjectId === project.id)
+  return event && !isPending(event.name) ? event.name : null
+}
+
+/** A skill is shown in production only once confirmed (no `verify` flag). */
+export const isSkillVisible = (skill: Skill): boolean =>
+  process.env.NODE_ENV !== 'production' || !skill.verify
+
+/** Short label for where a skill was used: "AI Studio", "Poridhi.io", "R455A study"… */
+export const evidenceLabel = (e: Skill['evidence'][number]): string | null => {
+  switch (e.type) {
+    case 'experience':
+      return experienceById[e.id]?.org ?? null
+    case 'project': {
+      const project = projectById[e.id]
+      return project ? projectTitle(project) : null
+    }
+    case 'research':
+      return researchById[e.id]?.shortTitle ?? null
+    case 'event': {
+      const name = eventById[e.id]?.name
+      return name && !isPending(name) ? name : null
+    }
+  }
+}
 
 /** Journey chapters in path order (zones only, excludes overlook/rooms). */
 export const zoneChapters: JourneyChapter[] = journeyChapters

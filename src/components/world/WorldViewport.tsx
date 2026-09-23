@@ -6,7 +6,10 @@ import type { ZoneId } from '@/content/types'
 import { AVATAR_H, AVATAR_W, GROUND_Y, PROXIMITY, WALK_SPEED } from '@/world/constants'
 import {
   AVATAR_START_X,
+  CABLE_Y,
+  PIPELINE,
   WORLD_WIDTH,
+  datacenterLeds,
   objectCenterX,
   placedObjects,
   routeZones,
@@ -53,6 +56,7 @@ export default function WorldViewport() {
   const viewportRef = useRef<HTMLDivElement>(null)
   const layerRef = useRef<HTMLDivElement>(null)
   const farRef = useRef<HTMLCanvasElement>(null)
+  const packetRef = useRef<HTMLDivElement>(null)
   const avatarRef = useRef<HTMLDivElement>(null)
   const liveRef = useRef<HTMLDivElement>(null)
   const invokerRef = useRef<HTMLElement | null>(null)
@@ -126,6 +130,24 @@ export default function WorldViewport() {
       }
     }
 
+    /** I-08: a light packet runs along the cable from the GPU to the opened machine. */
+    const pulse = (id: string) => {
+      const el = packetRef.current
+      if (!el || h.reduced || !(PIPELINE as readonly string[]).includes(id) || !el.animate) return
+      const s = h.scale
+      const x0 = objectCenterX(objectById[PIPELINE[0]]) * s
+      const x1 = objectCenterX(objectById[id]) * s
+      const steps = Math.max(1, Math.round(Math.abs(x1 - x0) / (16 * s)))
+      el.animate(
+        [
+          { transform: `translate3d(${x0}px,0,0)`, opacity: 1 },
+          { transform: `translate3d(${x1}px,0,0)`, opacity: 1, offset: 0.8 },
+          { transform: `translate3d(${x1}px,0,0)`, opacity: 0 },
+        ],
+        { duration: 500, easing: `steps(${steps}, end)` }
+      )
+    }
+
     const openObject = (id: string) => {
       const o = objectById[id]
       if (!o) return
@@ -135,6 +157,7 @@ export default function WorldViewport() {
       }
       dispatch({ type: 'open', id })
       syncUrl({ open: id })
+      pulse(id)
     }
 
     const updateProximity = () => {
@@ -425,6 +448,31 @@ export default function WorldViewport() {
           {zones.map((z, i) => (
             <TerrainCanvas key={z.id} zone={z} scale={s} near={Math.abs(i - current) <= 1} />
           ))}
+          {/* Rack LEDs sit on the terrain, under every object. */}
+          {Math.abs(current - zoneIndex('datacenter')) <= 1 && (
+            <svg
+              className="absolute top-0 pointer-events-none"
+              style={{ left: zoneById.datacenter.startX * s }}
+              width={(zoneById.datacenter.endX - zoneById.datacenter.startX) * s}
+              height={GROUND_Y * s}
+              viewBox={`0 0 ${zoneById.datacenter.endX - zoneById.datacenter.startX} ${GROUND_Y}`}
+              shapeRendering="crispEdges"
+              aria-hidden="true"
+            >
+              {datacenterLeds.map((led, i) => (
+                <rect
+                  key={i}
+                  className="world-led"
+                  x={led.x}
+                  y={led.y}
+                  width={1}
+                  height={1}
+                  fill={led.color}
+                  style={{ animationDelay: `${-led.delay}ms` }}
+                />
+              ))}
+            </svg>
+          )}
           {zones.map((z) => (
             <ZoneSign key={z.id} zone={z} scale={s} />
           ))}
@@ -454,6 +502,12 @@ export default function WorldViewport() {
               {o.overlay && <PixelSprite sprite={o.overlay} scale={s} frame={0} className="obj-overlay" />}
             </button>
           ))}
+          <div
+            ref={packetRef}
+            className="absolute left-0 pointer-events-none opacity-0"
+            style={{ top: (CABLE_Y - 1) * s, width: 8 * s, height: 3 * s, marginLeft: -4 * s, background: '#dff3f3' }}
+            aria-hidden="true"
+          />
           <div
             ref={avatarRef}
             className="absolute left-0 top-0 px-anim pointer-events-none"

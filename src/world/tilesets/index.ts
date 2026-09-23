@@ -67,6 +67,50 @@ const concreteFill: Grid = paint(TILE, TILE, (p) => {
   speckle(23, 'c', 3)(p)
 })
 
+const woodPalette: Palette = { W: '#c09a6a', w: '#a8845a', d: '#8a6a45', j: '#6b5238', k: '#4a3a28' }
+
+// Light wood planks: 4-px boards with staggered butt joints.
+const woodTop: Grid = paint(TILE, TILE, (p) => {
+  p.rect(0, 0, TILE, TILE, 'j')
+  p.rect(0, 0, TILE, 6, 'w')
+  p.hline(0, 0, TILE, 'W')
+  p.hline(0, 3, TILE, 'd')
+  p.vline(5, 1, 2, 'd')
+  p.vline(12, 4, 2, 'd')
+  p.hline(0, 6, TILE, 'k')
+  speckle(31, 'd', 3)(p, 7)
+})
+
+// Subfloor cross-section: a joist band over a plain slab, no dirt speckle.
+const woodFill: Grid = paint(TILE, TILE, (p) => {
+  p.rect(0, 0, TILE, TILE, 'k')
+  p.rect(0, 0, TILE, 5, 'j')
+  p.hline(0, 5, TILE, 'd')
+  p.rect(2, 6, 3, 10, 'j')
+  p.rect(10, 6, 3, 10, 'j')
+})
+
+const steelPalette: Palette = { S: '#a3aaae', s: '#7d858a', h: '#3b4043', d: '#4f575c', k: '#23282b' }
+
+// Perforated raised-floor tiles over a dark plenum.
+const steelTop: Grid = paint(TILE, TILE, (p) => {
+  p.rect(0, 0, TILE, TILE, 'k')
+  p.rect(0, 0, TILE, 5, 's')
+  p.hline(0, 0, TILE, 'S')
+  for (let x = 1; x < TILE; x += 3) p.px(x, 2, 'h')
+  p.vline(15, 0, 5, 'd')
+  p.hline(0, 5, TILE, 'd')
+  p.vline(3, 6, 10, 'd')
+  p.vline(12, 6, 10, 'd')
+})
+
+const steelFill: Grid = paint(TILE, TILE, (p) => {
+  p.rect(0, 0, TILE, TILE, 'k')
+  p.vline(3, 0, TILE, 'd')
+  p.vline(12, 0, TILE, 'd')
+  p.hline(4, 9, 8, 'h')
+})
+
 export const tilesets: Partial<Record<ZoneId, Tileset>> = {
   workshop: {
     top: { key: 'grass', grid: grassTile, palette: groundPalette },
@@ -79,6 +123,14 @@ export const tilesets: Partial<Record<ZoneId, Tileset>> = {
   garage: {
     top: { key: 'concrete', grid: concreteTop, palette: concretePalette },
     fill: { key: 'foundation', grid: concreteFill, palette: concretePalette },
+  },
+  software: {
+    top: { key: 'wood', grid: woodTop, palette: woodPalette },
+    fill: { key: 'subfloor', grid: woodFill, palette: woodPalette },
+  },
+  datacenter: {
+    top: { key: 'steel', grid: steelTop, palette: steelPalette },
+    fill: { key: 'plenum', grid: steelFill, palette: steelPalette },
   },
 }
 

@@ -1,4 +1,8 @@
-import { eventById, noteById, projectById, type WorldObjectRef } from '@/content'
+import Link from 'next/link'
+import { eventById, experienceById, noteById, projectById, type WorldObjectRef } from '@/content'
+import { RoleBlock } from '@/components/experience/RoleBlock'
+import { ToolDrawer } from '@/components/skills/ToolDrawer'
+import { isLiveRoute } from '@/lib/routes'
 import { ChapterCard } from './ChapterCard'
 import { EventCard } from './EventCard'
 import { ProjectCard } from './ProjectCard'
@@ -24,6 +28,42 @@ export function ObjectCard({ object: objectRef }: { object: WorldObjectRef }) {
       const event = eventById[opens.id]
       return event ? <EventCard event={event} fallbackTitle={objectRef.tooltip} /> : null
     }
+    case 'experience': {
+      const exp = experienceById[opens.id]
+      if (!exp) return null
+      const roles = opens.highlight ? exp.roles.filter((r) => opens.highlight!.includes(r.id)) : exp.roles
+      return (
+        <div className="space-y-3">
+          <p className="text-xs uppercase tracking-wide opacity-80">
+            {exp.org} {'·'} {exp.location}
+          </p>
+          {roles.map((role) => (
+            <RoleBlock key={role.id} role={role} anchors={false} />
+          ))}
+          {isLiveRoute('/experience') && (
+            <p className="text-sm">
+              <Link href={`/experience#${roles[0]?.id ?? ''}`} className="pixel-focus underline underline-offset-2">
+                Full experience {'→'}
+              </Link>
+            </p>
+          )}
+        </div>
+      )
+    }
+    case 'skills':
+      return (
+        <div className="space-y-3">
+          <h3 className="font-display text-lg">{objectRef.tooltip}</h3>
+          <ToolDrawer groups={opens.groups} headingLevel={4} />
+          {isLiveRoute('/skills') && (
+            <p className="text-sm">
+              <Link href={`/skills#${opens.groups[0]}`} className="pixel-focus underline underline-offset-2">
+                All skills {'→'}
+              </Link>
+            </p>
+          )}
+        </div>
+      )
     default:
       return <p>{objectRef.tooltip}</p>
   }

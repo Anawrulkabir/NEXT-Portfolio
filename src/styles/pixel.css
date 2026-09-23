@@ -141,6 +141,21 @@
   opacity: 1;
 }
 
+/* Data Center rack LEDs: 1.25 Hz blink, staggered (§08.6). */
+.world-led {
+  animation: led-blink 800ms steps(1, end) infinite;
+}
+@keyframes led-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
 /* Outfit change at a zone boundary: a 2-frame shimmer (§09 I-02). */
 .outfit-swap {
   animation: outfit-swap 160ms steps(2, end);
@@ -199,6 +214,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .world-led {
+    animation: none;
+  }
   .outfit-swap {
     animation: none;
   }
@@ -209,5 +227,30 @@
   .px-tick g[data-f='1'] {
     animation: none !important;
     visibility: hidden;
+  }
+}
+
+/* Print (the /hire brief is meant to be printable, §10): paper colours, no
+   chrome, external links spelled out. */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .pixel-panel,
+  .pixel-frame {
+    background: #fff !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    border-color: #999 !important;
+  }
+  .text-signal,
+  .text-parchment\/80,
+  .text-parchment\/70 {
+    color: #333 !important;
+  }
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
   }
 }

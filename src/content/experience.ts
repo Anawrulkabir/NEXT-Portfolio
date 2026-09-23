@@ -72,3 +72,30 @@ export const experience: Experience[] = [
     ],
   },
 ]
+
+/** Stable anchor for one CV bullet, e.g. `junior-software-engineer-ai-studio-1`. */
+export const bulletAnchor = (roleId: string, product: string | undefined, index: number) =>
+  `${roleId}-${(product ?? 'work').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${index + 1}`
+
+/**
+ * /hire "Infrastructure highlights" (§10.4): short restatements of CV
+ * bullets, each linking to the bullet it comes from. Not metric cards.
+ */
+export const experienceHighlights = [
+  {
+    text: '~70% faster GPU session launch (10–15 → 3–5 min)',
+    anchor: bulletAnchor('junior-software-engineer', 'AI Studio', 0),
+  },
+  {
+    text: 'RTX 4090 split into 6 × 8 GB isolated slices with HAMi',
+    anchor: bulletAnchor('junior-software-engineer', 'AI Studio', 0),
+  },
+  {
+    text: 'Edge backend for an in-browser PyTorch/CUDA IDE',
+    anchor: bulletAnchor('junior-software-engineer', 'TensorCode', 0),
+  },
+]
+
+/** /hire snapshot (§10.2). Education is appended from profile.ts so its tense follows C1. */
+export const hireSnapshot =
+  'Software engineer at Poridhi.io since May 2025, working on a multi-tenant GPU platform (bare-metal Kubernetes + AWS): GPU virtualization, session orchestration, backend services.'

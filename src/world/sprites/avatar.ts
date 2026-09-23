@@ -3,8 +3,9 @@
  * boundaries — the progression system made visible:
  *   workshop: work apron, safety goggles pushed up on the forehead
  *   hoodie:   hoodie, laptop under the arm (Dungeon, Garage)
- * Lanyard and lab-coat outfits land with their zones (Phases 4-5); until then
- * later zones keep the hoodie.
+ *   lanyard:  shirt, lanyard badge, headset around the neck (Software, Data Center)
+ * The lab-coat outfit lands with the labs (Phase 5); until then later zones
+ * keep the lanyard.
  *
  * Physical traits are placeholders pending the author's choice
  * [NEEDS CONFIRMATION]: neutral dark hair, no glasses, mid skin tone.
@@ -35,6 +36,7 @@ const palette = {
   U: '#3a4757',
   w: '#c9cfd2',
   L: '#8a9199',
+  r: '#c9663a',
 }
 
 const head = (eye: string, goggles: boolean): Grid => [
@@ -68,6 +70,16 @@ const hoodieTorso: Grid = [
   '....ssuuuuuuuLLs..',
   '.....uuuuuuuu.....',
   '.....UUUUUUUU.....',
+]
+
+const lanyardTorso: Grid = [
+  '.....kttttttk.....',
+  '....tttrttrttt....',
+  '....tTttrrttTt....',
+  '....tTttwwttTts...',
+  '....sstttttttss...',
+  '.....tttttttt.....',
+  '.....TTTTTTTT.....',
 ]
 
 const legsStand: Grid = [
@@ -113,14 +125,16 @@ function outfit(torso: Grid, goggles: boolean) {
   )
 }
 
-export type OutfitId = 'workshop' | 'hoodie'
+export type OutfitId = 'workshop' | 'hoodie' | 'lanyard'
 
 export const avatarOutfits: Record<OutfitId, ReturnType<typeof sprite>> = {
   workshop: outfit(apronTorso, true),
   hoodie: outfit(hoodieTorso, false),
+  lanyard: outfit(lanyardTorso, false),
 }
 
-export const outfitForZone = (zone: ZoneId): OutfitId => (zone === 'workshop' ? 'workshop' : 'hoodie')
+export const outfitForZone = (zone: ZoneId): OutfitId =>
+  zone === 'workshop' ? 'workshop' : zone === 'dungeon' || zone === 'garage' ? 'hoodie' : 'lanyard'
 
 /** Default (Workshop) outfit. */
 export const avatarSprite = avatarOutfits.workshop

@@ -3,7 +3,7 @@ import { profile, visibleLinks } from '@/content'
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t-2 border-loam bg-slate">
+    <footer className="print:hidden mt-24 border-t-2 border-loam bg-slate">
       <div className="max-w-[1120px] mx-auto px-4 md:px-6 py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <p className="text-sm text-parchment/70">
           {profile.name} {'·'} last updated {profile.cv.updated}

@@ -19,6 +19,17 @@ import {
   stickyWallSprite,
   trophySprite,
 } from './sprites/garage'
+import { deskDualSprite, monitorDeskSprite, toolboxRedSprite, toolboxSteelSprite, whiteboardSprite } from './sprites/software'
+import {
+  cloudGateSprite,
+  consoleSprite,
+  conveyorSprite,
+  crateSprite,
+  gpuRackSprite,
+  opsDeskSprite,
+  podSprite,
+  reactorSprite,
+} from './sprites/datacenter'
 
 export type ZoneLayout = {
   id: ZoneId
@@ -45,8 +56,8 @@ const zoneSpec: { id: ZoneId; widthTiles: number; keyColor: string; built: boole
   { id: 'workshop', widthTiles: 40, keyColor: 'var(--zone-workshop)', built: true },
   { id: 'dungeon', widthTiles: 40, keyColor: 'var(--zone-dungeon)', built: true },
   { id: 'garage', widthTiles: 40, keyColor: 'var(--zone-garage)', built: true },
-  { id: 'software', widthTiles: 40, keyColor: 'var(--zone-software)', built: false },
-  { id: 'datacenter', widthTiles: 40, keyColor: 'var(--zone-datacenter)', built: false },
+  { id: 'software', widthTiles: 40, keyColor: 'var(--zone-software)', built: true },
+  { id: 'datacenter', widthTiles: 40, keyColor: 'var(--zone-datacenter)', built: true },
   { id: 'physics-lab', widthTiles: 40, keyColor: 'var(--zone-physics-lab)', built: false },
   { id: 'thermal-lab', widthTiles: 40, keyColor: 'var(--zone-thermal-lab)', built: false },
   { id: 'overlook', widthTiles: 24, keyColor: 'var(--moss)', built: false },
@@ -86,6 +97,8 @@ const onGround = (sprite: Sprite) => GROUND_Y - sprite.h
 const w = zoneById.workshop.startX
 const d = zoneById.dungeon.startX
 const g = zoneById.garage.startX
+const sw = zoneById.software.startX
+const dc = zoneById.datacenter.startX
 
 type Placement = Omit<PlacedObject, 'ref' | 'zone' | 'y'> & { y?: number; objectId: string }
 
@@ -101,7 +114,7 @@ const place = (zone: ZoneId, items: Placement[]): PlacedObject[] =>
 export const GARAGE_SHELF_Y = 104
 
 /**
- * Placed objects in path order. Zones 4-7 get their objects in Phases 4-5;
+ * Placed objects in path order. Zones 6-7 get their objects in Phase 5;
  * until then they are colour-block placeholders with a sign.
  */
 export const placedObjects: PlacedObject[] = [
@@ -129,7 +142,38 @@ export const placedObjects: PlacedObject[] = [
     { objectId: 'pitch-board', x: g + 22 * TILE, sprite: pitchBoardSprite },
     { objectId: 'sticky-wall', x: g + 28 * TILE, y: 70, sprite: stickyWallSprite },
   ]),
+  ...place('software', [
+    { objectId: 'desk-internship', x: sw + 4 * TILE, sprite: deskDualSprite },
+    { objectId: 'whiteboard-api', x: sw + 11 * TILE, y: 66, sprite: whiteboardSprite },
+    { objectId: 'monitor-frontend', x: sw + 19 * TILE, sprite: monitorDeskSprite },
+    { objectId: 'toolbox-software', x: sw + 28 * TILE, sprite: toolboxRedSprite },
+  ]),
+  ...place('datacenter', [
+    { objectId: 'ops-desk', x: dc + 5 * TILE, sprite: opsDeskSprite },
+    { objectId: 'tensor-reactor', x: dc + 8 * TILE, sprite: reactorSprite },
+    { objectId: 'gpu-rack', x: dc + 11 * TILE, sprite: gpuRackSprite },
+    { objectId: 'container-crate', x: dc + 15 * TILE, sprite: crateSprite },
+    { objectId: 'k8s-console', x: dc + 19 * TILE, sprite: consoleSprite },
+    { objectId: 'workflow-conveyor', x: dc + 23 * TILE, sprite: conveyorSprite },
+    { objectId: 'workspace-pod', x: dc + 27.5 * TILE, sprite: podSprite },
+    { objectId: 'cloud-gate', x: dc + 32 * TILE, sprite: cloudGateSprite },
+    { objectId: 'toolbox-infra', x: dc + 36.5 * TILE, sprite: toolboxSteelSprite },
+  ]),
 ]
+
+/**
+ * The Data Center's guided pipeline, in data-flow order (§05.2 Zone 5). A
+ * cable joins them; opening one sends a light packet from the GPU to it (I-08).
+ */
+export const PIPELINE = [
+  'gpu-rack',
+  'container-crate',
+  'k8s-console',
+  'workflow-conveyor',
+  'workspace-pod',
+  'cloud-gate',
+] as const
+export const CABLE_Y = GROUND_Y - 3
 
 export const objectCenterX = (o: PlacedObject) => o.x + o.sprite.w / 2
 
@@ -148,6 +192,41 @@ export const dungeonScenery = {
   windows: [3 * TILE, 18 * TILE, 31 * TILE],
   pillars: [0, 10 * TILE, 20 * TILE, 38 * TILE],
 }
+
+export const softwareScenery = {
+  ceilingY: 44,
+  windows: [2 * TILE, 16 * TILE, 23 * TILE, 31 * TILE],
+  lights: [7 * TILE, 20 * TILE, 30 * TILE],
+  coffee: 25 * TILE,
+  serverDoor: 35 * TILE,
+}
+
+export const datacenterScenery = {
+  ceilingY: 36,
+  rackStep: 26,
+  airlock: 38 * TILE,
+}
+
+/** Rack LEDs that blink (§08.6: 1-2 Hz, ~3% of pixels) — zone-relative source px. */
+export const datacenterLeds: { x: number; y: number; color: string; delay: number }[] = (() => {
+  const leds: { x: number; y: number; color: string; delay: number }[] = []
+  let seed = 41
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0
+    return seed / 2 ** 32
+  }
+  for (let x = 4; x < 36 * TILE; x += datacenterScenery.rackStep) {
+    for (let i = 0; i < 3; i++) {
+      leds.push({
+        x: x + 3 + Math.floor(rand() * 14),
+        y: 62 + Math.floor(rand() * 9) * 6,
+        color: rand() < 0.8 ? '#6fb7b9' : '#e0a23c',
+        delay: Math.round(rand() * 1600),
+      })
+    }
+  }
+  return leds
+})()
 
 export const garageScenery = {
   roofY: 44,

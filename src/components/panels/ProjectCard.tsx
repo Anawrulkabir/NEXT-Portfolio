@@ -1,7 +1,8 @@
-import { events, isPending, skillById, type Project } from '@/content'
+import { events, isPending, type Project } from '@/content'
 import { Field } from '@/components/content/Field'
 import { LinkRow } from '@/components/content/LinkRow'
 import { MediaSlot } from '@/components/content/MediaSlot'
+import { TechChips } from '@/components/content/TechChips'
 import { formatDate } from '@/lib/format'
 
 /** Compact project card — world artifacts, and later the /projects shelves. */
@@ -51,15 +52,7 @@ export function ProjectCard({ project }: { project: Project }) {
         </ul>
       )}
 
-      {project.tech.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5" aria-label="Technologies">
-          {project.tech.map((id) => (
-            <li key={id} className="text-xs border border-loam px-1.5 py-0.5">
-              {skillById[id]?.name ?? id}
-            </li>
-          ))}
-        </ul>
-      )}
+      <TechChips ids={project.tech} />
 
       {project.images.map((img) => (
         <MediaSlot key={img.id} image={img} />

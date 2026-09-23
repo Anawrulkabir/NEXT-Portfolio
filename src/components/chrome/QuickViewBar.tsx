@@ -13,12 +13,13 @@ import { MobileMenu } from './MobileMenu'
  */
 const navItems = [
   { label: 'About', href: '/about' },
+  { label: 'Experience', href: '/experience' },
   { label: 'Projects', href: '/projects' },
 ]
 
 export function QuickViewBar() {
   return (
-    <header className="sticky top-0 z-50 h-14 flex items-center gap-4 px-4 md:px-6 bg-slate/95 backdrop-blur-sm border-b-2 border-loam">
+    <header className="print:hidden sticky top-0 z-50 h-14 flex items-center gap-4 px-4 md:px-6 bg-slate/95 backdrop-blur-sm border-b-2 border-loam">
       <Link href="/" className="pixel-focus font-display text-lg text-parchment shrink-0">
         {profile.shortName}
       </Link>

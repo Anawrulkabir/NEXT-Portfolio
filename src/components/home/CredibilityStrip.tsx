@@ -4,8 +4,8 @@ import { shortInstitution } from '@/lib/format'
 
 /**
  * Three verified facts (§04.2), built from content — no hard-coded claims.
- * Items link to their full pages as those routes land (/experience in
- * Phase 4, /research/* in Phase 5).
+ * Items link to their full pages; the research item gains its link when
+ * /research/* lands (Phase 5).
  */
 export function CredibilityStrip() {
   const role = experience[0].roles[0]
@@ -14,7 +14,10 @@ export function CredibilityStrip() {
   const edu = profile.education[0]
 
   const items: { text: string; href?: string }[] = [
-    { text: `${role.title} at ${experience[0].org}${product ? ` — GPU platform for ${product}` : ''}` },
+    {
+      text: `${role.title} at ${experience[0].org}${product ? ` — GPU platform for ${product}` : ''}`,
+      href: '/experience',
+    },
     { text: `${researchStatusLabel[r455a.status]} — ${r455a.oneLine.replace(/\.$/, '')}` },
     {
       text: `${edu.degree}, ${shortInstitution(edu.institution)} (${edu.dates.endLabel ?? edu.dates.end})`,

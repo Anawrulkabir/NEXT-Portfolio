@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 const baseUrl = 'https://fahadkabir.com'
 
 // Grows as later phases add routes (research/[slug], projects/[slug], etc.)
-const staticRoutes = ['/', '/about', '/journey', '/projects', '/archive', '/cv', '/contact']
+const staticRoutes = ['/', '/about', '/experience', '/hire', '/journey', '/projects', '/archive', '/cv', '/contact']
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return staticRoutes.map((route) => ({
