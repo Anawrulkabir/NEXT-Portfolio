@@ -1,0 +1,86 @@
+/**
+ * Pixel-art UI treatment — see docs/PORTFOLIO_REDESIGN.md §08.4-08.6
+ * Hard edges, hard shadows, no blur. No border-radius on framed elements.
+ */
+
+.pixel-frame {
+  border: 2px solid var(--loam);
+  clip-path: polygon(
+    0 2px,
+    2px 2px,
+    2px 0,
+    calc(100% - 2px) 0,
+    calc(100% - 2px) 2px,
+    100% 2px,
+    100% calc(100% - 2px),
+    calc(100% - 2px) calc(100% - 2px),
+    calc(100% - 2px) 100%,
+    2px 100%,
+    2px calc(100% - 2px),
+    0 calc(100% - 2px)
+  );
+}
+
+.pixel-shadow {
+  box-shadow: 4px 4px 0 0 rgb(0 0 0 / 0.45);
+}
+
+.pixel-shadow-pressed {
+  box-shadow: 0 0 0 0 rgb(0 0 0 / 0.45);
+  transform: translate(2px, 2px);
+}
+
+.pixel-focus {
+  outline: none;
+}
+.pixel-focus:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.pixel-panel {
+  background: var(--parchment);
+  color: var(--ink);
+  border: 2px solid var(--loam);
+}
+
+.pixel-panel-header {
+  background: var(--moss);
+  color: var(--parchment);
+}
+
+.pixel-btn-primary {
+  background: var(--fern-button);
+  color: var(--parchment);
+  border: 2px solid var(--loam);
+  transition:
+    transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.pixel-btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 0 rgb(0 0 0 / 0.45);
+}
+
+.pixel-btn-secondary {
+  background: transparent;
+  color: var(--parchment);
+  border: 2px solid var(--parchment);
+}
+
+/* image-rendering for any raster pixel art */
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

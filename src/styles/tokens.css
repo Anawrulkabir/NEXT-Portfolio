@@ -1,0 +1,28 @@
+/**
+ * Design tokens — see docs/PORTFOLIO_REDESIGN.md §08.1
+ * Palette is intentionally muted: deep greens/earth tones for the world,
+ * cyan reserved for "computation", amber reserved for "you can interact
+ * with this". Never used decoratively.
+ */
+:root {
+  --night: #161a17; /* page background */
+  --slate: #232a25; /* raised surfaces on dark */
+  --moss: #2f4a34; /* deep green — primary brand surface */
+  --fern: #4f7a4a; /* forest green — grass, decorative surfaces */
+  --fern-button: #375c34; /* darker fern for small button text — meets WCAG AA against parchment */
+  --loam: #6b5238; /* earth — timber, borders on light panels */
+  --parchment: #e7e1d1; /* warm off-white — panels, light text on dark */
+  --ink: #1e211d; /* text on parchment */
+  --signal: #6fb7b9; /* muted cyan — computation only */
+  --amber: #e0a23c; /* interaction highlight only */
+  --ember: #c9663a; /* under-review / in-progress accents, copper */
+
+  /* zone key colours (route strip + zone tints) */
+  --zone-workshop: var(--fern);
+  --zone-dungeon: #7c8a8f;
+  --zone-garage: #9a7b4f;
+  --zone-software: #8fa3a8;
+  --zone-datacenter: var(--signal);
+  --zone-physics-lab: #a9c4d9;
+  --zone-thermal-lab: var(--ember);
+}

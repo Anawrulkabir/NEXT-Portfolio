@@ -1,11 +1,12 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
   darkMode: ['class'],
   content: [
-    './pages/**/*.{js,jsx}',
-    './components/**/*.{js,jsx}',
-    './app/**/*.{js,jsx}',
-    './src/**/*.{js,jsx}',
+    './pages/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+    './app/**/*.{js,jsx,ts,tsx}',
+    './src/**/*.{js,jsx,ts,tsx}',
   ],
   prefix: '',
   theme: {
@@ -18,6 +19,27 @@ module.exports = {
     },
     extend: {
       colors: {
+        // Design-system tokens — see docs/PORTFOLIO_REDESIGN.md §08.1
+        night: 'var(--night)',
+        slate: 'var(--slate)',
+        moss: 'var(--moss)',
+        fern: 'var(--fern)',
+        loam: 'var(--loam)',
+        parchment: 'var(--parchment)',
+        ink: 'var(--ink)',
+        signal: 'var(--signal)',
+        amber: 'var(--amber)',
+        ember: 'var(--ember)',
+        'zone-workshop': 'var(--zone-workshop)',
+        'zone-dungeon': 'var(--zone-dungeon)',
+        'zone-garage': 'var(--zone-garage)',
+        'zone-software': 'var(--zone-software)',
+        'zone-datacenter': 'var(--zone-datacenter)',
+        'zone-physics-lab': 'var(--zone-physics-lab)',
+        'zone-thermal-lab': 'var(--zone-thermal-lab)',
+
+        // Legacy shadcn tokens — still used by ui/{sheet,button,card,carousel}
+        // until they're rebuilt/removed in later phases (see §01.1, §01.4).
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -72,9 +94,13 @@ module.exports = {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       fontFamily: {
-        ppTelegraf: ['var(--font-pp-telegraf)'],
+        display: ['var(--font-pixel)'],
+        sans: ['var(--font-body)'],
+        mono: ['var(--font-mono)'],
       },
     },
   },
   plugins: [require('tailwindcss-animate')],
 }
+
+export default config

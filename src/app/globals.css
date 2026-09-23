@@ -1,3 +1,6 @@
+@import '../styles/tokens.css';
+@import '../styles/pixel.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -71,6 +74,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-night text-parchment;
+  }
+  ::selection {
+    background: var(--amber);
+    color: var(--ink);
   }
 }

@@ -2,8 +2,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
 import { IoMdArrowBack } from 'react-icons/io'
 
 const page = ({ params }) => {
@@ -11,18 +9,14 @@ const page = ({ params }) => {
 
   if (!project) {
     return (
-      <div>
-        <Header />
-        <div className="min-h-[60vh] flex flex-col items-center justify-center text-white gap-6">
-          <p className="text-3xl font-semibold">Project not found</p>
-          <Link
-            href="/projects"
-            className="border border-purple-700 hover:border-purple-800 rounded-full px-4 py-2 text-sm"
-          >
-            BACK TO PROJECTS
-          </Link>
-        </div>
-        <Footer />
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-white gap-6">
+        <p className="text-3xl font-semibold">Project not found</p>
+        <Link
+          href="/projects"
+          className="border border-purple-700 hover:border-purple-800 rounded-full px-4 py-2 text-sm"
+        >
+          BACK TO PROJECTS
+        </Link>
       </div>
     )
   }
@@ -34,7 +28,6 @@ const page = ({ params }) => {
 
   return (
     <div>
-      <Header />
       <div className="mx-4 md:mx-8 mt-8">
         <Link
           href="/projects"
@@ -79,8 +72,6 @@ const page = ({ params }) => {
           <Image width={1920} height={1080} src={snap.src} alt={project.name} />
         </div>
       ))}
-
-      <Footer />
     </div>
   )
 }
