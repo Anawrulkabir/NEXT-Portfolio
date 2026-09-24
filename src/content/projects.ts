@@ -100,17 +100,8 @@ export const projects: Project[] = [
       {
         id: 'robot-team',
         src: '/media/robot/team.webp',
-        alt: 'Six students with lanyards in front of the Chittagong Science Carnival 2.0 banner; Fahad, in the middle, holds the plywood soccer robot. Teammates’ faces are covered for privacy.',
+        alt: 'Six students with lanyards in front of the Chittagong Science Carnival 2.0 banner; Fahad, in the middle, holds the plywood soccer robot. One teammate’s face is covered with a graduate emoji for privacy.',
         caption: 'The team with the bot at Chittagong Science Carnival 2.0.',
-        width: 1600,
-        height: 1200,
-        kind: 'photo',
-      },
-      {
-        id: 'robot-trio',
-        src: '/media/robot/team-trio.webp',
-        alt: 'Fahad holding the robot in front of the Chittagong Science Carnival 2.0 banner, with two teammates whose faces are covered for privacy',
-        caption: 'Chittagong Science Carnival 2.0, 2022.',
         width: 1600,
         height: 1200,
         kind: 'photo',

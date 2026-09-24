@@ -306,6 +306,13 @@ export function AboutApp() {
           <FMark size={13} /> fahadOS 26
         </dd>
       </dl>
+      <p className="mt-5 max-w-[300px] text-[10.5px] leading-snug text-black/40">
+        Inspired by{' '}
+        <a href="https://henryheffernan.com" target="_blank" rel="noopener noreferrer" className="underline">
+          henryheffernan.com
+        </a>
+        . Emoji from Noto Color Emoji by Google (Apache 2.0).
+      </p>
     </div>
   )
 }
