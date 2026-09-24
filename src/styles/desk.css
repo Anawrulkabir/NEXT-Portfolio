@@ -265,3 +265,520 @@ button.hud-pill:hover {
 :root[data-motion='reduce'] :is(.bb-pulse, .bb-pop, .bb-wire, .bb-fade) {
   animation: none;
 }
+
+/* ------------------------------------------------------------ GPU Academy (Duolingo-style) */
+.duo-root {
+  font-family: var(--font-round), 'Nunito', system-ui, sans-serif;
+  background: #fff;
+  color: #3c3c3c;
+}
+.duo {
+  position: relative;
+  border-radius: 16px;
+  background: var(--c);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 0 var(--s);
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s,
+    filter 0.15s;
+}
+.duo:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.duo:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--s);
+}
+.duo:disabled {
+  background: #e5e5e5;
+  color: #afafaf;
+  box-shadow: 0 4px 0 #cfcfcf;
+  cursor: default;
+}
+.duo-white {
+  color: #4b4b4b;
+  border: 2px solid #e5e5e5;
+}
+.duo:focus-visible,
+.duo-card:focus-visible,
+.duo-tile:focus-visible,
+.duo-node:focus-visible {
+  outline: 3px solid #84d8ff;
+  outline-offset: 3px;
+}
+
+/* cards + tiles */
+.duo-card {
+  border-radius: 16px;
+  border: 2px solid #e5e5e5;
+  border-bottom-width: 4px;
+  background: #fff;
+  color: #4b4b4b;
+  transition:
+    transform 0.08s,
+    background 0.15s,
+    border-color 0.15s;
+}
+.duo-card:hover:not(:disabled) {
+  background: #f7f7f7;
+}
+.duo-card:active:not(:disabled) {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+.duo-card.sel {
+  border-color: #84d8ff;
+  background: #ddf4ff;
+  color: #1899d6;
+}
+.duo-card.good,
+.duo-tile.good {
+  border-color: #58cc02;
+  background: #d7ffb8;
+  color: #58a700;
+}
+.duo-card.bad,
+.duo-tile.bad {
+  border-color: #ff4b4b;
+  background: #ffdfe0;
+  color: #ea2b2b;
+}
+.duo-card.gone {
+  opacity: 0.35;
+  border-color: #e5e5e5;
+  background: #f7f7f7;
+  transform: scale(0.97);
+}
+.duo-key {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 2px solid #e5e5e5;
+  font-size: 14px;
+  font-weight: 800;
+  color: #afafaf;
+}
+.duo-card.sel .duo-key {
+  border-color: #84d8ff;
+  color: #1899d6;
+}
+.duo-tile {
+  border-radius: 14px;
+  border: 2px solid #e5e5e5;
+  border-bottom-width: 4px;
+  background: #fff;
+  padding: 8px 13px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #4b4b4b;
+  transition: transform 0.08s;
+}
+.duo-tile:active:not(:disabled) {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+.duo-tile.ghost {
+  background: #e5e5e5;
+  color: transparent;
+  border-color: #e5e5e5;
+}
+.duo-lines {
+  background: repeating-linear-gradient(to bottom, transparent 0 44px, #e5e5e5 44px 46px);
+}
+
+/* mascot speech bubble */
+.duo-bubble {
+  position: relative;
+  border: 2px solid #e5e5e5;
+  border-radius: 16px;
+  background: #fff;
+  padding: 12px 16px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #3c3c3c;
+  margin-bottom: 26px;
+}
+.duo-bubble::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  bottom: 18px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-left: 2px solid #e5e5e5;
+  border-bottom: 2px solid #e5e5e5;
+  transform: rotate(45deg);
+}
+.duo-bubble-bottom {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.duo-bubble-bottom::before {
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%) rotate(-45deg);
+}
+
+/* progress */
+.duo-progress {
+  height: 16px;
+  border-radius: 999px;
+  background: #e5e5e5;
+  overflow: hidden;
+}
+.duo-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #58cc02;
+  box-shadow: inset 0 -4px 0 #58a700;
+  position: relative;
+  transition: width 0.45s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.duo-progress > span::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 4px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 0.35);
+}
+
+/* footer feedback */
+.duo-footer {
+  border-top: 2px solid #e5e5e5;
+  padding: 18px 0;
+  transition: background 0.2s;
+}
+.duo-footer.good {
+  background: #d7ffb8;
+  border-color: #d7ffb8;
+}
+.duo-footer.bad {
+  background: #ffdfe0;
+  border-color: #ffdfe0;
+}
+
+/* path map */
+.duo-unit {
+  background: #58cc02;
+  box-shadow: 0 4px 0 #58a700;
+}
+.duo-node {
+  width: 76px;
+  height: 70px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 8px 0 var(--s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
+}
+.duo-node:active:not(:disabled) {
+  transform: translateY(6px);
+  box-shadow: 0 2px 0 var(--s);
+}
+.duo-start {
+  position: absolute;
+  top: -48px;
+  z-index: 2;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #58cc02;
+  animation: duo-bounce 1.2s ease-in-out infinite;
+}
+.duo-start::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-right: 2px solid #e5e5e5;
+  border-bottom: 2px solid #e5e5e5;
+  transform: translateX(-50%) rotate(45deg);
+}
+.duo-deco {
+  position: absolute;
+  pointer-events: none;
+}
+.duo-stat {
+  border-radius: 16px;
+  border: 2px solid var(--c);
+  background: var(--c);
+  min-width: 118px;
+}
+
+/* GPU sandbox */
+.duo-gpu {
+  background: linear-gradient(160deg, #3c3c3c, #232323);
+  box-shadow:
+    0 6px 0 #111,
+    inset 0 2px 0 rgb(255 255 255 / 0.08);
+}
+.duo-fan {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: conic-gradient(#777 0 20%, #444 0 33%, #777 0 53%, #444 0 66%, #777 0 86%, #444 0);
+  animation: duo-spin 1.6s linear infinite;
+}
+.duo-fan.spin-fast {
+  animation-duration: 0.25s;
+}
+.duo-person {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 20px;
+  box-shadow: 0 3px 0 rgb(0 0 0 / 0.35);
+  transition: filter 0.3s;
+}
+.duo-person.greedy {
+  animation: duo-bounce 0.9s ease-in-out infinite;
+}
+.duo-person.crashed {
+  filter: grayscale(1);
+  animation: duo-shake 0.4s;
+}
+.duo-tank {
+  position: relative;
+  width: 40px;
+  height: 84px;
+  border-radius: 12px;
+  border: 3px solid #5a5a5a;
+  background: #1b1b1b;
+  overflow: hidden;
+}
+.duo-tank.wide {
+  width: 100%;
+  height: 76px;
+}
+.duo-liquid {
+  position: absolute;
+  inset: auto 0 0 0;
+  transition:
+    height 0.12s linear,
+    background 0.3s;
+}
+.duo-wave {
+  position: absolute;
+  top: -6px;
+  left: -50%;
+  width: 200%;
+  height: 12px;
+  border-radius: 45%;
+  animation: duo-slosh 1.4s ease-in-out infinite;
+}
+.duo-lid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 5px;
+  background: #ffc800;
+}
+
+/* race */
+.duo-road {
+  position: relative;
+  height: 58px;
+  border-radius: 16px;
+  background:
+    linear-gradient(transparent 27px, rgb(255 255 255 / 0.7) 27px 31px, transparent 31px) 0 0 / 34px 58px repeat-x,
+    #4b4b4b;
+  box-shadow: 0 4px 0 #2e2e2e;
+  overflow: hidden;
+}
+.duo-stop {
+  position: absolute;
+  top: 3px;
+  transform: translateX(-50%);
+  border-radius: 99px;
+  background: rgb(255 255 255 / 0.15);
+  padding: 1px 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: rgb(255 255 255 / 0.6);
+  transition: all 0.2s;
+}
+.duo-stop.on {
+  background: #58cc02;
+  color: #fff;
+}
+.duo-flag {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  background: repeating-conic-gradient(#fff 0 25%, #1d1d1f 0 50%) 0 0 / 12px 12px;
+}
+.duo-rider {
+  position: absolute;
+  bottom: 4px;
+  font-size: 32px;
+  line-height: 1;
+}
+.duo-rider.moving {
+  animation: duo-rumble 0.18s linear infinite;
+}
+
+/* motion */
+.duo-pop {
+  animation: duo-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.duo-enter {
+  animation: duo-enter 0.3s ease-out;
+}
+.duo-shake {
+  animation: duo-shake 0.4s;
+}
+.duo-float {
+  animation: duo-bounce 2.2s ease-in-out infinite;
+}
+.duo-drift {
+  animation: duo-drift 9s ease-in-out infinite alternate;
+}
+.duo-blink {
+  animation: duo-blinkl 1.2s steps(2) infinite;
+}
+.chip-hop {
+  animation: duo-hop 1.6s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+.chip-bob {
+  animation: duo-bounce 2.4s ease-in-out infinite;
+}
+.chip-eyes {
+  animation: chip-blink 4s infinite;
+  transform-origin: 60px 52px;
+}
+.chip-wave {
+  animation: chip-wave 0.8s ease-in-out infinite alternate;
+  transform-origin: 104px 40px;
+}
+.duo-confetti {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: duo-fall linear forwards;
+}
+@keyframes duo-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes duo-enter {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+@keyframes duo-shake {
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+@keyframes duo-bounce {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes duo-hop {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  70% {
+    transform: translateY(0) scale(1.08, 0.92);
+  }
+  82% {
+    transform: translateY(-14px) scale(0.95, 1.05);
+  }
+}
+@keyframes duo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes duo-slosh {
+  50% {
+    transform: translateX(20%);
+  }
+}
+@keyframes duo-rumble {
+  50% {
+    transform: translateY(-2px);
+  }
+}
+@keyframes duo-drift {
+  to {
+    transform: translateX(30px);
+  }
+}
+@keyframes duo-blinkl {
+  50% {
+    opacity: 0.2;
+  }
+}
+@keyframes chip-blink {
+  0%,
+  46%,
+  50%,
+  100% {
+    transform: scaleY(1);
+  }
+  48% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes chip-wave {
+  to {
+    transform: rotate(-25deg);
+  }
+}
+@keyframes duo-fall {
+  to {
+    transform: translateY(720px) rotate(720deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .duo-root *,
+  .duo-root *::before {
+    animation: none !important;
+  }
+}
+:root[data-motion='reduce'] .duo-root * {
+  animation: none !important;
+}

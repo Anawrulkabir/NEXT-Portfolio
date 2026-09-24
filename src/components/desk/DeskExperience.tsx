@@ -46,7 +46,7 @@ function useClock() {
 }
 
 /** Phones: the Mac screen is too small to read in 3D, so apps open flat, full-screen. */
-function PhoneScreen({ onClose }: { onClose: () => void }) {
+function PhoneScreen({ onClose, muted }: { onClose: () => void; muted: boolean }) {
   const [app, setApp] = useState<AppId | null>(null)
   const [note, setNote] = useState('read-me')
   const [arg, setArg] = useState<string | undefined>()
@@ -62,7 +62,7 @@ function PhoneScreen({ onClose }: { onClose: () => void }) {
     }
   }
   return (
-    <OSProvider value={{ open }}>
+    <OSProvider value={{ open, muted }}>
       <div className="fahad-mac absolute inset-0 z-40 flex flex-col" role="dialog" aria-label="fahadOS">
         <div className="mac-menubar flex h-11 shrink-0 items-center justify-between px-3 text-[15px]">
           {app ? (
@@ -293,7 +293,7 @@ export default function DeskExperience({ data }: { data: DeskData }) {
                 Esc · back to the desk
               </button>
             )}
-            {mode === 'screen' && narrow && <PhoneScreen onClose={() => sceneRef.current?.zoomOut()} />}
+            {mode === 'screen' && narrow && <PhoneScreen muted={muted} onClose={() => sceneRef.current?.zoomOut()} />}
           </>
         )}
       </div>

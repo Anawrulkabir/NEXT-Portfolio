@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Caveat, Fraunces, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
+import { Caveat, Fraunces, IBM_Plex_Sans, IBM_Plex_Mono, Nunito } from 'next/font/google'
 import './globals.css'
 import { profile } from '@/content'
 import { motionBootScript } from '@/lib/motion'
@@ -11,6 +11,9 @@ const showcaseFont = Fraunces({
   variable: '--font-showcase',
   display: 'swap',
 })
+
+// Rounded, chunky type for GPU Academy.
+const roundFont = Nunito({ subsets: ['latin'], weight: ['700', '800', '900'], variable: '--font-round', display: 'swap' })
 
 // Handwriting for the sticky note on the desktop.
 const handFont = Caveat({ subsets: ['latin'], weight: ['600'], variable: '--font-hand', display: 'swap' })
@@ -71,7 +74,7 @@ const personJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${showcaseFont.variable} ${handFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${showcaseFont.variable} ${handFont.variable} ${roundFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
       <head>
         {/* Restores the reduce-motion toggle before first paint (I-17). */}
         <script dangerouslySetInnerHTML={{ __html: motionBootScript }} />

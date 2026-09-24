@@ -6,9 +6,10 @@
 import { useState } from 'react'
 import { Architecture } from './Architecture'
 import { Launcher } from './Launcher'
+import { Academy } from './academy/Academy'
 
 export function StudioApp() {
-  const [tab, setTab] = useState<'how' | 'try'>('how')
+  const [tab, setTab] = useState<'learn' | 'how' | 'try'>('learn')
   return (
     <div className="flex h-full min-h-0 flex-col bg-[#fbfaf7] text-[#1d1d1f] text-[13px]">
       <header className="flex flex-wrap items-center gap-3 border-b border-black/10 bg-white px-4 py-2">
@@ -22,7 +23,8 @@ export function StudioApp() {
         <div className="inline-flex rounded-lg bg-black/[0.06] p-0.5" role="tablist" aria-label="AI Studio">
           {(
             [
-              ['how', 'How a session starts'],
+              ['learn', '🎮 Learn it'],
+              ['how', 'See the architecture'],
               ['try', 'Launch one yourself'],
             ] as const
           ).map(([id, label]) => (
@@ -43,7 +45,7 @@ export function StudioApp() {
         </a>
       </header>
       <div className="min-h-0 flex-1" role="tabpanel">
-        {tab === 'how' ? <Architecture /> : <Launcher />}
+        {tab === 'learn' ? <Academy onLaunch={() => setTab('try')} /> : tab === 'how' ? <Architecture /> : <Launcher />}
       </div>
     </div>
   )

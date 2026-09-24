@@ -182,7 +182,7 @@ export function MacOS({
     : ''
 
   return (
-    <OSProvider value={{ open }}>
+    <OSProvider value={{ open, muted }}>
       <div
         ref={rootRef}
         className="fahad-mac relative overflow-hidden select-none"
