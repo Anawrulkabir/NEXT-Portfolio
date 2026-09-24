@@ -175,11 +175,7 @@ function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg
           </p>
           {thesis?.supervisor && <p className="meta">Supervisor: {thesis.supervisor}</p>}
           {thesis?.title && thesis.title !== thesis.shortTitle && <p className="meta">Full title: {thesis.title}</p>}
-          <p className="pt-1">
-            <a href={`/research/${thesis?.id ?? ''}`} target="_blank" className="text-[#b3261e] underline underline-offset-2">
-              The longer write-up ↗
-            </a>
-          </p>
+
         </>
       ),
     },

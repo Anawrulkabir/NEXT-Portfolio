@@ -55,7 +55,7 @@ export function buildDeskData() {
         dates: `${formatDate(edu.dates.start)} – ${edu.dates.endLabel ?? edu.dates.end}`,
       },
       destination: profile.destination.sentence,
-      cv: { view: profile.cv.viewHref, download: profile.cv.downloadHref },
+      cv: { view: profile.cv.downloadHref, download: profile.cv.downloadHref },
       email: profile.links.find((l) => l.kind === 'email')!.href.replace('mailto:', ''),
       links: links(profile.links).filter((l) => l.kind !== 'email'),
     },

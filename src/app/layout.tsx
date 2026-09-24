@@ -1,18 +1,19 @@
 import type { Metadata } from 'next'
-import { Pixelify_Sans, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
+import { Caveat, Fraunces, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import { profile } from '@/content'
-import { SkipLink } from '@/components/chrome/SkipLink'
-import { QuickViewBar } from '@/components/chrome/QuickViewBar'
-import { Footer } from '@/components/chrome/Footer'
 import { motionBootScript } from '@/lib/motion'
 
-const pixelFont = Pixelify_Sans({
+// fahadOS: the "f" mark and display serif.
+const showcaseFont = Fraunces({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-pixel',
+  axes: ['SOFT', 'WONK', 'opsz'],
+  variable: '--font-showcase',
   display: 'swap',
 })
+
+// Handwriting for the sticky note on the desktop.
+const handFont = Caveat({ subsets: ['latin'], weight: ['600'], variable: '--font-hand', display: 'swap' })
 
 const bodyFont = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -70,21 +71,18 @@ const personJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${pixelFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${showcaseFont.variable} ${handFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
       <head>
         {/* Restores the reduce-motion toggle before first paint (I-17). */}
         <script dangerouslySetInnerHTML={{ __html: motionBootScript }} />
       </head>
-      <body className="font-sans bg-night text-parchment">
+      <body className="font-sans">
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
-        <SkipLink />
-        <QuickViewBar />
-        <main id="main">{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   )

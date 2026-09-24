@@ -1,9 +1,8 @@
 #!/usr/bin/env tsx
 /**
  * Accessibility audit (§15.9, Phase 9): axe (WCAG 2.2 AA + best practice)
- * on every route at desktop and phone widths, plus the world's interactive
- * states (open panel, room, map overlay, lightbox, controls). Also checks one
- * h1 per page and no skipped heading levels.
+ * on the desk page at desktop and phone widths. Also checks one h1 and no
+ * skipped heading levels (the server-rendered text version).
  *
  * Usage: npm run build && npm start   (in another terminal)
  *        npm run a11y                  # BASE_URL=http://localhost:3000 by default
@@ -11,32 +10,10 @@
  */
 import { chromium, type Page } from 'playwright-core'
 import AxeBuilder from '@axe-core/playwright'
-import { projects, projectTitle, research } from '../src/content'
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000'
-const routes = [
-  '/',
-  '/about',
-  '/experience',
-  '/hire',
-  '/research',
-  ...research.map((r) => `/research/${r.id}`),
-  '/academic',
-  '/projects',
-  ...projects.filter((p) => projectTitle(p)).map((p) => `/projects/${p.id}`),
-  '/skills',
-  '/journey',
-  '/archive',
-  '/cv',
-  '/contact',
-]
-const states: [string, string][] = [
-  ['open panel', '/?open=phe-rig-r455a'],
-  ['airfoil demo', '/?open=wind-tunnel'],
-  ['archive room', '/?at=archive'],
-  ['events map', '/?open=map-table'],
-  ['field office', '/?open=mailbox'],
-]
+const routes = ['/']
+const states: [string, string][] = []
 
 let failures = 0
 
@@ -68,7 +45,6 @@ async function main() {
     [390, true],
   ] as const) {
     const ctx = await browser.newContext({ viewport: { width, height: 900 }, isMobile: mobile, hasTouch: mobile })
-    await ctx.addInitScript(() => localStorage.setItem('world:intro-seen', '1'))
     const page = await ctx.newPage()
     for (const r of routes) {
       await page.goto(BASE + r, { waitUntil: 'networkidle' })

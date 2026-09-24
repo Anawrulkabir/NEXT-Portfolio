@@ -207,23 +207,41 @@ export default function DeskExperience({ data }: { data: DeskData }) {
             screenEl
           )}
 
-        {/* Boot: logo, a real progress bar, and what is being built right now. */}
+        {/* Boot: who this is, a real progress bar, and a way out for people in a hurry. */}
         {stage !== 'running' && (
-          <button
-            type="button"
-            onClick={begin}
-            disabled={stage === 'loading'}
-            aria-label={stage === 'ready' ? 'Start: enter the desk' : 'Loading'}
-            className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black text-[#f2f0ea] disabled:cursor-progress"
+          <div
+            className={`absolute inset-0 z-30 flex flex-col items-center justify-center bg-black px-6 text-center text-[#f2f0ea] ${stage === 'ready' ? 'cursor-pointer' : 'cursor-progress'}`}
+            onClick={(e) => !(e.target as HTMLElement).closest('a') && begin()}
           >
-            <FMark size={84} color="#f2f0ea" />
-            <span className="mt-10 block h-[5px] w-[220px] overflow-hidden rounded-full bg-white/20">
+            <FMark size={76} color="#f2f0ea" />
+            <p className="mt-6 text-[22px] font-semibold tracking-tight">{data.profile.name}</p>
+            <p className="mt-1 text-[14px] text-white/55">{data.profile.positioning}</p>
+            <span className="mt-9 block h-[5px] w-[220px] overflow-hidden rounded-full bg-white/20" role="progressbar" aria-label="Loading the desk" aria-valuenow={Math.round(step.pct * 100)}>
               <span className="block h-full rounded-full bg-[#f2f0ea] transition-[width] duration-300" style={{ width: `${step.pct * 100}%` }} />
             </span>
-            <span className="mt-4 h-5 text-[13px] text-white/45" aria-live="polite">
-              {stage === 'ready' ? <span className="text-white/85">Click anywhere to start. Sound on.</span> : `${step.label}…`}
+            <span className="mt-4 h-9 text-[13px] text-white/45" aria-live="polite">
+              {stage === 'ready' ? (
+                <button type="button" onClick={begin} autoFocus className="rounded-full bg-[#f2f0ea] px-5 py-2 text-[13px] font-semibold text-black outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
+                  Enter the desk · sound on
+                </button>
+              ) : (
+                `${step.label}…`
+              )}
             </span>
-          </button>
+            <nav aria-label="Skip the 3D" className="absolute bottom-8 flex gap-5 text-[13px] text-white/50">
+              <a href={data.profile.cv.download} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:text-white hover:underline">
+                Résumé (PDF)
+              </a>
+              <a href={`mailto:${data.profile.email}`} className="underline-offset-4 hover:text-white hover:underline">
+                Email me
+              </a>
+              {data.profile.links.map((l) => (
+                <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:text-white hover:underline">
+                  {l.label}
+                </a>
+              ))}
+            </nav>
+          </div>
         )}
 
         {stage === 'running' && (
@@ -239,11 +257,11 @@ export default function DeskExperience({ data }: { data: DeskData }) {
                   <button type="button" onClick={toggleMute} className="hud-pill" aria-pressed={!muted}>
                     {muted ? 'Sound off' : 'Sound on'}
                   </button>
-                  <a href="/hire" className="hud-pill">
-                    1-minute brief
+                  <a href={data.profile.cv.download} target="_blank" rel="noopener noreferrer" className="hud-pill">
+                    Résumé
                   </a>
-                  <a href="/" className="hud-pill">
-                    Classic site
+                  <a href={`mailto:${data.profile.email}`} className="hud-pill">
+                    Email
                   </a>
                 </nav>
               </div>

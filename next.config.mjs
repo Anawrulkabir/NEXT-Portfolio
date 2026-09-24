@@ -1,17 +1,19 @@
 /** @type {import('next').NextConfig} */
+
+const CV = '/cv/Md-Anawrul-Kabir-Fahad-CV.pdf'
+
+// The site is now a single page (the desk). Old URLs land somewhere useful.
+const OLD_PAGES = ['about', 'academic', 'archive', 'contact', 'experience', 'hire', 'journey', 'projects', 'research', 'skills', 'desk', 'animate', 'review']
+
 const nextConfig = {
-  images: {
-    // All images are local (public/media); no remote hosts (§15.7).
-    formats: ['image/avif', 'image/webp'],
-  },
   async redirects() {
     return [
-      { source: '/resume', destination: '/cv', permanent: true },
-      { source: '/animate', destination: '/', permanent: true },
-      { source: '/review', destination: '/', permanent: true },
-      // Old capitalised project URLs (/projects/Luca etc.) are lowercased in
-      // src/middleware.ts — config redirects match case-insensitively and
-      // would loop.
+      { source: '/cv', destination: CV, permanent: false },
+      { source: '/resume', destination: CV, permanent: false },
+      ...OLD_PAGES.flatMap((p) => [
+        { source: `/${p}`, destination: '/', permanent: true },
+        { source: `/${p}/:path*`, destination: '/', permanent: true },
+      ]),
     ]
   },
 }
