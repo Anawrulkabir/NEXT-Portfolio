@@ -116,12 +116,12 @@ export const projects: Project[] = [
         kind: 'photo',
       },
       {
-        id: 'robot-body',
-        src: '/media/robot/bot.webp',
-        alt: 'The robot’s plywood body from the side, wheels with blue rims, wires and electronics on a shelf inside',
-        caption: 'Plywood body, four wheels, the electronics on a shelf inside.',
-        width: 1200,
-        height: 1600,
+        id: 'robot-versions',
+        src: '/media/robot/versions.webp',
+        alt: 'Two versions of the plywood soccer robot. First version: open plywood body with a clear top and two flat plywood arms at the front. Second version: angled white plates with green tips at the front, forming a scoop for the ball.',
+        caption: 'Version one had flat plywood arms; version two got angled plates to scoop the ball.',
+        width: 1536,
+        height: 1024,
         kind: 'photo',
       },
       {

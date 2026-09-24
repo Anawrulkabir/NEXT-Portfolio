@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useDesk } from '../../DeskDataContext'
 
-const ORDER = ['robot-parts', 'robot-bench', 'robot-body', 'robot-team']
+const ORDER = ['robot-parts', 'robot-bench', 'robot-versions', 'robot-team']
 
 export function Story({ built, onPlay, onBuild }: { built: boolean; onPlay: () => void; onBuild: () => void }) {
   const d = useDesk()
