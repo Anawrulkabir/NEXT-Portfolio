@@ -136,17 +136,41 @@ export function drawerTexture(seed: number) {
   return tex(c)
 }
 
-/** macOS-like wallpaper glow for the MacBook screen. */
+/** The MacBook's wallpaper: the same keyboard palette as the desktop on the monitor. */
 export function laptopWallpaper() {
   const c = draw(256, 160, (ctx) => {
-    const g = ctx.createLinearGradient(0, 0, 256, 160)
-    g.addColorStop(0, '#1d2f5a')
-    g.addColorStop(0.55, '#5a3f8f')
-    g.addColorStop(1, '#d07a8c')
-    ctx.fillStyle = g
+    ctx.fillStyle = '#2f5d4a'
     ctx.fillRect(0, 0, 256, 160)
-    ctx.fillStyle = 'rgba(255,255,255,0.12)'
-    ctx.fillRect(0, 0, 256, 8)
+    const blob = (x: number, y: number, r: number, color: string) => {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r)
+      g.addColorStop(0, color)
+      g.addColorStop(1, 'rgba(0,0,0,0)')
+      ctx.fillStyle = g
+      ctx.fillRect(0, 0, 256, 160)
+    }
+    blob(40, 30, 140, 'rgba(239,230,214,0.9)')
+    blob(220, 140, 130, 'rgba(169,68,76,0.85)')
+    blob(190, 20, 90, 'rgba(127,165,138,0.8)')
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    ctx.fillRect(0, 0, 256, 5)
+  })
+  return tex(c)
+}
+
+/** The small "hp" roundel on the monitor chin. */
+export function hpLogoTexture() {
+  const c = draw(256, 52, (ctx) => {
+    ctx.clearRect(0, 0, 256, 52)
+    ctx.strokeStyle = '#6b6d70'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(128, 26, 20, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.fillStyle = '#6b6d70'
+    ctx.font = 'italic bold 22px Arial, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('hp', 128, 27)
   })
   return tex(c)
 }

@@ -10,20 +10,20 @@ import type { Profile } from './types'
 export const profile: Profile = {
   name: 'Md Anawrul Kabir Fahad',
   shortName: 'Fahad Kabir',
-  positioning: 'Mechanical Engineering × AI × Software Infrastructure',
+  positioning: 'Mechanical engineering student who builds GPU infrastructure',
   sentence:
-    'I build systems at the intersection of engineering, software, AI infrastructure, and computational research.',
+    'I study mechanical engineering at CUET and work on AI Studio at Poridhi.io, where I helped cut GPU session launch time from 10–15 minutes to 3–5.',
   spine: [
-    'I started by building machines.',
-    'Then I learned to build software.',
-    'Then I learned to build the infrastructure behind AI.',
-    'Now I apply computational intelligence to engineering problems.',
+    '2022: I built a remote-controlled soccer robot.',
+    '2022–23: competitive programming. ICPC preliminaries twice, 300+ problems.',
+    '2025: I joined Poridhi.io and started building GPU infrastructure.',
+    'Now: a thesis that teaches a neural network the physics of airflow.',
   ],
   location: 'Chattogram, Bangladesh',
   about: [
-    // Draft — author to approve (§14 blocker). Tense depends on C1.
-    'I study Mechanical Engineering at CUET and work as a software engineer at Poridhi.io, where I build the GPU platform behind AI Studio. I started with robots — a remote-controlled soccer bot in 2022 — then spent two years on competitive programming before moving into backend and infrastructure work.',
-    'My research brings that computing background back to engineering: a physics-informed neural network solver for airfoil flow in my thesis, and machine-learning models for heat transfer in low-GWP refrigerants. I am most interested in problems where physical understanding and learned models have to work together.',
+    // Plain, specific, first person — every sentence carries a fact from the CV (Jul 2026).
+    'At Poridhi.io I work on AI Studio, an on-demand GPU platform. I set up its first AWS stack, then co-engineered its move to a bare-metal Kubernetes cluster, where HAMi splits each RTX 4090 into six isolated 8 GB slices. Starting a GPU session used to take 10–15 minutes; now it takes 3–5. I also built the backend of TensorCode, an in-browser GPU IDE, on Cloudflare’s edge.',
+    'I also study mechanical engineering at CUET. My thesis trains a physics-informed neural network to predict airflow around a NACA 0012 airfoil, then adapts it to steep angles of attack with LoRA-style fine-tuning instead of retraining from scratch. Separately, I work on machine-learning models for heat transfer in low-GWP refrigerants.',
   ],
   // C5 resolved: new professional portrait supplied by the author (Sep 2026).
   portrait: {
@@ -50,7 +50,7 @@ export const profile: Profile = {
     heading: "This is where I'm going.",
     line: pending('CONFIRM destination line (C4): AI × ME only, or also AI systems/infra?', true),
     sentence:
-      'Using computational and AI methods to understand and model real engineering systems.',
+      'I want to use machine learning to model real engineering systems, starting with fluid flow and heat transfer.',
   },
   cv: {
     viewHref: '/cv',

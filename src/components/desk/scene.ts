@@ -16,26 +16,28 @@ import {
   contactShadowTexture,
   deskMatTexture,
   drawerTexture,
+  hpLogoTexture,
   laptopWallpaper,
   rng,
   tableclothTexture,
 } from './textures'
 
 export const SCREEN_PX = { w: 1280, h: 720 }
-const SCREEN = { w: 0.56, h: 0.315 }
-const SCREEN_CENTER = new THREE.Vector3(0, 1.075, -0.214)
+// HP M22f: 21.5" 16:9 panel, 476 × 268 mm active area.
+const SCREEN = { w: 0.476, h: 0.268 }
+const SCREEN_CENTER = new THREE.Vector3(0, 1.0, -0.2155)
 
 const TARGET = new THREE.Vector3(-0.2, 0.62, 0)
-const DESK_LOOK = new THREE.Vector3(0.02, 0.93, -0.12)
+const DESK_LOOK = new THREE.Vector3(0.02, 0.9, -0.12)
 
 export type Mode = 'loading' | 'orbit' | 'travel' | 'desk' | 'zooming' | 'screen'
 export type Hotspot = 'monitor' | 'lamp' | 'plant' | 'keyboard' | 'laptop' | 'chair'
 export const HOTSPOT_LABEL: Record<Hotspot, string> = {
-  monitor: 'Use the computer',
+  monitor: 'HP M22f · use the computer',
   lamp: 'Lamp',
   plant: 'Money plant',
-  keyboard: 'Keyboard',
-  laptop: 'MacBook',
+  keyboard: 'Royal Kludge R65',
+  laptop: 'MacBook Air (M1, 2020)',
   chair: 'Chair',
 }
 
@@ -104,12 +106,12 @@ export class DeskScene {
   private plantWiggle = 0
   private chair!: THREE.Group
   private chairSpin = 0
-  private keys!: THREE.InstancedMesh
-  private keyBase: THREE.Matrix4[] = []
-  private keyPress = new Map<number, number>()
+  private keyMeshes = new Map<string, THREE.Mesh>()
+  private keyPress = new Map<THREE.Mesh, number>()
+  private knob!: THREE.Mesh
   private laptopScreen!: THREE.MeshStandardMaterial
   private laptopOn = true
-  private mouseObj!: THREE.Mesh
+  private mouseObj!: THREE.Group
   private clock = new THREE.Clock()
   private raf = 0
   private reduced = false
@@ -239,28 +241,41 @@ export class DeskScene {
     this.scene.add(mat)
   }
 
+  /** HP M22f: 21.5" FHD, three-sided micro-edge bezel, slim chin, thin stand. */
   private buildMonitor() {
     const g = new THREE.Group()
-    const shell = std(0xecebe7, { roughness: 0.45 })
-    const alu = std(0xd5d7d9, { metalness: 0.55, roughness: 0.32 })
-    const base = shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.01, 40), alu))
-    base.scale.z = 0.62
-    base.position.set(0, 0.756, -0.22)
+    const shell = std(0xeeede9, { roughness: 0.42 })
+    const alu = std(0xcfd2d5, { metalness: 0.6, roughness: 0.3 })
+    // Stand: flat rounded base and a slim, slightly raked neck.
+    const base = rbox(0.2, 0.008, 0.14, 0.006, alu, 4)
+    base.position.set(0, 0.756, -0.2)
     g.add(base)
-    const neck = rbox(0.045, 0.23, 0.018, 0.006, alu)
-    neck.position.set(0, 0.87, -0.245)
+    const neck = rbox(0.05, 0.16, 0.012, 0.005, alu)
+    neck.position.set(0, 0.83, -0.245)
+    neck.rotation.x = -0.12
     g.add(neck)
-    const back = rbox(0.59, 0.345, 0.018, 0.008, shell)
-    back.position.set(0, 1.07, -0.232)
+    // Panel: thin edges plus the bulge that holds the electronics.
+    const PANEL_W = 0.489
+    const PANEL_H = 0.2965
+    const panelY = SCREEN_CENTER.y - 0.134 - 0.022 + PANEL_H / 2
+    const back = rbox(PANEL_W, PANEL_H, 0.009, 0.004, shell)
+    back.position.set(0, panelY, -0.2215)
     g.add(back)
-    const bezel = rbox(0.585, 0.34, 0.006, 0.006, std(0x111214, { roughness: 0.25 }))
-    bezel.position.set(0, 1.07, -0.218)
-    g.add(bezel)
-    const chin = rbox(0.585, 0.02, 0.012, 0.004, shell)
-    chin.position.set(0, 0.9, -0.22)
+    const bulge = rbox(0.3, 0.17, 0.022, 0.02, shell, 5)
+    bulge.position.set(0, panelY - 0.02, -0.236)
+    g.add(bulge)
+    // Front: black glass over the whole top area (micro-edge), white chin below.
+    const glass = rbox(PANEL_W - 0.003, PANEL_H - 0.021, 0.002, 0.001, std(0x0b0c0d, { roughness: 0.12, metalness: 0.1 }))
+    glass.position.set(0, panelY + 0.0105, -0.217)
+    g.add(glass)
+    const chin = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.06, 0.012),
+      new THREE.MeshStandardMaterial({ map: hpLogoTexture(), transparent: true, roughness: 0.5 })
+    )
+    chin.position.set(0, panelY - PANEL_H / 2 + 0.011, -0.2168)
     g.add(chin)
-    const led = new THREE.Mesh(new THREE.CircleGeometry(0.0018, 10), new THREE.MeshBasicMaterial({ color: 0x7ee08a }))
-    led.position.set(0.27, 0.9, -0.2138)
+    const led = new THREE.Mesh(new THREE.CircleGeometry(0.0012, 10), new THREE.MeshBasicMaterial({ color: 0xf2f2f2 }))
+    led.position.set(0.22, panelY - PANEL_H / 2 + 0.008, -0.2168)
     g.add(led)
 
     // The hole: writes (0,0,0,0) so the CSS3D screen underneath shows through.
@@ -279,9 +294,10 @@ export class DeskScene {
     this.scene.add(this.cssScreen)
   }
 
+  /** MacBook Air (M1, 2020): the wedge — 16.1 mm at the hinge, 4.1 mm at the front. */
   private buildLaptop() {
     const g = new THREE.Group()
-    const alu = std(0xb9bdc2, { metalness: 0.6, roughness: 0.3 })
+    const alu = std(0xc3c6ca, { metalness: 0.65, roughness: 0.28 })
     const stand = rbox(0.24, 0.008, 0.21, 0.003, alu)
     stand.position.set(0, 0.8, 0)
     stand.rotation.x = 0.3
@@ -289,76 +305,168 @@ export class DeskScene {
     const leg = rbox(0.2, 0.085, 0.008, 0.003, alu)
     leg.position.set(0, 0.77, -0.09)
     g.add(leg)
+
+    const W = 0.304
+    const D = 0.212
+    const profile = new THREE.Shape()
+    profile.moveTo(-D / 2, 0)
+    profile.lineTo(D / 2, 0)
+    profile.lineTo(D / 2, 0.0161)
+    profile.lineTo(-D / 2 + 0.004, 0.0041)
+    profile.quadraticCurveTo(-D / 2, 0.0041, -D / 2, 0.002)
+    profile.lineTo(-D / 2, 0)
+    const wedge = new THREE.ExtrudeGeometry(profile, {
+      depth: W - 0.01,
+      bevelEnabled: true,
+      bevelSize: 0.005,
+      bevelThickness: 0.005,
+      bevelSegments: 4,
+      curveSegments: 6,
+    })
+    wedge.translate(0, 0, -(W - 0.01) / 2)
+    wedge.rotateY(Math.PI / 2)
     const bodyG = new THREE.Group()
-    bodyG.position.set(0, 0.812, 0)
+    bodyG.position.set(0, 0.806, 0)
     bodyG.rotation.x = 0.3
-    bodyG.add(rbox(0.3, 0.011, 0.21, 0.004, alu))
-    const deck = rbox(0.26, 0.002, 0.1, 0.001, std(0x1f2124))
-    deck.position.set(0, 0.006, -0.02)
+    const body = shadowed(new THREE.Mesh(wedge, alu))
+    bodyG.add(body)
+    // Top deck (the wedge's upper face): black keys and the big trackpad.
+    const deck = new THREE.Group()
+    const slope = Math.atan2(0.0161 - 0.0041, D)
+    deck.rotation.x = slope
+    deck.position.set(0, 0.0101, 0)
+    const keyMat = std(0x16171a, { roughness: 0.6 })
+    const keys = new THREE.InstancedMesh(new RoundedBoxGeometry(0.0155, 0.0015, 0.0145, 1, 0.002), keyMat, 14 * 5 + 6)
+    let k = 0
+    const m = new THREE.Matrix4()
+    for (let r = 0; r < 5; r++)
+      for (let c = 0; c < 14; c++) {
+        m.makeTranslation(-0.128 + c * 0.0197, 0.0012, -0.078 + r * 0.0185)
+        keys.setMatrixAt(k++, m)
+      }
+    for (let c = 0; c < 6; c++) {
+      m.makeTranslation(-0.128 + c * 0.0197 + (c > 2 ? 0.07 : 0), 0.0012, -0.097)
+      keys.setMatrixAt(k++, m)
+    }
+    deck.add(keys)
+    const pad = rbox(0.12, 0.0008, 0.075, 0.004, std(0xb9bdc1, { metalness: 0.4, roughness: 0.35 }))
+    pad.position.set(0, 0.0004, 0.06)
+    deck.add(pad)
     bodyG.add(deck)
-    const pad = rbox(0.11, 0.001, 0.065, 0.001, std(0xa9adb2, { metalness: 0.4, roughness: 0.35 }))
-    pad.position.set(0, 0.006, 0.065)
-    bodyG.add(pad)
+    // Lid: thin, black bezel, no notch.
     const lid = new THREE.Group()
-    lid.position.set(0, 0.005, -0.105)
-    lid.rotation.x = -0.55
-    const lidShell = rbox(0.3, 0.2, 0.006, 0.004, alu)
-    lidShell.position.set(0, 0.1, -0.003)
+    lid.position.set(0, 0.0161, -D / 2 + 0.004)
+    lid.rotation.x = -0.55 - slope
+    const lidShell = rbox(W, 0.2, 0.0041, 0.004, alu)
+    lidShell.position.set(0, 0.1, -0.002)
     lid.add(lidShell)
-    const wall = laptopWallpaper()
-    this.laptopScreen = std(0x000000, { emissive: 0xffffff, emissiveMap: wall, emissiveIntensity: 0.8, roughness: 0.15 })
-    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.272, 0.172), this.laptopScreen)
-    scr.position.set(0, 0.102, 0.0002)
+    const bezel = new THREE.Mesh(new THREE.PlaneGeometry(W - 0.006, 0.194), std(0x0a0a0b, { roughness: 0.15 }))
+    bezel.position.set(0, 0.1, 0.0002)
+    lid.add(bezel)
+    this.laptopScreen = std(0x000000, { emissive: 0xffffff, emissiveMap: laptopWallpaper(), emissiveIntensity: 0.85, roughness: 0.12 })
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.286, 0.179), this.laptopScreen)
+    scr.position.set(0, 0.102, 0.0004)
     lid.add(scr)
     bodyG.add(lid)
     g.add(bodyG)
-    g.position.set(0.46, 0, -0.1)
+    g.position.set(0.44, 0, -0.1)
     g.rotation.y = -0.4
     this.scene.add(g)
     this.hotspots.push({ id: 'laptop', root: g })
   }
 
+  /** Royal Kludge R65: 65% layout with the volume knob top-right, cream caps with green and red accents. */
   private buildKeyboard() {
     const g = new THREE.Group()
-    g.add(rbox(0.31, 0.02, 0.108, 0.007, std(0xebe5d6, { roughness: 0.55 })))
-    const cols = 14
-    const rows = 5
-    this.keys = new THREE.InstancedMesh(
-      new RoundedBoxGeometry(0.0182, 0.011, 0.0182, 2, 0.003),
-      std(0xffffff, { roughness: 0.5 }),
-      cols * rows
-    )
-    this.keys.castShadow = true
-    this.keys.receiveShadow = true
-    const cream = new THREE.Color(0xf4efe2)
-    const green = new THREE.Color(0x4d8059)
-    const red = new THREE.Color(0xa9444c)
-    let i = 0
-    for (let r = 0; r < rows; r++)
-      for (let c = 0; c < cols; c++) {
-        const m = new THREE.Matrix4().makeTranslation(-0.137 + c * 0.021, 0.0155, -0.042 + r * 0.021)
-        this.keys.setMatrixAt(i, m)
-        this.keyBase.push(m.clone())
-        const accent = c === 0 || c === cols - 1 || (r === rows - 1 && (c < 3 || c > cols - 4))
-        this.keys.setColorAt(i, r === rows - 1 && c > 3 && c < 10 ? red : accent ? green : cream)
-        i++
+    const U = 0.019
+    g.add(rbox(0.322, 0.024, 0.11, 0.008, std(0xece6d8, { roughness: 0.5 })))
+    const plate = rbox(0.308, 0.002, 0.097, 0.002, std(0xd9d2c2, { roughness: 0.7 }))
+    plate.position.y = 0.012
+    g.add(plate)
+    type K = [code: string, width: number]
+    const row = (...keys: (string | K)[]) => keys.map((k) => (typeof k === 'string' ? ([k, 1] as K) : k))
+    const letters = (s: string) => [...s].map((c) => `Key${c}`)
+    const LAYOUT: K[][] = [
+      row('Escape', ...['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((d) => `Digit${d}`), 'Minus', 'Equal', ['Backspace', 2], ['Knob', 1]),
+      row(['Tab', 1.5], ...letters('QWERTYUIOP'), 'BracketLeft', 'BracketRight', ['Backslash', 1.5], 'Delete'),
+      row(['CapsLock', 1.75], ...letters('ASDFGHJKL'), 'Semicolon', 'Quote', ['Enter', 2.25], 'PageUp'),
+      row(['ShiftLeft', 2.25], ...letters('ZXCVBNM'), 'Comma', 'Period', 'Slash', ['ShiftRight', 1.75], 'ArrowUp', 'PageDown'),
+      row(['ControlLeft', 1.25], ['MetaLeft', 1.25], ['AltLeft', 1.25], ['Space', 6.25], 'AltRight', 'Fn', 'ControlRight', 'ArrowLeft', 'ArrowDown', 'ArrowRight'),
+    ]
+    const cream = std(0xf4efe2, { roughness: 0.55 })
+    const green = std(0x4d8059, { roughness: 0.55 })
+    const red = std(0xa9444c, { roughness: 0.55 })
+    const RED = new Set(['Escape', 'Enter'])
+    const ALPHA = /^(Key|Digit)|^(Minus|Equal|BracketLeft|BracketRight|Semicolon|Quote|Comma|Period|Slash|Space)$/
+    const geos = new Map<number, THREE.BufferGeometry>()
+    LAYOUT.forEach((keys, r) => {
+      let x = -8 * U
+      for (const [code, w] of keys) {
+        const cx = x + (w * U) / 2
+        x += w * U
+        const z = -0.038 + r * U
+        if (code === 'Knob') {
+          const knob = shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.0085, 0.009, 0.013, 36), std(0x3a3c40, { metalness: 0.75, roughness: 0.32, flatShading: true })))
+          knob.position.set(cx, 0.019, z)
+          g.add(knob)
+          this.knob = knob
+          continue
+        }
+        if (!geos.has(w)) geos.set(w, new RoundedBoxGeometry(w * U - 0.0026, 0.0095, U - 0.0026, 2, 0.0026))
+        const key = shadowed(new THREE.Mesh(geos.get(w)!, RED.has(code) ? red : ALPHA.test(code) ? cream : green))
+        key.position.set(cx, 0.0175, z)
+        g.add(key)
+        this.keyMeshes.set(code, key)
       }
-    g.add(this.keys)
+    })
     g.position.set(-0.03, 0.764, 0.11)
     this.scene.add(g)
     this.hotspots.push({ id: 'keyboard', root: g })
+    this.buildMouse()
+  }
 
-    this.mouseObj = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.028, 24, 14), std(0x1c1d20, { roughness: 0.35 })))
-    this.mouseObj.scale.set(1, 0.42, 1.6)
-    this.mouseObj.position.set(0.28, 0.765, 0.12)
-    this.scene.add(this.mouseObj)
+  /** Rapoo MT760L: right-handed ergonomic mouse with a thumb rest and side wheel. */
+  private buildMouse() {
+    const geo = new THREE.SphereGeometry(1, 48, 32)
+    const p = geo.attributes.position
+    for (let i = 0; i < p.count; i++) {
+      let x = p.getX(i)
+      let y = p.getY(i)
+      const z = p.getZ(i) // +z points at the user (palm end)
+      if (y < 0) y *= 0.12 // flat underside
+      const palm = (z + 1) / 2 // 0 at the nose, 1 at the palm
+      y *= 0.75 + 0.35 * palm // taller at the back
+      x -= y * 0.28 // top leans left, like the real shell
+      if (x < -0.35 && y < 0.35) x -= (0.35 - y) * 0.45 * (0.4 + palm * 0.6) // thumb rest flare
+      p.setXYZ(i, x * 0.036, y * 0.042, z * 0.06)
+    }
+    geo.computeVertexNormals()
+    const mouse = new THREE.Group()
+    mouse.add(shadowed(new THREE.Mesh(geo, std(0x1b1c1f, { roughness: 0.5 }))))
+    const wheel = shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.007, 24), std(0x6d7176, { metalness: 0.8, roughness: 0.3 })))
+    wheel.rotation.z = Math.PI / 2
+    wheel.position.set(-0.004, 0.034, -0.03)
+    mouse.add(wheel)
+    const thumbWheel = shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.005, 20), std(0x5a5e63, { metalness: 0.7, roughness: 0.35 })))
+    thumbWheel.position.set(-0.041, 0.018, -0.005)
+    mouse.add(thumbWheel)
+    for (const dz of [0.01, 0.024]) {
+      const b = rbox(0.004, 0.006, 0.011, 0.002, std(0x2a2c30, { roughness: 0.4 }))
+      b.position.set(-0.04, 0.025, dz)
+      b.rotation.z = 0.3
+      mouse.add(b)
+    }
+    mouse.position.set(0.3, 0.756, 0.12)
+    mouse.rotation.y = 0.12
+    this.mouseObj = mouse
+    this.scene.add(mouse)
     const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0.28, 0.757, 0.07),
-      new THREE.Vector3(0.24, 0.756, -0.02),
+      new THREE.Vector3(0.3, 0.757, 0.06),
+      new THREE.Vector3(0.26, 0.756, -0.02),
       new THREE.Vector3(0.1, 0.756, -0.12),
       new THREE.Vector3(0.02, 0.756, -0.24),
     ])
-    this.scene.add(shadowed(new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.0025, 6), std(0x151515))))
+    this.scene.add(shadowed(new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.0022, 6), std(0x151515))))
   }
 
   private buildPlant() {
@@ -697,12 +805,11 @@ export class DeskScene {
     this.onModeChange(m)
   }
 
-  /** A real key was pressed: press a keycap on the 3D keyboard too. */
+  /** A real key was pressed: press the same keycap on the 3D R65. */
   pressKey(code: string) {
-    let h = 0
-    for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0
-    const idx = code === 'Space' ? 4 * 14 + 6 : h % this.keyBase.length
-    this.keyPress.set(idx, 1)
+    const key = this.keyMeshes.get(code) ?? this.keyMeshes.get(code.replace('Right', 'Left'))
+    if (key) this.keyPress.set(key, 1)
+    if (code === 'AudioVolumeUp' || code === 'AudioVolumeDown') this.knob.rotation.y += code.endsWith('Up') ? -0.4 : 0.4
   }
 
   /* ------------------------------------------------------------ input */
@@ -775,7 +882,9 @@ export class DeskScene {
         this.plantWiggle = 1
         break
       case 'keyboard':
-        for (let k = 0; k < 7; k++) this.keyPress.set(Math.floor(Math.random() * this.keyBase.length), 1 + k * 0.18)
+        // Types "fahad" on the keycaps.
+        ;['KeyF', 'KeyA', 'KeyH', 'KeyA', 'KeyD'].forEach((c, k) => this.keyPress.set(this.keyMeshes.get(c)!, 1 + k * 0.35))
+        this.knob.rotation.y -= 1.2
         break
       case 'laptop':
         this.laptopOn = !this.laptopOn
@@ -840,19 +949,16 @@ export class DeskScene {
         this.chairSpin = Math.max(0, this.chairSpin - dt * 0.45)
         this.chair.rotation.y += dt * 9 * ease(this.chairSpin)
       }
-      if (this.keyPress.size) {
-        for (const [i, left] of this.keyPress) {
-          const next = left - dt * 6
-          const depth = next > 0 && next < 1 ? Math.sin(next * Math.PI) * 0.005 : 0
-          this.keys.setMatrixAt(i, this.keyBase[i].clone().multiply(new THREE.Matrix4().makeTranslation(0, -depth, 0)))
-          if (next <= 0) this.keyPress.delete(i)
-          else this.keyPress.set(i, next)
-        }
-        this.keys.instanceMatrix.needsUpdate = true
+      for (const [key, left] of this.keyPress) {
+        const next = left - dt * 6
+        const depth = next > 0 && next < 1 ? Math.sin(next * Math.PI) * 0.004 : 0
+        key.position.y = 0.0175 - depth
+        if (next <= 0) this.keyPress.delete(key)
+        else this.keyPress.set(key, next)
       }
       if (this.mode === 'screen') {
         // The 3D mouse follows the real one, a little.
-        this.mouseObj.position.x = 0.28 + this.smooth.x * 0.02
+        this.mouseObj.position.x = 0.3 + this.smooth.x * 0.02
         this.mouseObj.position.z = 0.12 - this.smooth.y * 0.015
       }
 

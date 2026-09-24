@@ -98,6 +98,7 @@ const config: Config = {
         sans: ['var(--font-body)'],
         mono: ['var(--font-mono)'],
         showcase: ['var(--font-showcase)', 'Georgia', 'serif'],
+        hand: ['var(--font-hand)', 'cursive'],
       },
     },
   },

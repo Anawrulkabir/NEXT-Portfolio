@@ -51,7 +51,7 @@ export type Education = {
 export type Profile = {
   name: string // 'Md Anawrul Kabir Fahad'
   shortName: string // 'Fahad Kabir'
-  positioning: string // 'Mechanical Engineering × AI × Software Infrastructure'
+  positioning: string // one plain line, e.g. 'Mechanical engineering student who builds GPU infrastructure'
   sentence: string
   spine: [string, string, string, string]
   location: string // 'Chattogram, Bangladesh'

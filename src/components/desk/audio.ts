@@ -84,6 +84,25 @@ export class DeskAudio {
     src.stop(t + 1.6)
   }
 
+  /** A soft F-major boot chord (F for Fahad). */
+  chime() {
+    const { ctx, master } = this
+    if (!ctx || !master) return
+    const t = ctx.currentTime + 0.05
+    for (const f of [174.61, 220, 261.63, 349.23, 440]) {
+      const o = ctx.createOscillator()
+      o.type = f > 300 ? 'sine' : 'triangle'
+      o.frequency.value = f
+      const g = ctx.createGain()
+      g.gain.setValueAtTime(0, t)
+      g.gain.linearRampToValueAtTime(0.05, t + 0.04)
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6)
+      o.connect(g).connect(master)
+      o.start(t)
+      o.stop(t + 2.7)
+    }
+  }
+
   /** Low room tone plus a faint computer fan. */
   private ambience() {
     const { ctx, master, noise } = this
