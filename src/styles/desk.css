@@ -1,63 +1,224 @@
-/* FahadOS (the /desk mockup) — a Win95-style shell in the site palette. */
+/* /desk — FahadOS (a Win95 shell), the Showcase site inside it, and the CRT glass. */
+
+/* ---------------------------------------------------------------- Win95 */
+.w95 {
+  font-family: Tahoma, 'MS Sans Serif', 'Microsoft Sans Serif', 'Segoe UI', Arial, sans-serif;
+  font-size: 12px;
+  color: #000;
+  -webkit-font-smoothing: none;
+}
 .fahad-os {
   background:
-    radial-gradient(circle at 70% 30%, rgb(79 122 74 / 0.35), transparent 55%),
-    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 4px),
-    linear-gradient(160deg, #123a38, #0b2320 70%);
-  font-family: var(--font-body), system-ui, sans-serif;
-  color: #1e211d;
+    radial-gradient(ellipse at 30% 25%, rgb(255 255 255 / 0.1), transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgb(0 60 60 / 0.12), transparent 60%),
+    #58a89c;
 }
-.os-bevel {
+.w95-raised,
+.w95-window,
+.w95-btn {
+  background: #c0c0c0;
   box-shadow:
-    inset -2px -2px 0 #5a5a5a,
-    inset 2px 2px 0 #ffffff;
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #ffffff;
 }
-.os-inset {
+.w95-window {
   box-shadow:
-    inset 2px 2px 0 #7a7a7a,
-    inset -2px -2px 0 #ffffff;
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #ffffff,
+    2px 2px 0 rgb(0 0 0 / 0.15);
 }
-.os-btn {
-  background: #d4d0c8;
-  color: #1e211d;
+.w95-sunken,
+.w95-field {
   box-shadow:
-    inset -2px -2px 0 #5a5a5a,
-    inset 2px 2px 0 #ffffff;
+    inset -1px -1px #ffffff,
+    inset 1px 1px #0a0a0a,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px #808080;
 }
-.os-btn:active {
-  box-shadow:
-    inset 2px 2px 0 #5a5a5a,
-    inset -2px -2px 0 #ffffff;
-}
-.os-window {
-  background: #d4d0c8;
-  box-shadow:
-    inset -2px -2px 0 #3a3a3a,
-    inset 2px 2px 0 #ffffff,
-    6px 8px 0 rgb(0 0 0 / 0.35);
-  padding: 3px;
-}
-.os-titlebar {
-  background: linear-gradient(90deg, #2f4a34, #4f7a4a 60%, #6fb7b9);
-  color: #fff;
-  touch-action: none;
-}
-.os-taskbar {
-  background: #d4d0c8;
-  box-shadow: inset 0 2px 0 #ffffff;
-}
-.os-icon:hover > span:first-child,
-.os-icon:focus-visible > span:first-child {
-  outline: 2px dotted #e0a23c;
-  outline-offset: 2px;
-}
-.os-icon:focus-visible {
+.w95-field {
+  background: #fff;
   outline: none;
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 13px;
+}
+.w95-btn:active,
+.w95-btn.pressed {
+  box-shadow:
+    inset -1px -1px #ffffff,
+    inset 1px 1px #0a0a0a,
+    inset -2px -2px #dfdfdf,
+    inset 2px 2px #808080;
+}
+.w95-btn.pressed {
+  background-image: repeating-conic-gradient(#c0c0c0 0% 25%, #dfdfdf 0% 50%);
+  background-size: 2px 2px;
+}
+.w95-btn:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -4px;
+}
+.w95-cell {
+  background: #c0c0c0;
+  box-shadow:
+    inset -2px -2px #808080,
+    inset 2px 2px #ffffff;
+}
+.w95-title {
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+  cursor: default;
+}
+.w95-title.inactive {
+  background: linear-gradient(90deg, #808080, #b5b5b5);
+  color: #dfdfdf;
+}
+.w95-taskbar {
+  background: #c0c0c0;
+  box-shadow:
+    inset 0 1px #dfdfdf,
+    inset 0 2px #ffffff;
+}
+.w95-icon:focus-visible,
+.w95-icon:active {
+  outline: 1px dotted #fff;
+}
+.w95-icon:active span:last-child,
+.w95-icon:focus-visible span:last-child {
+  background: #000080;
 }
 
-/* BIOS boot text */
+/* Win95 scrollbars inside the OS */
+.fahad-os ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+.fahad-os ::-webkit-scrollbar-track {
+  background-image: repeating-conic-gradient(#c0c0c0 0% 25%, #ffffff 0% 50%);
+  background-size: 2px 2px;
+}
+.fahad-os ::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #ffffff;
+}
+
+/* ------------------------------------------------------------- Showcase */
+.showcase {
+  font-family: 'Times New Roman', Times, var(--font-showcase), serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.sc-body p {
+  margin: 0 0 0.9em;
+  text-align: justify;
+  hyphens: auto;
+}
+.sc-h2 {
+  font-family: var(--font-showcase), Georgia, serif;
+  font-weight: 800;
+  font-size: 24px;
+  margin: 1.6em 0 0.5em;
+  line-height: 1.1;
+}
+.sc-link {
+  color: #2a1fd6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sc-link:visited {
+  color: #6b1fa8;
+}
+.sc-link:hover {
+  color: #c0282d;
+}
+.font-showcase {
+  font-variation-settings: 'SOFT' 100, 'WONK' 0;
+}
+
+/* ------------------------------------------------------------ CRT glass */
+.crt > div {
+  position: absolute;
+  inset: 0;
+}
+.crt-scan {
+  background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.07) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+.crt-band {
+  inset: 0 auto 0 0 !important;
+  width: 110px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 60 120 / 0.1),
+    rgb(80 255 150 / 0.12),
+    rgb(90 130 255 / 0.12),
+    transparent
+  );
+  mix-blend-mode: screen;
+  filter: blur(6px);
+  animation: crt-band 11s linear infinite;
+}
+@keyframes crt-band {
+  from {
+    transform: translateX(-160px);
+  }
+  to {
+    transform: translateX(1440px);
+  }
+}
+.crt-smudge {
+  background-size: cover;
+  opacity: 0.22;
+  mix-blend-mode: screen;
+}
+.crt-glare {
+  background:
+    linear-gradient(118deg, rgb(255 255 255 / 0.13) 0%, rgb(255 255 255 / 0.03) 28%, transparent 42%),
+    radial-gradient(ellipse at 50% 0%, rgb(255 255 255 / 0.06), transparent 60%);
+}
+.crt-vignette {
+  box-shadow:
+    inset 0 0 90px rgb(0 0 0 / 0.35),
+    inset 0 0 18px rgb(0 0 0 / 0.4);
+}
+.crt-off .crt-vignette {
+  background: #050505;
+  transition: background 0.3s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .crt-band {
+    animation: none;
+    transform: translateX(820px);
+  }
+}
+:root[data-motion='reduce'] .crt-band {
+  animation: none;
+  transform: translateX(820px);
+}
+
+/* ------------------------------------------------------------------ HUD */
+.desk-void {
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, #eceae6 0%, #d3d0cb 45%, #a9a6a1 100%);
+}
+.hud-tag {
+  background: #000;
+  color: #fff;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1;
+  padding: 5px 8px;
+}
 .bios-caret::after {
-  content: '█';
+  content: '_';
   animation: bios-blink 1s steps(1) infinite;
 }
 @keyframes bios-blink {

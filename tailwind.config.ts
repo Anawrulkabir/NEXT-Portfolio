@@ -97,6 +97,7 @@ const config: Config = {
         display: ['var(--font-pixel)'],
         sans: ['var(--font-body)'],
         mono: ['var(--font-mono)'],
+        showcase: ['var(--font-showcase)', 'Georgia', 'serif'],
       },
     },
   },

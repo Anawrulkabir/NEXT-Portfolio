@@ -1,46 +1,46 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import Link from 'next/link'
-import { ArrowLeft, Monitor } from 'lucide-react'
-import { DeskScene, HOTSPOT_LABEL, SCREEN_PX, type Hotspot } from './scene'
+import { DeskScene, HOTSPOT_LABEL, SCREEN_PX, type Hotspot, type Mode } from './scene'
+import { DeskAudio } from './audio'
+import { DeskDataProvider } from './DeskDataContext'
+import type { DeskData } from './data'
 import { FahadOS } from './os/FahadOS'
+import { Showcase } from './os/Showcase'
+import { TitleGlyph } from './os/Win95'
 import { onMotionChange, prefersReducedMotion } from '@/lib/motion'
 
-const BIOS = [
-  'FAHAD-BIOS v2.6  (C) 2022–2026 Md Anawrul Kabir Fahad',
-  '',
-  'CPU   : Mechanical Engineering @ CUET ........ OK',
-  'GPU   : RTX 4090 × 6 × 8 GB slices (HAMi) .... OK',
-  'MEM   : 300+ problems, 50+ contests .......... OK',
-  'DISK  : AI Studio · TensorCode ............... OK',
-  'LAB   : PINN airfoil · R455A · R1336mzz(E) ... OK',
-  '',
-  'Booting desk…',
-]
+type Stage = 'loading' | 'ready' | 'running'
 
-type Mode = 'intro' | 'idle' | 'zooming' | 'screen'
+function useClock() {
+  const [t, setT] = useState('')
+  useEffect(() => {
+    const tick = () => setT(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }))
+    tick()
+    const i = setInterval(tick, 1000)
+    return () => clearInterval(i)
+  }, [])
+  return t
+}
 
 /**
- * /desk mockup: the author's real desk in 3D (Henry Heffernan-style). Click
- * the monitor to fly into FahadOS; Esc or "Back to desk" flies out.
+ * /desk: the author's real desk as a 3D diorama. A BIOS loader lists what is
+ * actually being built, START unlocks sound, the camera drifts around the
+ * desk, click to sit down, click the monitor to use FahadOS.
  */
-export default function DeskExperience() {
+export default function DeskExperience({ data }: { data: DeskData }) {
   const hostRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<DeskScene | null>(null)
+  const audioRef = useRef(new DeskAudio())
   const [screenEl, setScreenEl] = useState<HTMLDivElement | null>(null)
-  const [booted, setBooted] = useState(false)
-  const [lines, setLines] = useState(0)
-  const [mode, setMode] = useState<Mode>('intro')
-  const [hover, setHover] = useState<Hotspot | null>(null)
-
-  // BIOS text types out, then waits for a click/key.
-  useEffect(() => {
-    if (booted) return
-    const fast = prefersReducedMotion()
-    const t = setInterval(() => setLines((n) => (n < BIOS.length ? n + 1 : n)), fast ? 30 : 220)
-    return () => clearInterval(t)
-  }, [booted])
+  const [stage, setStage] = useState<Stage>('loading')
+  const [loaded, setLoaded] = useState<{ label: string; pct: number }[]>([])
+  const [total, setTotal] = useState(0)
+  const [mode, setMode] = useState<Mode>('loading')
+  const [hover, setHover] = useState<{ h: Hotspot; x: number; y: number } | null>(null)
+  const [muted, setMuted] = useState(false)
+  const [narrow, setNarrow] = useState(false)
+  const clock = useClock()
 
   useEffect(() => {
     const el = document.createElement('div')
@@ -49,93 +49,224 @@ export default function DeskExperience() {
     setScreenEl(el)
     const scene = new DeskScene(hostRef.current!, el)
     sceneRef.current = scene
-    scene.onHover = setHover
+    scene.onHover = (h, x, y) => setHover(h ? { h, x, y } : null)
     scene.onModeChange = setMode
+    scene.onTravel = () => audioRef.current.whoosh()
     scene.setReducedMotion(prefersReducedMotion())
     const off = onMotionChange(() => scene.setReducedMotion(prefersReducedMotion()))
     scene.start()
+    let cancelled = false
+    scene
+      .build((label, done, n) => {
+        if (cancelled) return
+        setTotal(n)
+        setLoaded((l) => [...l, { label, pct: Math.round((done / n) * 100) }])
+      })
+      .then(() => !cancelled && setStage('ready'))
+    const audio = audioRef.current
+    const onResize = () => {
+      const n = window.innerWidth < 700
+      scene.flatScreen = n
+      setNarrow(n)
+    }
+    onResize()
+    window.addEventListener('resize', onResize)
     return () => {
+      cancelled = true
       off()
+      window.removeEventListener('resize', onResize)
       scene.dispose()
+      audio.dispose()
     }
   }, [])
 
-  const boot = () => {
-    if (booted) return
-    setBooted(true)
-    sceneRef.current?.enter()
+  const begin = () => {
+    if (stage !== 'ready') return
+    audioRef.current.start()
+    setStage('running')
+    sceneRef.current?.showOrbit()
   }
 
+  // Keys and clicks make sound; real key presses also press 3D keycaps.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (!booted && (e.key === 'Enter' || e.key === ' ')) boot()
-      if (e.key === 'Escape' && mode === 'screen') sceneRef.current?.zoomOut()
+    if (stage !== 'running') return
+    const audio = audioRef.current
+    const down = () => audio.mouseDown()
+    const up = () => audio.mouseUp()
+    const key = (e: KeyboardEvent) => {
+      if (e.repeat) return
+      audio.key()
+      sceneRef.current?.pressKey(e.code)
+      if (e.key === 'Escape') {
+        const s = sceneRef.current
+        if (s?.currentMode === 'screen') s.zoomOut()
+        else if (s?.currentMode === 'desk') s.toOrbit()
+      }
     }
+    window.addEventListener('pointerdown', down)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('keydown', key)
+    return () => {
+      window.removeEventListener('pointerdown', down)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('keydown', key)
+    }
+  }, [stage])
+
+  useEffect(() => {
+    if (stage !== 'ready') return
+    const onKey = (e: KeyboardEvent) => e.key === 'Enter' && begin()
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
 
+  const toggleMute = () => {
+    setMuted((m) => {
+      audioRef.current.setMuted(!m)
+      return !m
+    })
+  }
+
+  const date = new Date()
+  const today = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`
+
   return (
-    <div className="fixed inset-0 z-[70] bg-[#0b0d0c] text-parchment overflow-hidden">
-      <div ref={hostRef} className="absolute inset-0" />
-      {screenEl && createPortal(<FahadOS active={mode === 'screen'} onShutdown={() => sceneRef.current?.zoomOut()} />, screenEl)}
-
-      {/* BIOS boot overlay */}
-      {!booted && (
-        <button
-          type="button"
-          onClick={boot}
-          className="absolute inset-0 z-10 bg-black text-left font-mono text-[13px] md:text-[15px] text-[#c8c8c8] p-6 md:p-12 cursor-pointer"
-          aria-label="Start: enter the desk"
-        >
-          {BIOS.slice(0, lines).map((l, i) => (
-            <div key={i} className="whitespace-pre min-h-[1.4em]">
-              {l}
-            </div>
-          ))}
-          {lines >= BIOS.length && (
-            <p className="mt-6 text-[#9fe0a8] bios-caret">Click or press Enter to start </p>
+    <DeskDataProvider value={data}>
+      <div className="desk-void fixed inset-0 z-[70] overflow-hidden text-black">
+        <div ref={hostRef} className="absolute inset-0" />
+        {screenEl &&
+          createPortal(
+            <FahadOS active={mode === 'screen' && !narrow} muted={muted} onToggleMute={toggleMute} onShutdown={() => sceneRef.current?.zoomOut()} />,
+            screenEl
           )}
-        </button>
-      )}
 
-      {/* Idle HUD */}
-      {booted && mode === 'idle' && (
-        <div className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-3 pointer-events-none">
-          <p className="text-sm bg-black/60 px-3 py-1.5 border border-parchment/30" aria-live="polite">
-            {hover ? HOTSPOT_LABEL[hover] : 'Click the monitor to boot FahadOS · try the lamp, the plant, the keyboard'}
-          </p>
-          <button
-            type="button"
-            onClick={() => sceneRef.current?.zoomIn()}
-            className="pointer-events-auto pixel-btn-primary pixel-frame pixel-focus inline-flex items-center gap-2 px-4 py-2 text-sm"
-          >
-            <Monitor className="h-4 w-4" aria-hidden="true" /> Use the computer
-          </button>
-        </div>
-      )}
+        {/* BIOS loader */}
+        {stage !== 'running' && (
+          <div className="absolute inset-0 z-30 bg-black text-[#d0d0d0] font-mono text-[12px] sm:text-[13px] leading-[1.35] p-5 sm:p-8 flex flex-col">
+            <div className="flex gap-10">
+              <p className="font-bold text-white">
+                FAHAD KABIR,
+                <br />
+                SHOWCASE INC.
+              </p>
+              <p>
+                Released: 09/2026
+                <br />
+                FKBIOS (C)2026 {data.profile.name}
+              </p>
+            </div>
+            <p className="mt-5">FK Showcase(tm) 26.0 &nbsp;&nbsp; WebGL + CSS3D</p>
+            <p className="mt-4">
+              LOADING RESOURCES ({loaded.length}/{total || '-'}).
+            </p>
+            <ul className="mt-1 pl-4">
+              {loaded.map((l) => (
+                <li key={l.label} className="whitespace-pre">
+                  {`Loaded ${l.label}`.padEnd(30, ' ')}... {l.pct}%
+                </li>
+              ))}
+            </ul>
+            {stage === 'loading' && <p className="bios-caret mt-2" />}
+            <p className="mt-auto">
+              Press <b className="text-white">ENTER</b> to start · {today}
+            </p>
 
-      {/* Screen HUD */}
-      {mode === 'screen' && (
-        <button
-          type="button"
-          onClick={() => sceneRef.current?.zoomOut()}
-          className="absolute left-3 top-3 z-20 pixel-focus inline-flex items-center gap-1.5 bg-black/70 border border-parchment/40 px-3 py-1.5 text-sm"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to desk <kbd className="opacity-70 text-xs">Esc</kbd>
-        </button>
-      )}
+            {stage === 'ready' && (
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                <div className="border-[3px] border-white bg-black px-6 py-5 text-center text-white">
+                  <p>{data.profile.name} Portfolio Showcase 2026</p>
+                  <p className="bios-caret">Click start to begin </p>
+                  <button
+                    type="button"
+                    onClick={begin}
+                    autoFocus
+                    className="mt-4 border-2 border-white px-4 py-1 hover:bg-white hover:text-black focus-visible:bg-white focus-visible:text-black outline-none"
+                  >
+                    START
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-      {booted && mode !== 'screen' && (
-        <nav className="absolute right-3 top-3 flex gap-2 text-xs">
-          <Link href="/hire" className="pixel-focus bg-black/60 border border-parchment/30 px-2.5 py-1.5 hover:text-amber">
-            Skip to the 1-minute brief
-          </Link>
-          <Link href="/" className="pixel-focus bg-black/60 border border-parchment/30 px-2.5 py-1.5 hover:text-amber">
-            Classic site
-          </Link>
-        </nav>
-      )}
-    </div>
+        {stage === 'running' && (
+          <>
+            {/* HUD tags */}
+            {mode !== 'screen' && mode !== 'zooming' && (
+              <div className="absolute left-4 right-4 top-4 flex flex-col items-start gap-1 pointer-events-none">
+                <span className="hud-tag">{data.profile.name}</span>
+                <span className="hud-tag max-w-full">{data.profile.positioning}</span>
+                <span className="flex gap-1 pointer-events-auto">
+                  <span className="hud-tag tabular-nums">{clock}</span>
+                  <button type="button" onClick={toggleMute} className="hud-tag hover:bg-[#333]" aria-label={muted ? 'Unmute' : 'Mute'}>
+                    {muted ? 'SOUND OFF' : 'SOUND ON'}
+                  </button>
+                  <a href="/hire" className="hud-tag hover:bg-[#333] sm:hidden">
+                    BRIEF
+                  </a>
+                  <a href="/" className="hud-tag hover:bg-[#333] sm:hidden">
+                    CLASSIC
+                  </a>
+                </span>
+              </div>
+            )}
+            {mode !== 'screen' && mode !== 'zooming' && (
+              <nav aria-label="Other views" className="absolute right-4 top-4 hidden sm:flex gap-1">
+                <a href="/hire" className="hud-tag hover:bg-[#333]">
+                  1-MIN BRIEF
+                </a>
+                <a href="/" className="hud-tag hover:bg-[#333]">
+                  CLASSIC SITE
+                </a>
+              </nav>
+            )}
+
+            {mode === 'orbit' && (
+              <p className="absolute inset-x-0 bottom-10 flex justify-center pointer-events-none">
+                <span className="hud-tag bios-caret">Click anywhere to begin </span>
+              </p>
+            )}
+            {mode === 'desk' && (
+              <div className="absolute inset-x-0 bottom-6 flex justify-center gap-1">
+                <button type="button" onClick={() => sceneRef.current?.zoomIn()} className="hud-tag hover:bg-[#333]">
+                  USE THE COMPUTER
+                </button>
+                <span className="hud-tag bg-black/70 hidden sm:inline">Try the lamp, the plant, the chair · Esc to step back</span>
+              </div>
+            )}
+            {mode === 'desk' && hover && (
+              <span className="hud-tag absolute pointer-events-none" style={{ left: hover.x + 14, top: hover.y + 14 }}>
+                {HOTSPOT_LABEL[hover.h]}
+              </span>
+            )}
+            {mode === 'screen' && !narrow && (
+              <button
+                type="button"
+                onClick={() => sceneRef.current?.zoomOut()}
+                className="hud-tag absolute left-3 top-3 opacity-60 hover:opacity-100 focus-visible:opacity-100"
+              >
+                ESC · BACK TO DESK
+              </button>
+            )}
+
+            {/* Phones: the Showcase opens full-screen instead of on the tiny 3D monitor. */}
+            {mode === 'screen' && narrow && (
+              <div className="absolute inset-0 z-40 w95 flex flex-col bg-[#c0c0c0] p-[3px]" role="dialog" aria-label="Showcase">
+                <div className="w95-title flex items-center h-[26px] px-2 shrink-0">
+                  <span className="flex-1 font-bold text-[13px] truncate">Fahad Kabir - Showcase &rsquo;26</span>
+                  <button type="button" className="w95-btn w-6 h-5 flex items-center justify-center" aria-label="Close" onClick={() => sceneRef.current?.zoomOut()}>
+                    <TitleGlyph kind="close" />
+                  </button>
+                </div>
+                <div className="flex-1 min-h-0 mt-[3px] w95-sunken p-[2px] bg-white">
+                  <Showcase />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </DeskDataProvider>
   )
 }

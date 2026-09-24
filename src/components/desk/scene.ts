@@ -1,58 +1,80 @@
 /**
- * The desk — a procedural 3D model of the author's real desk (monitor,
- * MacBook on a stand, green/red/cream keyboard, world-map desk mat, floral
- * tablecloth, lamp, money plant in a bottle, butterfly cabinet, pink poster).
+ * The desk diorama: the author's real desk (floral tablecloth, white monitor,
+ * MacBook on a stand, cream keyboard with green/red accents, world-map mat,
+ * money plant in a bottle, butterfly cabinet, white lamp, blue chair),
+ * modelled in code and floating in a soft studio void.
  *
- * Rendering: WebGL for the room, CSS3DRenderer for the monitor's screen (a
- * live DOM "OS"). The screen mesh punches a transparent hole in the WebGL
- * canvas so the DOM underneath shows through, and anything in front of the
- * monitor still occludes it correctly.
+ * Rendering: WebGL (transparent) over a CSS3DRenderer. The monitor's screen
+ * mesh writes transparent pixels, so the live DOM OS placed at the same spot
+ * in the CSS3D layer shows through, and anything in front still occludes it.
  */
 import * as THREE from 'three'
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import {
-  cabinetTexture,
-  curtainTexture,
+  contactShadowTexture,
   deskMatTexture,
-  floorTexture,
-  posterTexture,
+  drawerTexture,
+  laptopWallpaper,
+  rng,
   tableclothTexture,
-  wallTexture,
 } from './textures'
 
-export const SCREEN_PX = { w: 1280, h: 740 }
-const SCREEN = { w: 0.58, h: 0.335 }
-const SCREEN_CENTER = new THREE.Vector3(0, 1.075, -0.277)
+export const SCREEN_PX = { w: 1280, h: 720 }
+const SCREEN = { w: 0.56, h: 0.315 }
+const SCREEN_CENTER = new THREE.Vector3(0, 1.075, -0.214)
 
-const IDLE = { pos: new THREE.Vector3(0.62, 1.34, 1.3), look: new THREE.Vector3(-0.05, 0.98, -0.22) }
-const INTRO = { pos: new THREE.Vector3(0.35, 1.75, 3.0), look: new THREE.Vector3(-0.2, 1, -0.2) }
+const TARGET = new THREE.Vector3(-0.2, 0.62, 0)
+const DESK_LOOK = new THREE.Vector3(0.02, 0.93, -0.12)
 
-export type Hotspot = 'monitor' | 'lamp' | 'plant' | 'keyboard' | 'laptop' | 'poster'
+export type Mode = 'loading' | 'orbit' | 'travel' | 'desk' | 'zooming' | 'screen'
+export type Hotspot = 'monitor' | 'lamp' | 'plant' | 'keyboard' | 'laptop' | 'chair'
 export const HOTSPOT_LABEL: Record<Hotspot, string> = {
   monitor: 'Use the computer',
-  lamp: 'Toggle the lamp',
+  lamp: 'Lamp',
   plant: 'Money plant',
-  keyboard: 'Mechanical keyboard',
-  laptop: 'MacBook — Poridhi work machine',
-  poster: 'Poster',
+  keyboard: 'Keyboard',
+  laptop: 'MacBook',
+  chair: 'Chair',
 }
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2)
+const frame = () => new Promise<void>((r) => requestAnimationFrame(() => r()))
 
 function std(color: THREE.ColorRepresentation, extra: Partial<THREE.MeshStandardMaterialParameters> = {}) {
-  return new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0, ...extra })
+  return new THREE.MeshStandardMaterial({ color, roughness: 0.65, metalness: 0, ...extra })
 }
-function box(w: number, h: number, d: number, mat: THREE.Material) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat)
-  m.castShadow = true
-  m.receiveShadow = true
-  return m
+function shadowed<T extends THREE.Object3D>(o: T) {
+  o.traverse((c) => {
+    c.castShadow = true
+    c.receiveShadow = true
+  })
+  return o
 }
-function cyl(rt: number, rb: number, h: number, mat: THREE.Material, seg = 24) {
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat)
-  m.castShadow = true
-  m.receiveShadow = true
-  return m
+function rbox(w: number, h: number, d: number, r: number, mat: THREE.Material, seg = 3) {
+  return shadowed(new THREE.Mesh(new RoundedBoxGeometry(w, h, d, seg, Math.min(r, w / 2, h / 2, d / 2)), mat))
+}
+function cyl(rt: number, rb: number, h: number, mat: THREE.Material, seg = 28) {
+  return shadowed(new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat))
+}
+
+/** A heart-shaped pothos (money plant) leaf, bent slightly along its spine. */
+function leafGeometry(size: number) {
+  const s = new THREE.Shape()
+  s.moveTo(0, 0)
+  s.bezierCurveTo(-0.55, 0.15, -0.6, 0.75, 0, 1)
+  s.bezierCurveTo(0.6, 0.75, 0.55, 0.15, 0, 0)
+  const g = new THREE.ShapeGeometry(s, 10)
+  const p = g.attributes.position
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i)
+    const y = p.getY(i)
+    p.setZ(i, -x * x * 0.5 + Math.sin(y * Math.PI) * 0.08)
+  }
+  g.scale(size, size, size)
+  g.computeVertexNormals()
+  return g
 }
 
 export class DeskScene {
@@ -60,172 +82,188 @@ export class DeskScene {
   readonly css: CSS3DRenderer
   readonly scene = new THREE.Scene()
   readonly camera: THREE.PerspectiveCamera
+  private cssScreen!: CSS3DObject
   private hotspots: { id: Hotspot; root: THREE.Object3D }[] = []
   private raycaster = new THREE.Raycaster()
   private pointer = new THREE.Vector2(9, 9)
-  private mouse = new THREE.Vector2(0, 0) // -1..1, for parallax
-  private look = IDLE.look.clone()
-  private tween: { from: [THREE.Vector3, THREE.Vector3]; to: [THREE.Vector3, THREE.Vector3]; t: number; dur: number; done?: () => void } | null = null
-  private mode: 'intro' | 'idle' | 'zooming' | 'screen' = 'intro'
+  private smooth = new THREE.Vector2(0, 0)
+  private look = TARGET.clone()
+  private tween: {
+    from: [THREE.Vector3, THREE.Vector3]
+    to: () => [THREE.Vector3, THREE.Vector3]
+    t: number
+    dur: number
+    done?: () => void
+  } | null = null
+  private mode: Mode = 'loading'
+  private orbitAngle = 0.62
   private lampLight!: THREE.PointLight
   private lampBulb!: THREE.MeshStandardMaterial
   private lampOn = true
   private plant!: THREE.Group
   private plantWiggle = 0
+  private chair!: THREE.Group
+  private chairSpin = 0
   private keys!: THREE.InstancedMesh
   private keyBase: THREE.Matrix4[] = []
   private keyPress = new Map<number, number>()
   private laptopScreen!: THREE.MeshStandardMaterial
   private laptopOn = true
+  private mouseObj!: THREE.Mesh
   private clock = new THREE.Clock()
   private raf = 0
   private reduced = false
-  onHover: (h: Hotspot | null) => void = () => {}
-  onModeChange: (m: 'intro' | 'idle' | 'zooming' | 'screen') => void = () => {}
+  private downAt: { x: number; y: number } | null = null
+  /** Phones show the screen as a flat overlay, so hover-away must not exit. */
+  flatScreen = false
+  onHover: (h: Hotspot | null, x: number, y: number) => void = () => {}
+  onModeChange: (m: Mode) => void = () => {}
+  onTravel: () => void = () => {}
 
   constructor(
     private host: HTMLElement,
-    screenElement: HTMLElement
+    private screenElement: HTMLElement
   ) {
     const { clientWidth: w, clientHeight: h } = host
-    this.camera = new THREE.PerspectiveCamera(40, w / h, 0.05, 50)
-    this.camera.position.copy(INTRO.pos)
-    this.camera.lookAt(INTRO.look)
+    this.camera = new THREE.PerspectiveCamera(32, w / h, 0.05, 60)
+    this.camera.position.copy(this.orbitPos(0))
+    this.camera.lookAt(TARGET)
 
     this.css = new CSS3DRenderer()
     this.css.setSize(w, h)
     Object.assign(this.css.domElement.style, { position: 'absolute', inset: '0' })
     host.appendChild(this.css.domElement)
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(w, h)
     this.renderer.setClearColor(0x000000, 0)
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping
-    this.renderer.toneMappingExposure = 1.05
+    this.renderer.toneMappingExposure = 1.0
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     Object.assign(this.renderer.domElement.style, { position: 'absolute', inset: '0' })
     host.appendChild(this.renderer.domElement)
 
-    this.buildRoom()
-    this.buildDesk()
-    this.buildMonitor(screenElement)
-    this.buildLaptop()
-    this.buildKeyboard()
-    this.buildDeskProps()
-    this.buildCabinet()
-    this.buildLights()
-
     const el = this.renderer.domElement
     el.addEventListener('pointermove', this.onPointerMove)
-    el.addEventListener('click', this.onClick)
+    el.addEventListener('pointerdown', this.onPointerDown)
+    el.addEventListener('pointerup', this.onPointerUp)
+    window.addEventListener('pointermove', this.onWindowPointer)
     window.addEventListener('resize', this.onResize)
+  }
+
+  /** Builds the scene step by step, reporting real progress to the loader. */
+  async build(onStep: (label: string, done: number, total: number) => void) {
+    const steps: [string, () => void | Promise<void>][] = [
+      ['studioEnvironment', () => this.buildEnvironment()],
+      ['tableclothTexture', () => this.buildDesk()],
+      ['deskMatTexture', () => this.buildMat()],
+      ['monitorModel', () => this.buildMonitor()],
+      ['macbookModel', () => this.buildLaptop()],
+      ['keyboardModel', () => this.buildKeyboard()],
+      ['moneyPlantModel', () => this.buildPlant()],
+      ['cabinetModel', () => this.buildCabinet()],
+      ['lampModel', () => this.buildLamp()],
+      ['chairModel', () => this.buildChair()],
+      ['contactShadows', () => this.buildShadows()],
+      ['lighting', () => this.buildLights()],
+      ['shaders', async () => {
+        await this.renderer.compileAsync(this.scene, this.camera)
+      }],
+    ]
+    for (let i = 0; i < steps.length; i++) {
+      await steps[i][1]()
+      onStep(steps[i][0], i + 1, steps.length)
+      await frame()
+    }
   }
 
   /* ------------------------------------------------------------ build */
 
-  private buildRoom() {
-    const wall = std(0xffffff, { map: wallTexture(), roughness: 0.95 })
-    const back = new THREE.Mesh(new THREE.PlaneGeometry(6, 3.2), wall)
-    back.position.set(0, 1.6, -0.46)
-    back.receiveShadow = true
-    this.scene.add(back)
-
-    const right = new THREE.Mesh(new THREE.PlaneGeometry(4, 3.2), wall)
-    right.position.set(1.15, 1.6, 1.4)
-    right.rotation.y = -Math.PI / 2
-    right.receiveShadow = true
-    this.scene.add(right)
-
-    const left = new THREE.Mesh(new THREE.PlaneGeometry(4, 3.2), wall)
-    left.position.set(-1.9, 1.6, 1.4)
-    left.rotation.y = Math.PI / 2
-    left.receiveShadow = true
-    this.scene.add(left)
-
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), std(0xffffff, { map: floorTexture(), roughness: 0.6 }))
+  private buildEnvironment() {
+    const pmrem = new THREE.PMREMGenerator(this.renderer)
+    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
+    this.scene.environmentIntensity = 0.55
+    pmrem.dispose()
+    // Shadow-catching floor: invisible except for the shadows it receives.
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.16 }))
     floor.rotation.x = -Math.PI / 2
     floor.receiveShadow = true
     this.scene.add(floor)
-
-    // Sheer curtain along the right wall, gently folded.
-    const cg = new THREE.PlaneGeometry(1.5, 2.6, 40, 1)
-    const p = cg.attributes.position
-    for (let i = 0; i < p.count; i++) p.setZ(i, Math.sin(p.getX(i) * 22) * 0.025)
-    cg.computeVertexNormals()
-    const curtain = new THREE.Mesh(
-      cg,
-      std(0xffffff, { map: curtainTexture(), transparent: true, opacity: 0.92, side: THREE.DoubleSide, roughness: 1 })
-    )
-    curtain.position.set(1.1, 1.35, 0.3)
-    curtain.rotation.y = -Math.PI / 2
-    curtain.receiveShadow = true
-    this.scene.add(curtain)
-
-    // Wooden doorframe on the far left, and the green wall plaque top-right.
-    const wood = std(0x8a6a45, { roughness: 0.6 })
-    const frame = box(0.06, 2.1, 0.08, wood)
-    frame.position.set(-1.55, 1.05, -0.42)
-    this.scene.add(frame)
-    const plaque = box(0.14, 0.2, 0.02, std(0x24302a))
-    plaque.position.set(0.92, 2.15, -0.44)
-    this.scene.add(plaque)
-    const dots = box(0.05, 0.12, 0.005, std(0x6a9a5a, { emissive: 0x1a2a1a }))
-    dots.position.set(0.92, 2.15, -0.428)
-    this.scene.add(dots)
   }
 
   private buildDesk() {
-    const cloth = std(0xffffff, { map: tableclothTexture(4), roughness: 0.95 })
-    const top = box(1.5, 0.04, 0.74, cloth)
-    top.position.set(0, 0.73, -0.08)
-    this.scene.add(top)
-    // Ruffled skirt: front and sides, wavy.
-    const skirt = (w: number) => {
-      const g = new THREE.PlaneGeometry(w, 0.72, Math.round(w * 60), 1)
-      const pos = g.attributes.position
-      for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.sin(pos.getX(i) * 55) * 0.012 * (pos.getY(i) < 0 ? 1.4 : 0.4))
-      g.computeVertexNormals()
-      const t = tableclothTexture(2)
-      const m = new THREE.Mesh(g, std(0xffffff, { map: t, side: THREE.DoubleSide, roughness: 1 }))
-      m.castShadow = true
-      m.receiveShadow = true
-      return m
+    const g = new THREE.Group()
+    const cloth = std(0xffffff, { map: tableclothTexture(3), roughness: 0.92 })
+    const top = rbox(1.24, 0.03, 0.66, 0.012, cloth)
+    top.position.y = 0.735
+    g.add(top)
+    // Ruffled skirt: soft vertical folds that deepen toward the hem.
+    const skirt = (w: number, seed: number) => {
+      const geo = new THREE.PlaneGeometry(w, 0.66, Math.round(w * 90), 8)
+      const p = geo.attributes.position
+      const r = rng(seed)
+      const phase = r() * 6
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i)
+        const y = p.getY(i)
+        const depth = (0.33 - y) / 0.66 // 0 at top, 1 at hem
+        p.setZ(i, (Math.sin(x * 48 + phase) * 0.6 + Math.sin(x * 97 + phase * 2) * 0.25) * (0.004 + depth * 0.014))
+        if (y < -0.32) p.setY(i, y + Math.sin(x * 48 + phase) * 0.006)
+      }
+      geo.computeVertexNormals()
+      const m = new THREE.Mesh(geo, std(0xffffff, { map: tableclothTexture(1.4), side: THREE.DoubleSide, roughness: 0.95 }))
+      return shadowed(m)
     }
-    const front = skirt(1.52)
-    front.position.set(0, 0.36, 0.3)
-    this.scene.add(front)
+    const front = skirt(1.25, 1)
+    front.position.set(0, 0.405, 0.335)
+    g.add(front)
+    const back = skirt(1.25, 2)
+    back.position.set(0, 0.405, -0.335)
+    back.rotation.y = Math.PI
+    g.add(back)
     for (const sx of [-1, 1]) {
-      const side = skirt(0.76)
-      side.position.set(sx * 0.76, 0.36, -0.08)
-      side.rotation.y = Math.PI / 2
-      this.scene.add(side)
+      const side = skirt(0.67, 3 + sx)
+      side.position.set(sx * 0.625, 0.405, 0)
+      side.rotation.y = (sx * Math.PI) / 2
+      g.add(side)
     }
-    // World-map desk mat.
-    const mat = box(0.95, 0.004, 0.37, std(0xffffff, { map: deskMatTexture(), roughness: 0.9 }))
-    mat.position.set(0.1, 0.752, 0.08)
+    this.scene.add(g)
+  }
+
+  private buildMat() {
+    const mat = rbox(0.84, 0.004, 0.32, 0.002, std(0xffffff, { map: deskMatTexture(), roughness: 0.95 }))
+    mat.position.set(0.06, 0.752, 0.09)
     this.scene.add(mat)
   }
 
-  private buildMonitor(screenElement: HTMLElement) {
+  private buildMonitor() {
     const g = new THREE.Group()
-    const silver = std(0xd6d8da, { metalness: 0.6, roughness: 0.35 })
-    const base = box(0.22, 0.012, 0.16, silver)
-    base.position.set(0, 0.756, -0.3)
+    const shell = std(0xecebe7, { roughness: 0.45 })
+    const alu = std(0xd5d7d9, { metalness: 0.55, roughness: 0.32 })
+    const base = shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.01, 40), alu))
+    base.scale.z = 0.62
+    base.position.set(0, 0.756, -0.22)
     g.add(base)
-    const neck = box(0.035, 0.2, 0.02, silver)
-    neck.position.set(0, 0.86, -0.34)
+    const neck = rbox(0.045, 0.23, 0.018, 0.006, alu)
+    neck.position.set(0, 0.87, -0.245)
     g.add(neck)
-    const panel = box(0.6, 0.36, 0.022, std(0xe8e9ea, { roughness: 0.4 }))
-    panel.position.set(0, 1.075, -0.29)
-    g.add(panel)
-    const bezel = box(0.59, 0.35, 0.004, std(0x0b0c0e, { roughness: 0.2 }))
-    bezel.position.set(0, 1.078, -0.2805)
+    const back = rbox(0.59, 0.345, 0.018, 0.008, shell)
+    back.position.set(0, 1.07, -0.232)
+    g.add(back)
+    const bezel = rbox(0.585, 0.34, 0.006, 0.006, std(0x111214, { roughness: 0.25 }))
+    bezel.position.set(0, 1.07, -0.218)
     g.add(bezel)
+    const chin = rbox(0.585, 0.02, 0.012, 0.004, shell)
+    chin.position.set(0, 0.9, -0.22)
+    g.add(chin)
+    const led = new THREE.Mesh(new THREE.CircleGeometry(0.0018, 10), new THREE.MeshBasicMaterial({ color: 0x7ee08a }))
+    led.position.set(0.27, 0.9, -0.2138)
+    g.add(led)
 
-    // The hole: writes transparent pixels so the CSS3D screen shows through.
+    // The hole: writes (0,0,0,0) so the CSS3D screen underneath shows through.
     const hole = new THREE.Mesh(
       new THREE.PlaneGeometry(SCREEN.w, SCREEN.h),
       new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0, transparent: false, blending: THREE.NoBlending })
@@ -235,352 +273,492 @@ export class DeskScene {
     this.scene.add(g)
     this.hotspots.push({ id: 'monitor', root: g })
 
-    const obj = new CSS3DObject(screenElement)
-    obj.position.copy(SCREEN_CENTER)
-    obj.scale.setScalar(SCREEN.w / SCREEN_PX.w)
-    this.scene.add(obj)
+    this.cssScreen = new CSS3DObject(this.screenElement)
+    this.cssScreen.position.copy(SCREEN_CENTER)
+    this.cssScreen.scale.setScalar(SCREEN.w / SCREEN_PX.w)
+    this.scene.add(this.cssScreen)
   }
 
   private buildLaptop() {
     const g = new THREE.Group()
-    const alu = std(0xbfc3c7, { metalness: 0.7, roughness: 0.3 })
-    // Stand: two angled plates.
-    const stand = box(0.24, 0.01, 0.2, alu)
+    const alu = std(0xb9bdc2, { metalness: 0.6, roughness: 0.3 })
+    const stand = rbox(0.24, 0.008, 0.21, 0.003, alu)
     stand.position.set(0, 0.8, 0)
-    stand.rotation.x = 0.35
+    stand.rotation.x = 0.3
     g.add(stand)
-    const leg = box(0.2, 0.08, 0.01, alu)
+    const leg = rbox(0.2, 0.085, 0.008, 0.003, alu)
     leg.position.set(0, 0.77, -0.09)
     g.add(leg)
     const bodyG = new THREE.Group()
     bodyG.position.set(0, 0.812, 0)
-    bodyG.rotation.x = 0.35
-    const body = box(0.3, 0.012, 0.21, alu)
-    bodyG.add(body)
-    const keys = box(0.26, 0.002, 0.1, std(0x222428))
-    keys.position.set(0, 0.007, -0.02)
-    bodyG.add(keys)
+    bodyG.rotation.x = 0.3
+    bodyG.add(rbox(0.3, 0.011, 0.21, 0.004, alu))
+    const deck = rbox(0.26, 0.002, 0.1, 0.001, std(0x1f2124))
+    deck.position.set(0, 0.006, -0.02)
+    bodyG.add(deck)
+    const pad = rbox(0.11, 0.001, 0.065, 0.001, std(0xa9adb2, { metalness: 0.4, roughness: 0.35 }))
+    pad.position.set(0, 0.006, 0.065)
+    bodyG.add(pad)
     const lid = new THREE.Group()
-    lid.position.set(0, 0.006, -0.105)
-    lid.rotation.x = -0.6
-    const lidShell = box(0.3, 0.2, 0.008, alu)
-    lidShell.position.set(0, 0.1, -0.004)
+    lid.position.set(0, 0.005, -0.105)
+    lid.rotation.x = -0.55
+    const lidShell = rbox(0.3, 0.2, 0.006, 0.004, alu)
+    lidShell.position.set(0, 0.1, -0.003)
     lid.add(lidShell)
-    this.laptopScreen = std(0x16323a, { emissive: 0x2c6e78, emissiveIntensity: 0.9, roughness: 0.2 })
-    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.27, 0.175), this.laptopScreen)
-    scr.position.set(0, 0.1, 0.001)
+    const wall = laptopWallpaper()
+    this.laptopScreen = std(0x000000, { emissive: 0xffffff, emissiveMap: wall, emissiveIntensity: 0.8, roughness: 0.15 })
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.272, 0.172), this.laptopScreen)
+    scr.position.set(0, 0.102, 0.0002)
     lid.add(scr)
     bodyG.add(lid)
     g.add(bodyG)
-    g.position.set(0.55, 0, -0.2)
-    g.rotation.y = -0.35
+    g.position.set(0.46, 0, -0.1)
+    g.rotation.y = -0.4
     this.scene.add(g)
     this.hotspots.push({ id: 'laptop', root: g })
   }
 
   private buildKeyboard() {
     const g = new THREE.Group()
-    const baseMat = std(0xe9e4d6, { roughness: 0.6 })
-    const base = box(0.33, 0.022, 0.115, baseMat)
-    g.add(base)
-    const cols = 15
+    g.add(rbox(0.31, 0.02, 0.108, 0.007, std(0xebe5d6, { roughness: 0.55 })))
+    const cols = 14
     const rows = 5
-    const n = cols * rows
-    this.keys = new THREE.InstancedMesh(new THREE.BoxGeometry(0.0185, 0.012, 0.0185), std(0xffffff, { roughness: 0.5 }), n)
+    this.keys = new THREE.InstancedMesh(
+      new RoundedBoxGeometry(0.0182, 0.011, 0.0182, 2, 0.003),
+      std(0xffffff, { roughness: 0.5 }),
+      cols * rows
+    )
     this.keys.castShadow = true
-    const cream = new THREE.Color(0xf1ecdf)
-    const green = new THREE.Color(0x3d7a4e)
-    const red = new THREE.Color(0x9b2c34)
+    this.keys.receiveShadow = true
+    const cream = new THREE.Color(0xf4efe2)
+    const green = new THREE.Color(0x4d8059)
+    const red = new THREE.Color(0xa9444c)
     let i = 0
     for (let r = 0; r < rows; r++)
       for (let c = 0; c < cols; c++) {
-        const m = new THREE.Matrix4().makeTranslation(-0.147 + c * 0.021, 0.017, -0.044 + r * 0.021)
+        const m = new THREE.Matrix4().makeTranslation(-0.137 + c * 0.021, 0.0155, -0.042 + r * 0.021)
         this.keys.setMatrixAt(i, m)
         this.keyBase.push(m.clone())
         const accent = c === 0 || c === cols - 1 || (r === rows - 1 && (c < 3 || c > cols - 4))
-        const color = r === rows - 1 && c > 4 && c < 10 ? red : accent ? green : cream
-        this.keys.setColorAt(i, color)
+        this.keys.setColorAt(i, r === rows - 1 && c > 3 && c < 10 ? red : accent ? green : cream)
         i++
       }
     g.add(this.keys)
-    g.position.set(0.02, 0.765, 0.08)
+    g.position.set(-0.03, 0.764, 0.11)
     this.scene.add(g)
     this.hotspots.push({ id: 'keyboard', root: g })
 
-    const mouse = new THREE.Mesh(new THREE.SphereGeometry(0.03, 20, 12), std(0x1a1b1e, { roughness: 0.4 }))
-    mouse.scale.set(1, 0.45, 1.6)
-    mouse.position.set(0.36, 0.765, 0.09)
-    mouse.castShadow = true
-    this.scene.add(mouse)
-    // Cable to the hub.
+    this.mouseObj = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.028, 24, 14), std(0x1c1d20, { roughness: 0.35 })))
+    this.mouseObj.scale.set(1, 0.42, 1.6)
+    this.mouseObj.position.set(0.28, 0.765, 0.12)
+    this.scene.add(this.mouseObj)
     const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0.36, 0.758, 0.04),
-      new THREE.Vector3(0.3, 0.756, -0.05),
-      new THREE.Vector3(0.12, 0.756, -0.15),
-      new THREE.Vector3(0.02, 0.756, -0.25),
+      new THREE.Vector3(0.28, 0.757, 0.07),
+      new THREE.Vector3(0.24, 0.756, -0.02),
+      new THREE.Vector3(0.1, 0.756, -0.12),
+      new THREE.Vector3(0.02, 0.756, -0.24),
     ])
-    const cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 30, 0.003, 6), std(0x111111))
-    this.scene.add(cable)
+    this.scene.add(shadowed(new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.0025, 6), std(0x151515))))
   }
 
-  private buildDeskProps() {
-    // Money plant in a glass bottle, on a wooden coaster.
-    const plant = new THREE.Group()
-    const coaster = cyl(0.06, 0.06, 0.008, std(0x8a5a3a))
+  private buildPlant() {
+    const g = new THREE.Group()
+    const coaster = cyl(0.058, 0.058, 0.008, std(0x9a6a45, { roughness: 0.6 }))
     coaster.position.y = 0.754
-    plant.add(coaster)
+    g.add(coaster)
     const glass = new THREE.MeshPhysicalMaterial({
-      color: 0xdfeee8,
-      transmission: 0.9,
-      roughness: 0.05,
-      thickness: 0.01,
+      color: 0xe6f2ec,
+      roughness: 0.04,
+      metalness: 0,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.32,
+      clearcoat: 1,
+      depthWrite: false,
     })
-    const bottle = cyl(0.035, 0.045, 0.16, glass)
-    bottle.position.y = 0.84
-    plant.add(bottle)
-    const neck = cyl(0.015, 0.03, 0.05, glass)
-    neck.position.y = 0.945
-    plant.add(neck)
-    const leafMat = std(0x3f7d3a, { roughness: 0.5, side: THREE.DoubleSide })
-    const leafGeo = new THREE.SphereGeometry(0.03, 12, 8)
-    const stems = new THREE.Group()
-    for (let i = 0; i < 9; i++) {
-      const leaf = new THREE.Mesh(leafGeo, leafMat)
-      leaf.scale.set(1, 0.22, 1.35)
-      const a = (i / 9) * Math.PI * 2
-      const h = 0.99 + (i % 3) * 0.045
-      leaf.position.set(Math.cos(a) * 0.05, h, Math.sin(a) * 0.05)
-      leaf.rotation.set(0.5 * Math.sin(a), a, 0.3)
-      leaf.castShadow = true
-      stems.add(leaf)
+    const body = new THREE.Mesh(
+      new THREE.LatheGeometry(
+        [
+          new THREE.Vector2(0.0, 0),
+          new THREE.Vector2(0.038, 0.002),
+          new THREE.Vector2(0.041, 0.02),
+          new THREE.Vector2(0.041, 0.13),
+          new THREE.Vector2(0.03, 0.16),
+          new THREE.Vector2(0.014, 0.18),
+          new THREE.Vector2(0.014, 0.215),
+        ],
+        32
+      ),
+      glass
+    )
+    body.position.y = 0.758
+    g.add(body)
+    const water = cyl(0.036, 0.036, 0.09, std(0xbfdcd2, { transparent: true, opacity: 0.35, roughness: 0.1 }))
+    water.position.y = 0.806
+    g.add(water)
+
+    const vines = new THREE.Group()
+    const stemMat = std(0x5f8a3e, { roughness: 0.6 })
+    const leafMats = [
+      std(0x3f7d34, { side: THREE.DoubleSide, roughness: 0.45 }),
+      std(0x5c9a3f, { side: THREE.DoubleSide, roughness: 0.45 }),
+      std(0x7fae4c, { side: THREE.DoubleSide, roughness: 0.45 }),
+    ]
+    const r = rng(8)
+    const vineDefs: [number, number, number][] = [
+      [0.4, 0.2, 1],
+      [2.4, 0.16, 0.8],
+      [4.3, 0.22, 1.1],
+      [1.4, 0.12, 0.6],
+    ]
+    for (const [a, reach, lift] of vineDefs) {
+      const dir = new THREE.Vector3(Math.cos(a), 0, Math.sin(a))
+      const pts = [
+        new THREE.Vector3(0, 0.95, 0),
+        new THREE.Vector3(0, 1.02 + 0.03 * lift, 0).addScaledVector(dir, reach * 0.3),
+        new THREE.Vector3(0, 1.04 + 0.05 * lift, 0).addScaledVector(dir, reach * 0.65),
+        new THREE.Vector3(0, 0.99 + 0.05 * lift, 0).addScaledVector(dir, reach),
+      ]
+      const curve = new THREE.CatmullRomCurve3(pts)
+      vines.add(shadowed(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.0018, 5), stemMat)))
+      const n = 5 + Math.round(reach * 20)
+      for (let k = 1; k <= n; k++) {
+        const t = k / (n + 0.5)
+        const leaf = new THREE.Mesh(leafGeometry(0.03 + r() * 0.018), leafMats[Math.floor(r() * 3)])
+        leaf.castShadow = true
+        leaf.position.copy(curve.getPoint(t))
+        const side = k % 2 ? 1 : -1
+        leaf.rotation.set(-0.9 + r() * 0.6, a + side * 1.2 + r() * 0.3, side * 0.4)
+        vines.add(leaf)
+      }
     }
-    plant.add(stems)
-    plant.position.set(-0.43, 0, -0.3)
-    this.plant = stems
-    this.scene.add(plant)
-    this.hotspots.push({ id: 'plant', root: plant })
-
-    // USB hub and a phone stand.
-    const hub = box(0.12, 0.012, 0.035, std(0x6b6f74, { metalness: 0.5, roughness: 0.4 }))
-    hub.position.set(0.12, 0.757, -0.2)
-    this.scene.add(hub)
-    const phone = box(0.06, 0.1, 0.006, std(0x3b3f42, { metalness: 0.4 }))
-    phone.position.set(-0.3, 0.8, -0.05)
-    phone.rotation.x = -0.25
-    this.scene.add(phone)
-
-    // Pink poster on the wall.
-    const poster = new THREE.Group()
-    const frame = box(0.3, 0.39, 0.015, std(0x111111))
-    poster.add(frame)
-    const art = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.35), std(0xffffff, { map: posterTexture(), roughness: 0.8 }))
-    art.position.z = 0.008
-    poster.add(art)
-    poster.position.set(-0.5, 1.55, -0.45)
-    this.scene.add(poster)
-    this.hotspots.push({ id: 'poster', root: poster })
-
-    // Blue plastic chair, pushed back from the desk.
-    const chair = new THREE.Group()
-    const blue = std(0x1d4fb8, { roughness: 0.55 })
-    const seat = box(0.44, 0.03, 0.42, blue)
-    seat.position.y = 0.46
-    chair.add(seat)
-    const backGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.34, 32, 1, true, -0.75, 1.5)
-    const back = new THREE.Mesh(backGeo, std(0x1d4fb8, { roughness: 0.55, side: THREE.DoubleSide }))
-    back.castShadow = true
-    back.position.set(0, 0.68, -0.06)
-    chair.add(back)
-    for (const [x, z] of [[-0.19, -0.18], [0.19, -0.18], [-0.19, 0.18], [0.19, 0.18]]) {
-      const leg = cyl(0.012, 0.014, 0.46, blue, 8)
-      leg.position.set(x, 0.23, z)
-      chair.add(leg)
-    }
-    chair.position.set(0.1, 0, 0.82)
-    chair.rotation.y = 0.15
-    this.scene.add(chair)
+    g.add(vines)
+    g.position.set(-0.43, 0, -0.18)
+    this.plant = vines
+    this.scene.add(g)
+    this.hotspots.push({ id: 'plant', root: g })
   }
 
   private buildCabinet() {
     const g = new THREE.Group()
-    const gloss = std(0x141416, { roughness: 0.25, metalness: 0.1 })
-    const body = box(0.52, 1.28, 0.46, gloss)
-    body.position.y = 0.64
+    const gloss = std(0x151517, { roughness: 0.22, metalness: 0.05 })
+    const body = rbox(0.46, 1.0, 0.42, 0.012, gloss)
+    body.position.y = 0.5
     g.add(body)
-    const front = cabinetTexture()
-    const drawers: [number, number, number][] = [
-      [-0.125, 1.13, 0.23],
-      [0.125, 1.13, 0.23],
-      [0, 0.87, 0.48],
-      [0, 0.6, 0.48],
-      [0, 0.33, 0.48],
+    const handleMat = std(0xc9ccd0, { metalness: 0.8, roughness: 0.25 })
+    const drawers: [number, number, number, number][] = [
+      [-0.113, 0.85, 0.2, 0.2],
+      [0.113, 0.85, 0.2, 0.2],
+      [0, 0.61, 0.43, 0.22],
+      [0, 0.37, 0.43, 0.22],
+      [0, 0.13, 0.43, 0.2],
     ]
-    drawers.forEach(([x, y, w], i) => {
-      const d = box(w, 0.24, 0.012, std(0xffffff, { map: front, roughness: 0.25 }))
-      d.position.set(x, y, 0.236)
-      if (i > 1) d.scale.y = 1.05
+    drawers.forEach(([x, y, w, h], i) => {
+      const d = rbox(w, h, 0.012, 0.006, std(0xffffff, { map: drawerTexture(20 + i), roughness: 0.2 }))
+      d.position.set(x, y, 0.214)
       g.add(d)
-      const handle = box(w * 0.4, 0.015, 0.02, gloss)
-      handle.position.set(x, y + 0.1, 0.25)
+      const handle = rbox(w * 0.36, 0.012, 0.016, 0.005, handleMat)
+      handle.position.set(x, y + h / 2 - 0.03, 0.226)
       g.add(handle)
     })
-    // Things on top: books, bottles, a potted plant, and the white desk lamp.
-    const books = ['#e7c6cf', '#f1e3c8', '#d66a7a', '#f4f1ea', '#e9a8b8']
+    // Books and bottles on top.
+    const books = [0xe8c7cf, 0xf1e4cb, 0xd46e7e, 0xf6f2ea]
     books.forEach((c, i) => {
-      const b = box(0.2, 0.022, 0.15, std(c))
-      b.position.set(0.02, 1.291 + i * 0.022, -0.02)
-      b.rotation.y = (i % 2 ? 0.05 : -0.04)
+      const b = rbox(0.19, 0.024, 0.14, 0.004, std(c, { roughness: 0.8 }))
+      b.position.set(-0.07, 1.013 + i * 0.024, -0.05)
+      b.rotation.y = i % 2 ? 0.06 : -0.05
       g.add(b)
     })
-    const bottleColors = [0x2c6fb6, 0xf1f1f1, 0x1d1d1d, 0xb4242a, 0xe9e9e9]
-    bottleColors.forEach((c, i) => {
-      const b = cyl(0.02, 0.022, 0.1 + (i % 3) * 0.04, std(c, { roughness: 0.3 }), 12)
-      b.position.set(-0.2 + i * 0.045, 1.33 + (i % 3) * 0.02, 0.1)
+    const bottles = [0x2d6fb5, 0xf1f1f1, 0xb4282e]
+    bottles.forEach((c, i) => {
+      const h = 0.11 + (i % 2) * 0.05
+      const b = cyl(0.019, 0.021, h, std(c, { roughness: 0.3 }), 18)
+      b.position.set(0.1 + i * 0.045, 1 + h / 2, 0.1)
       g.add(b)
+      const cap = cyl(0.009, 0.009, 0.02, std(0x222222), 12)
+      cap.position.set(0.1 + i * 0.045, 1 + h + 0.01, 0.1)
+      g.add(cap)
     })
-    const pot = cyl(0.045, 0.035, 0.08, std(0xe7dccb, { roughness: 0.5 }))
-    pot.position.set(-0.08, 1.32, 0.1)
+    const pot = cyl(0.045, 0.036, 0.075, std(0xeadfce, { roughness: 0.5 }))
+    pot.position.set(-0.15, 1.04, 0.11)
     g.add(pot)
-    for (let i = 0; i < 6; i++) {
-      const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 6), std(0x3f7d3a))
-      leaf.scale.set(1, 0.25, 1.3)
-      leaf.position.set(-0.08 + Math.cos(i) * 0.04, 1.39 + (i % 3) * 0.03, 0.1 + Math.sin(i) * 0.04)
-      leaf.rotation.set(0.4, i, 0.3)
+    const leafMat = std(0x4f8a3e, { side: THREE.DoubleSide })
+    const r = rng(3)
+    for (let i = 0; i < 9; i++) {
+      const leaf = new THREE.Mesh(leafGeometry(0.035 + r() * 0.015), leafMat)
+      leaf.castShadow = true
+      leaf.position.set(-0.15, 1.08, 0.11)
+      leaf.rotation.set(-0.5 - r() * 0.6, (i / 9) * Math.PI * 2, 0)
       g.add(leaf)
     }
-
-    // Lamp
-    const lamp = new THREE.Group()
-    const white = std(0xf4f4f2, { roughness: 0.35 })
-    const lbase = cyl(0.07, 0.075, 0.02, white)
-    lbase.position.y = 1.29
-    lamp.add(lbase)
-    const arm1 = cyl(0.008, 0.008, 0.3, white, 10)
-    arm1.position.set(0, 1.44, 0)
-    arm1.rotation.z = 0.12
-    lamp.add(arm1)
-    const arm2 = cyl(0.008, 0.008, 0.22, white, 10)
-    arm2.position.set(0.06, 1.62, 0)
-    arm2.rotation.z = -0.9
-    lamp.add(arm2)
-    const head = new THREE.Mesh(
-      new THREE.SphereGeometry(0.065, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2),
-      std(0xdcdcdc, { side: THREE.DoubleSide, roughness: 0.4 })
-    )
-    head.position.set(0.16, 1.66, 0)
-    head.rotation.z = -2.4
-    head.castShadow = true
-    lamp.add(head)
-    this.lampBulb = std(0xfff4d8, { emissive: 0xffe2a8, emissiveIntensity: 2 })
-    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.02, 12, 8), this.lampBulb)
-    bulb.position.set(0.175, 1.645, 0)
-    lamp.add(bulb)
-    this.lampLight = new THREE.PointLight(0xffd9a0, 2.2, 3, 1.6)
-    this.lampLight.position.set(0.2, 1.6, 0.05)
-    this.lampLight.castShadow = true
-    this.lampLight.shadow.mapSize.set(512, 512)
-    lamp.add(this.lampLight)
-    lamp.position.set(0.12, 0, -0.1)
-    g.add(lamp)
-
-    g.position.set(-1.07, 0, -0.2)
+    g.position.set(-0.9, 0, -0.08)
     this.scene.add(g)
+  }
+
+  private buildLamp() {
+    const lamp = new THREE.Group()
+    const white = std(0xf5f4f0, { roughness: 0.35 })
+    const base = cyl(0.065, 0.07, 0.018, white, 32)
+    base.position.y = 0.009
+    lamp.add(base)
+    const arm = (from: THREE.Vector3, to: THREE.Vector3) => {
+      const len = from.distanceTo(to)
+      const m = cyl(0.0065, 0.0065, len, white, 12)
+      m.position.copy(from).lerp(to, 0.5)
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.clone().sub(from).normalize())
+      lamp.add(m)
+      const joint = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.011, 12, 8), white))
+      joint.position.copy(to)
+      lamp.add(joint)
+    }
+    const p0 = new THREE.Vector3(0, 0.018, 0)
+    const p1 = new THREE.Vector3(-0.03, 0.3, 0)
+    const p2 = new THREE.Vector3(0.2, 0.42, 0)
+    arm(p0, p1)
+    arm(p1, p2)
+    const head = shadowed(
+      new THREE.Mesh(
+        new THREE.LatheGeometry(
+          [new THREE.Vector2(0.012, 0), new THREE.Vector2(0.03, 0.02), new THREE.Vector2(0.06, 0.07), new THREE.Vector2(0.062, 0.075)],
+          32
+        ),
+        std(0xf1f0ec, { side: THREE.DoubleSide, roughness: 0.4 })
+      )
+    )
+    head.position.copy(p2)
+    head.rotation.z = 2.3
+    lamp.add(head)
+    this.lampBulb = std(0xfff6e0, { emissive: 0xffe3aa, emissiveIntensity: 3 })
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.018, 14, 10), this.lampBulb)
+    bulb.position.copy(p2).add(new THREE.Vector3(0.035, -0.035, 0))
+    lamp.add(bulb)
+    this.lampLight = new THREE.PointLight(0xffd6a0, 0.9, 2.2, 1.5)
+    this.lampLight.position.copy(bulb.position).add(new THREE.Vector3(0.02, -0.03, 0))
+    lamp.add(this.lampLight)
+    lamp.position.set(-0.84, 1.0, -0.1)
+    lamp.rotation.y = -0.25
+    this.scene.add(lamp)
     this.hotspots.push({ id: 'lamp', root: lamp })
   }
 
+  private buildChair() {
+    const chair = new THREE.Group()
+    const blue = std(0x2451b3, { roughness: 0.42 })
+    const seat = rbox(0.42, 0.03, 0.4, 0.014, blue)
+    seat.position.y = 0.45
+    chair.add(seat)
+    // Curved backrest: a bent slab.
+    const bg = new RoundedBoxGeometry(0.4, 0.26, 0.022, 3, 0.01)
+    const p = bg.attributes.position
+    for (let i = 0; i < p.count; i++) p.setZ(i, p.getZ(i) + p.getX(i) ** 2 * 1.1)
+    bg.computeVertexNormals()
+    const back = shadowed(new THREE.Mesh(bg, blue))
+    back.position.set(0, 0.73, 0.2)
+    back.rotation.x = -0.12
+    chair.add(back)
+    const metal = std(0x8b9097, { metalness: 0.7, roughness: 0.35 })
+    for (const sx of [-1, 1]) {
+      const post = cyl(0.009, 0.009, 0.3, metal, 10)
+      post.position.set(sx * 0.17, 0.6, 0.19)
+      chair.add(post)
+      for (const sz of [-1, 1]) {
+        const leg = cyl(0.01, 0.012, 0.45, metal, 10)
+        leg.position.set(sx * 0.18, 0.225, sz * 0.17)
+        chair.add(leg)
+      }
+    }
+    const pivot = new THREE.Group()
+    pivot.add(chair)
+    pivot.position.set(0.12, 0, 0.62)
+    pivot.rotation.y = 0.35
+    this.chair = pivot
+    this.scene.add(pivot)
+    this.hotspots.push({ id: 'chair', root: pivot })
+  }
+
+  private buildShadows() {
+    const t = contactShadowTexture()
+    const blob = (w: number, d: number, x: number, z: number, o = 1) => {
+      const m = new THREE.Mesh(
+        new THREE.PlaneGeometry(w, d),
+        new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, opacity: o })
+      )
+      m.rotation.x = -Math.PI / 2
+      m.position.set(x, 0.001, z)
+      this.scene.add(m)
+    }
+    blob(1.9, 1.2, 0, 0)
+    blob(0.8, 0.75, -0.9, -0.08)
+    blob(0.7, 0.7, 0.12, 0.62, 0.7)
+  }
+
   private buildLights() {
-    this.scene.add(new THREE.HemisphereLight(0xfff6e6, 0x5a5248, 0.9))
-    const sun = new THREE.DirectionalLight(0xfff1dc, 1.6)
-    sun.position.set(-2.5, 3.2, 2.2)
-    sun.castShadow = true
-    sun.shadow.mapSize.set(2048, 2048)
-    sun.shadow.camera.left = -2
-    sun.shadow.camera.right = 2
-    sun.shadow.camera.top = 2
-    sun.shadow.camera.bottom = -1
-    sun.shadow.bias = -0.0004
-    sun.shadow.radius = 4
-    this.scene.add(sun)
-    // Soft cyan spill from the monitor onto the desk.
-    const glow = new THREE.PointLight(0x9fd4e0, 0.6, 1.2, 2)
-    glow.position.copy(SCREEN_CENTER).add(new THREE.Vector3(0, -0.05, 0.15))
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8580, 0.35))
+    const key = new THREE.DirectionalLight(0xfff7ee, 2.1)
+    key.position.set(1.6, 3.6, 2.4)
+    key.castShadow = true
+    key.shadow.mapSize.set(2048, 2048)
+    const s = key.shadow.camera
+    s.left = -1.6
+    s.right = 1.6
+    s.top = 1.6
+    s.bottom = -1.2
+    s.near = 1
+    s.far = 9
+    key.shadow.bias = -0.0003
+    key.shadow.normalBias = 0.015
+    key.shadow.radius = 6
+    this.scene.add(key)
+    const rim = new THREE.DirectionalLight(0xdfe8ff, 0.6)
+    rim.position.set(-2.5, 2, -2)
+    this.scene.add(rim)
+    const glow = new THREE.PointLight(0xa8d8d0, 0.35, 0.9, 2)
+    glow.position.copy(SCREEN_CENTER).add(new THREE.Vector3(0, -0.08, 0.14))
     this.scene.add(glow)
   }
 
   /* ------------------------------------------------------------ camera */
 
-  private moveTo(pos: THREE.Vector3, look: THREE.Vector3, dur: number, done?: () => void) {
-    if (this.reduced) dur = 0.001
-    this.tween = { from: [this.camera.position.clone(), this.look.clone()], to: [pos.clone(), look.clone()], t: 0, dur, done }
+  private fitDistance(w: number, h: number, pad: number) {
+    const fov = THREE.MathUtils.degToRad(this.camera.fov)
+    const dh = h / 2 / Math.tan(fov / 2)
+    const dw = w / 2 / (Math.tan(fov / 2) * this.camera.aspect)
+    return Math.max(dh, dw) * pad
   }
 
-  private screenView() {
-    const fov = THREE.MathUtils.degToRad(this.camera.fov)
-    const dh = SCREEN.h / 2 / Math.tan(fov / 2)
-    const dw = SCREEN.w / 2 / (Math.tan(fov / 2) * this.camera.aspect)
-    const d = Math.max(dh, dw) * 1.04
-    return SCREEN_CENTER.clone().add(new THREE.Vector3(0, 0, d))
+  private orbitPos(t: number) {
+    const a = this.orbitAngle + (this.reduced ? 0 : Math.sin(t * 0.11) * 0.45)
+    const r = this.fitDistance(2.4, 1.5, this.camera.aspect < 1 ? 1.25 : 1.9)
+    return new THREE.Vector3(TARGET.x + Math.sin(a) * r, TARGET.y + r * 0.42, TARGET.z + Math.cos(a) * r)
+  }
+
+  private deskPos() {
+    const portrait = this.camera.aspect < 1
+    const d = this.fitDistance(portrait ? 0.9 : 1.25, 0.62, 1)
+    return DESK_LOOK.clone().add(new THREE.Vector3(0, portrait ? 0.5 : 0.34, 1).normalize().multiplyScalar(d))
+  }
+
+  private screenPos() {
+    return SCREEN_CENTER.clone().add(new THREE.Vector3(0, 0, this.fitDistance(SCREEN.w, SCREEN.h, 1.1)))
+  }
+
+  private moveTo(to: () => [THREE.Vector3, THREE.Vector3], dur: number, done?: () => void) {
+    if (this.reduced) dur = 0.001
+    this.tween = { from: [this.camera.position.clone(), this.look.clone()], to, t: 0, dur, done }
   }
 
   setReducedMotion(r: boolean) {
     this.reduced = r
   }
 
-  /** Boot finished: fly from the doorway to the desk. */
-  enter() {
-    this.moveTo(IDLE.pos, IDLE.look, 2.4, () => this.setMode('idle'))
+  get currentMode() {
+    return this.mode
+  }
+
+  /** Loader finished: the diorama slowly turns in the void. */
+  showOrbit() {
+    this.look.copy(TARGET)
+    this.setMode('orbit')
+  }
+
+  toDesk() {
+    if (this.mode === 'desk' || this.mode === 'travel') return
+    const from = this.mode
+    this.setMode('travel')
+    this.onTravel()
+    this.moveTo(() => [this.deskPos(), DESK_LOOK], from === 'screen' ? 1.1 : 1.9, () => this.setMode('desk'))
+  }
+
+  toOrbit() {
+    if (this.mode !== 'desk') return
+    this.setMode('travel')
+    this.onTravel()
+    this.moveTo(() => [this.orbitPos(this.clock.elapsedTime), TARGET], 1.9, () => this.setMode('orbit'))
   }
 
   zoomIn() {
-    if (this.mode === 'screen' || this.mode === 'zooming') return
+    if (this.mode === 'screen' || this.mode === 'zooming' || this.mode === 'loading') return
+    const far = this.mode === 'orbit'
     this.setMode('zooming')
-    this.onHover(null)
-    this.moveTo(this.screenView(), SCREEN_CENTER, 1.4, () => this.setMode('screen'))
+    this.onHover(null, 0, 0)
+    this.onTravel()
+    this.moveTo(() => [this.screenPos(), SCREEN_CENTER], far ? 2 : 1.3, () => this.setMode('screen'))
   }
 
   zoomOut() {
     if (this.mode !== 'screen') return
-    this.setMode('zooming')
-    this.moveTo(IDLE.pos, IDLE.look, 1.2, () => this.setMode('idle'))
+    this.toDesk()
   }
 
-  private setMode(m: typeof this.mode) {
+  private setMode(m: Mode) {
     this.mode = m
     // Only the screen (CSS3D, underneath) takes pointer input while zoomed in.
     this.renderer.domElement.style.pointerEvents = m === 'screen' ? 'none' : 'auto'
+    this.renderer.domElement.style.cursor = m === 'orbit' ? 'pointer' : 'default'
     this.onModeChange(m)
+  }
+
+  /** A real key was pressed: press a keycap on the 3D keyboard too. */
+  pressKey(code: string) {
+    let h = 0
+    for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0
+    const idx = code === 'Space' ? 4 * 14 + 6 : h % this.keyBase.length
+    this.keyPress.set(idx, 1)
   }
 
   /* ------------------------------------------------------------ input */
 
   private hit(): Hotspot | null {
     this.raycaster.setFromCamera(this.pointer, this.camera)
+    let best: { id: Hotspot; d: number } | null = null
     for (const h of this.hotspots) {
-      if (this.raycaster.intersectObject(h.root, true).length) return h.id
+      const i = this.raycaster.intersectObject(h.root, true)[0]
+      if (i && (!best || i.distance < best.d)) best = { id: h.id, d: i.distance }
     }
-    return null
+    return best?.id ?? null
   }
 
   private hovered: Hotspot | null = null
   private onPointerMove = (e: PointerEvent) => {
     const r = this.renderer.domElement.getBoundingClientRect()
     this.pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)
-    this.mouse.copy(this.pointer)
-    if (this.mode !== 'idle') return
+    if (this.mode !== 'desk') return
     const h = this.hit()
     if (h !== this.hovered) {
       this.hovered = h
       this.renderer.domElement.style.cursor = h ? 'pointer' : 'default'
-      this.onHover(h)
     }
+    this.onHover(h, e.clientX, e.clientY)
   }
 
-  private onClick = () => {
-    if (this.mode !== 'idle') return
+  private onPointerDown = (e: PointerEvent) => {
+    this.downAt = { x: e.clientX, y: e.clientY }
+  }
+
+  private onPointerUp = (e: PointerEvent) => {
+    if (!this.downAt || Math.hypot(e.clientX - this.downAt.x, e.clientY - this.downAt.y) > 6) return
+    this.downAt = null
+    this.onPointerMove(e)
+    if (this.mode === 'orbit') return this.toDesk()
+    if (this.mode !== 'desk') return
     const h = this.hit()
     if (h) this.activate(h)
+    else this.toOrbit()
+  }
+
+  // While zoomed in, drifting off the screen for a moment steps back to the desk.
+  private offScreenSince = 0
+  private onWindowPointer = (e: PointerEvent) => {
+    if (this.mode !== 'screen') {
+      this.offScreenSince = 0
+      return
+    }
+    // Hover-away only makes sense with a real mouse (not touch or pen).
+    if (e.buttons || e.pointerType !== 'mouse' || this.flatScreen) return
+    const r = this.screenElement.getBoundingClientRect()
+    const m = 6
+    const inside = e.clientX > r.left - m && e.clientX < r.right + m && e.clientY > r.top - m && e.clientY < r.bottom + m
+    if (inside) this.offScreenSince = 0
+    else if (!this.offScreenSince) this.offScreenSince = performance.now()
   }
 
   activate(h: Hotspot) {
@@ -590,20 +768,21 @@ export class DeskScene {
         break
       case 'lamp':
         this.lampOn = !this.lampOn
-        this.lampLight.intensity = this.lampOn ? 2.2 : 0
-        this.lampBulb.emissiveIntensity = this.lampOn ? 2 : 0
+        this.lampLight.intensity = this.lampOn ? 0.9 : 0
+        this.lampBulb.emissiveIntensity = this.lampOn ? 3 : 0
         break
       case 'plant':
         this.plantWiggle = 1
         break
       case 'keyboard':
-        for (let k = 0; k < 6; k++) this.keyPress.set(Math.floor(Math.random() * this.keyBase.length), 1 + k * 0.15)
+        for (let k = 0; k < 7; k++) this.keyPress.set(Math.floor(Math.random() * this.keyBase.length), 1 + k * 0.18)
         break
       case 'laptop':
         this.laptopOn = !this.laptopOn
-        this.laptopScreen.emissiveIntensity = this.laptopOn ? 0.9 : 0
+        this.laptopScreen.emissiveIntensity = this.laptopOn ? 0.8 : 0
         break
-      case 'poster':
+      case 'chair':
+        this.chairSpin = 1
         break
     }
   }
@@ -614,7 +793,8 @@ export class DeskScene {
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h)
     this.css.setSize(w, h)
-    if (this.mode === 'screen') this.camera.position.copy(this.screenView())
+    if (this.mode === 'screen') this.camera.position.copy(this.screenPos())
+    if (this.mode === 'desk') this.camera.position.copy(this.deskPos())
   }
 
   /* ------------------------------------------------------------ loop */
@@ -625,41 +805,55 @@ export class DeskScene {
       const raw = this.clock.getDelta()
       const dt = Math.min(raw, 0.05)
       const t = this.clock.elapsedTime
+      this.smooth.lerp(this.pointer.x > 5 ? new THREE.Vector2() : this.pointer, 1 - Math.exp(-dt * 4))
 
       if (this.tween) {
         const tw = this.tween
         tw.t = Math.min(1, tw.t + Math.min(raw, 0.2) / tw.dur)
         const k = ease(tw.t)
-        this.camera.position.lerpVectors(tw.from[0], tw.to[0], k)
-        this.look.lerpVectors(tw.from[1], tw.to[1], k)
+        const [pos, look] = tw.to()
+        this.camera.position.lerpVectors(tw.from[0], pos, k)
+        this.look.lerpVectors(tw.from[1], look, k)
         if (tw.t >= 1) {
           this.tween = null
           tw.done?.()
         }
-      } else if (this.mode === 'idle' && !this.reduced) {
-        // Gentle parallax toward the pointer, plus a slow breathing sway.
-        const target = IDLE.pos
-          .clone()
-          .add(new THREE.Vector3(this.mouse.x * 0.18 + Math.sin(t * 0.25) * 0.03, this.mouse.y * 0.08, 0))
-        this.camera.position.lerp(target, 1 - Math.exp(-dt * 3))
+      } else if (this.mode === 'orbit' || this.mode === 'loading') {
+        const p = this.orbitPos(t)
+        p.y += this.smooth.y * 0.15
+        this.camera.position.lerp(p, 1 - Math.exp(-dt * 2))
+      } else if (this.mode === 'desk' && !this.reduced) {
+        const p = this.deskPos().add(new THREE.Vector3(this.smooth.x * 0.07, this.smooth.y * 0.035, 0))
+        this.camera.position.lerp(p, 1 - Math.exp(-dt * 3))
+      } else if (this.mode === 'screen' && this.offScreenSince && performance.now() - this.offScreenSince > 450) {
+        this.offScreenSince = 0
+        this.zoomOut()
       }
       this.camera.lookAt(this.look)
 
       if (this.plantWiggle > 0) {
-        this.plantWiggle = Math.max(0, this.plantWiggle - dt * 0.8)
-        this.plant.rotation.y = Math.sin(t * 18) * 0.12 * this.plantWiggle
-        this.plant.rotation.z = Math.cos(t * 14) * 0.05 * this.plantWiggle
+        this.plantWiggle = Math.max(0, this.plantWiggle - dt * 0.7)
+        this.plant.rotation.y = Math.sin(t * 16) * 0.1 * this.plantWiggle
+        this.plant.rotation.z = Math.cos(t * 12) * 0.04 * this.plantWiggle
+      }
+      if (this.chairSpin > 0) {
+        this.chairSpin = Math.max(0, this.chairSpin - dt * 0.45)
+        this.chair.rotation.y += dt * 9 * ease(this.chairSpin)
       }
       if (this.keyPress.size) {
         for (const [i, left] of this.keyPress) {
-          const next = left - dt * 4
-          const depth = next > 0 && next < 1 ? Math.sin(next * Math.PI) * 0.006 : 0
-          const m = this.keyBase[i].clone().multiply(new THREE.Matrix4().makeTranslation(0, -depth, 0))
-          this.keys.setMatrixAt(i, m)
+          const next = left - dt * 6
+          const depth = next > 0 && next < 1 ? Math.sin(next * Math.PI) * 0.005 : 0
+          this.keys.setMatrixAt(i, this.keyBase[i].clone().multiply(new THREE.Matrix4().makeTranslation(0, -depth, 0)))
           if (next <= 0) this.keyPress.delete(i)
           else this.keyPress.set(i, next)
         }
         this.keys.instanceMatrix.needsUpdate = true
+      }
+      if (this.mode === 'screen') {
+        // The 3D mouse follows the real one, a little.
+        this.mouseObj.position.x = 0.28 + this.smooth.x * 0.02
+        this.mouseObj.position.z = 0.12 - this.smooth.y * 0.015
       }
 
       this.renderer.render(this.scene, this.camera)
@@ -671,8 +865,17 @@ export class DeskScene {
   dispose() {
     cancelAnimationFrame(this.raf)
     window.removeEventListener('resize', this.onResize)
-    this.renderer.domElement.removeEventListener('pointermove', this.onPointerMove)
-    this.renderer.domElement.removeEventListener('click', this.onClick)
+    window.removeEventListener('pointermove', this.onWindowPointer)
+    const el = this.renderer.domElement
+    el.removeEventListener('pointermove', this.onPointerMove)
+    el.removeEventListener('pointerdown', this.onPointerDown)
+    el.removeEventListener('pointerup', this.onPointerUp)
+    this.scene.traverse((o) => {
+      const m = o as THREE.Mesh
+      m.geometry?.dispose()
+      const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : []
+      mats.forEach((x) => x.dispose())
+    })
     this.renderer.dispose()
     this.host.innerHTML = ''
   }

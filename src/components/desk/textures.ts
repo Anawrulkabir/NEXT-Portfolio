@@ -1,23 +1,27 @@
 /**
- * Procedural canvas textures for the desk scene — drawn in code from the
- * author's desk photo (floral tablecloth, world-map desk mat, butterfly
- * cabinet, pink poster), so no photos or third-party assets ship.
+ * Procedural textures for the desk diorama, drawn in code from the author's
+ * desk photo. Kept low-contrast on purpose: the scene reads as a soft studio
+ * render, so patterns whisper instead of shout.
  */
 import * as THREE from 'three'
 
-function canvas(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void) {
+function draw(w: number, h: number, paint: (ctx: CanvasRenderingContext2D) => void) {
   const c = document.createElement('canvas')
   c.width = w
   c.height = h
-  draw(c.getContext('2d')!)
+  paint(c.getContext('2d')!)
+  return c
+}
+
+function tex(c: HTMLCanvasElement, srgb = true) {
   const t = new THREE.CanvasTexture(c)
-  t.colorSpace = THREE.SRGBColorSpace
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace
   t.anisotropy = 8
   return t
 }
 
-/** Deterministic PRNG so textures are identical on every load. */
-function rng(seed: number) {
+/** Deterministic PRNG so every load looks identical. */
+export function rng(seed: number) {
   let s = seed >>> 0
   return () => {
     s = (s * 1664525 + 1013904223) >>> 0
@@ -25,77 +29,74 @@ function rng(seed: number) {
   }
 }
 
-function flower(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string, center: string) {
-  ctx.fillStyle = color
+function blossom(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, petal: string, eye: string) {
+  ctx.fillStyle = petal
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2
     ctx.beginPath()
-    ctx.ellipse(x + Math.cos(a) * r * 0.55, y + Math.sin(a) * r * 0.55, r * 0.5, r * 0.32, a, 0, Math.PI * 2)
+    ctx.ellipse(x + Math.cos(a) * r * 0.5, y + Math.sin(a) * r * 0.5, r * 0.46, r * 0.3, a, 0, Math.PI * 2)
     ctx.fill()
   }
-  ctx.fillStyle = center
+  ctx.fillStyle = eye
   ctx.beginPath()
-  ctx.arc(x, y, r * 0.22, 0, Math.PI * 2)
+  ctx.arc(x, y, r * 0.2, 0, Math.PI * 2)
   ctx.fill()
 }
 
-/** Cream tablecloth with scattered brown roses and leaves. */
-export function tableclothTexture(repeat = 3) {
-  const t = canvas(512, 512, (ctx) => {
+/** Cream cotton with small, faded rose-brown blossoms (the tablecloth). */
+export function tableclothTexture(repeat: number) {
+  const c = draw(512, 512, (ctx) => {
     const rand = rng(11)
-    ctx.fillStyle = '#efe7da'
+    ctx.fillStyle = '#efe7d8'
     ctx.fillRect(0, 0, 512, 512)
-    for (let i = 0; i < 70; i++) {
-      const x = rand() * 512
-      const y = rand() * 512
-      ctx.fillStyle = rand() < 0.5 ? '#b49a86' : '#9c7f6b'
+    // Weave
+    ctx.globalAlpha = 0.05
+    ctx.fillStyle = '#6b5a40'
+    for (let y = 0; y < 512; y += 3) ctx.fillRect(0, y, 512, 1)
+    ctx.globalAlpha = 1
+    for (let i = 0; i < 60; i++) {
+      ctx.fillStyle = 'rgba(150,140,100,0.28)'
       ctx.beginPath()
-      ctx.ellipse(x, y, 10, 4, rand() * Math.PI, 0, Math.PI * 2)
+      ctx.ellipse(rand() * 512, rand() * 512, 7, 2.6, rand() * Math.PI, 0, Math.PI * 2)
       ctx.fill()
     }
-    for (let i = 0; i < 38; i++) {
-      const r = 9 + rand() * 12
-      flower(ctx, rand() * 512, rand() * 512, r, rand() < 0.5 ? '#8a5a44' : '#a87058', '#5e3a2a')
+    for (let i = 0; i < 34; i++) {
+      const r = 6 + rand() * 7
+      blossom(ctx, rand() * 512, rand() * 512, r, rand() < 0.5 ? 'rgba(160,110,90,0.45)' : 'rgba(185,135,110,0.4)', 'rgba(110,70,55,0.5)')
     }
   })
+  const t = tex(c)
   t.wrapS = t.wrapT = THREE.RepeatWrapping
   t.repeat.set(repeat, repeat)
   return t
 }
 
-/** Dark desk mat with a faint dotted world map. */
+/** Charcoal desk mat with a faint dotted world map. */
 export function deskMatTexture() {
-  return canvas(1024, 400, (ctx) => {
-    ctx.fillStyle = '#1b1e25'
-    ctx.fillRect(0, 0, 1024, 400)
-    // Blobby continents as dot clouds (stylised, not survey-accurate).
+  const c = draw(1024, 420, (ctx) => {
+    ctx.fillStyle = '#25282d'
+    ctx.fillRect(0, 0, 1024, 420)
     const blobs: [number, number, number, number][] = [
-      [200, 130, 120, 70],
-      [260, 280, 60, 90],
-      [520, 120, 90, 50],
-      [540, 250, 70, 90],
-      [700, 130, 170, 70],
-      [820, 290, 70, 40],
+      [210, 140, 120, 70],
+      [270, 290, 55, 90],
+      [520, 125, 85, 50],
+      [545, 260, 65, 90],
+      [720, 135, 170, 70],
+      [835, 300, 65, 38],
     ]
     const rand = rng(5)
-    ctx.fillStyle = 'rgba(160,170,185,0.35)'
+    ctx.fillStyle = 'rgba(190,195,205,0.22)'
     for (const [cx, cy, rx, ry] of blobs) {
-      for (let i = 0; i < 900; i++) {
+      for (let i = 0; i < 700; i++) {
         const a = rand() * Math.PI * 2
         const d = Math.sqrt(rand())
         const x = cx + Math.cos(a) * rx * d * (0.8 + rand() * 0.4)
         const y = cy + Math.sin(a) * ry * d
-        ctx.fillRect(Math.round(x / 6) * 6, Math.round(y / 6) * 6, 2, 2)
+        ctx.fillRect(Math.round(x / 7) * 7, Math.round(y / 7) * 7, 2, 2)
       }
     }
-    ctx.strokeStyle = 'rgba(160,170,185,0.12)'
-    for (let y = 40; y < 400; y += 60) {
-      ctx.beginPath()
-      ctx.moveTo(0, y)
-      ctx.lineTo(1024, y)
-      ctx.stroke()
-    }
   })
+  return tex(c)
 }
 
 function butterfly(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, color: string, rot: number) {
@@ -114,108 +115,74 @@ function butterfly(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   ctx.restore()
 }
 
-/** Glossy black drawer front with butterflies and pink vines. */
-export function cabinetTexture() {
-  return canvas(512, 256, (ctx) => {
-    const rand = rng(23)
-    ctx.fillStyle = '#121214'
+/** Gloss-black drawer front with a few pastel butterfly decals and a vine. */
+export function drawerTexture(seed: number) {
+  const c = draw(512, 256, (ctx) => {
+    const rand = rng(seed)
+    ctx.fillStyle = '#18181a'
     ctx.fillRect(0, 0, 512, 256)
-    ctx.strokeStyle = '#c98fa4'
+    ctx.strokeStyle = 'rgba(205,150,170,0.45)'
     ctx.lineWidth = 2
-    for (let i = 0; i < 3; i++) {
-      ctx.beginPath()
-      const x0 = 250 + i * 70
-      ctx.moveTo(x0, 30)
-      for (let t = 0; t < 1; t += 0.05) ctx.lineTo(x0 + Math.sin(t * 9) * 30 + t * 60, 30 + t * 200)
-      ctx.stroke()
-    }
-    const colors = ['#8fc3e8', '#e8d77a', '#a7d7c5', '#8fc3e8']
-    for (let i = 0; i < 9; i++) {
-      butterfly(ctx, 40 + rand() * 440, 30 + rand() * 200, 14 + rand() * 12, colors[i % colors.length], rand() * 1.2 - 0.6)
-    }
-  })
-}
-
-/** Pink framed poster: a line-drawn building on pink, like the one on the author's wall. */
-export function posterTexture() {
-  return canvas(360, 480, (ctx) => {
-    const g = ctx.createLinearGradient(0, 0, 0, 480)
-    g.addColorStop(0, '#f2a7c3')
-    g.addColorStop(1, '#e56f9b')
-    ctx.fillStyle = g
-    ctx.fillRect(0, 0, 360, 480)
-    ctx.fillStyle = 'rgba(255,255,255,0.85)'
-    ctx.fillRect(50, 60, 200, 14)
-    ctx.fillRect(80, 90, 170, 14)
-    ctx.fillRect(110, 120, 110, 14)
-    // Isometric building
-    ctx.fillStyle = '#f7c9da'
     ctx.beginPath()
-    ctx.moveTo(40, 330)
-    ctx.lineTo(180, 260)
-    ctx.lineTo(330, 320)
-    ctx.lineTo(330, 420)
-    ctx.lineTo(180, 470)
-    ctx.lineTo(40, 420)
-    ctx.closePath()
-    ctx.fill()
-    ctx.strokeStyle = '#c9477a'
-    ctx.lineWidth = 2
+    const x0 = 300 + rand() * 120
+    ctx.moveTo(x0, 0)
+    for (let t = 0; t < 1; t += 0.04) ctx.lineTo(x0 + Math.sin(t * 8 + seed) * 22 + t * 40, t * 256)
     ctx.stroke()
-    ctx.fillStyle = '#c9477a'
-    for (let r = 0; r < 4; r++)
-      for (let c = 0; c < 6; c++) {
-        ctx.fillRect(55 + c * 20, 340 + r * 18 + c * 0, 10, 8)
-        ctx.fillRect(200 + c * 20, 300 + r * 18 + c * 4, 10, 8)
-      }
-  })
-}
-
-/** Warm cream wall with a faint plaster noise. */
-export function wallTexture() {
-  const t = canvas(256, 256, (ctx) => {
-    const rand = rng(3)
-    ctx.fillStyle = '#e9e0c4'
-    ctx.fillRect(0, 0, 256, 256)
-    for (let i = 0; i < 1800; i++) {
-      ctx.fillStyle = rand() < 0.5 ? 'rgba(255,255,255,0.08)' : 'rgba(120,100,60,0.05)'
-      ctx.fillRect(rand() * 256, rand() * 256, 2, 2)
+    const colors = ['rgba(150,195,230,0.75)', 'rgba(230,215,130,0.75)', 'rgba(170,215,195,0.75)']
+    for (let i = 0; i < 3; i++) {
+      butterfly(ctx, 60 + rand() * 380, 50 + rand() * 150, 13 + rand() * 9, colors[i % colors.length], rand() - 0.5)
     }
   })
-  t.wrapS = t.wrapT = THREE.RepeatWrapping
-  t.repeat.set(4, 2)
-  return t
+  return tex(c)
 }
 
-/** Pale floor tiles. */
-export function floorTexture() {
-  const t = canvas(256, 256, (ctx) => {
-    ctx.fillStyle = '#d9d6cf'
+/** macOS-like wallpaper glow for the MacBook screen. */
+export function laptopWallpaper() {
+  const c = draw(256, 160, (ctx) => {
+    const g = ctx.createLinearGradient(0, 0, 256, 160)
+    g.addColorStop(0, '#1d2f5a')
+    g.addColorStop(0.55, '#5a3f8f')
+    g.addColorStop(1, '#d07a8c')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, 256, 160)
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'
+    ctx.fillRect(0, 0, 256, 8)
+  })
+  return tex(c)
+}
+
+/** Soft black blob used as a baked contact shadow under objects. */
+export function contactShadowTexture() {
+  const c = draw(256, 256, (ctx) => {
+    const g = ctx.createRadialGradient(128, 128, 10, 128, 128, 128)
+    g.addColorStop(0, 'rgba(0,0,0,0.55)')
+    g.addColorStop(0.55, 'rgba(0,0,0,0.22)')
+    g.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = g
     ctx.fillRect(0, 0, 256, 256)
-    ctx.strokeStyle = '#bdb9b0'
-    ctx.lineWidth = 3
-    ctx.strokeRect(0, 0, 256, 256)
   })
-  t.wrapS = t.wrapT = THREE.RepeatWrapping
-  t.repeat.set(10, 10)
-  return t
+  return tex(c, false)
 }
 
-/** Sheer curtain with a soft leaf pattern. */
-export function curtainTexture() {
-  const t = canvas(256, 512, (ctx) => {
-    ctx.fillStyle = '#e8e2dc'
-    ctx.fillRect(0, 0, 256, 512)
-    ctx.strokeStyle = 'rgba(160,150,140,0.35)'
-    ctx.lineWidth = 3
-    for (let y = 0; y < 512; y += 96)
-      for (let x = 0; x < 256; x += 64) {
-        ctx.beginPath()
-        ctx.ellipse(x + 32, y + 48, 18, 40, 0, 0, Math.PI * 2)
-        ctx.stroke()
-      }
+/** Smudges and dust on the monitor glass (used as a CSS overlay image). */
+export function glassSmudgeDataUrl() {
+  const c = draw(640, 360, (ctx) => {
+    const rand = rng(99)
+    ctx.clearRect(0, 0, 640, 360)
+    for (let i = 0; i < 26; i++) {
+      const x = rand() * 640
+      const y = rand() * 360
+      const r = 12 + rand() * 38
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r)
+      g.addColorStop(0, 'rgba(255,255,255,0.35)')
+      g.addColorStop(1, 'rgba(255,255,255,0)')
+      ctx.fillStyle = g
+      ctx.beginPath()
+      ctx.ellipse(x, y, r, r * (0.4 + rand() * 0.6), rand() * Math.PI, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'
+    for (let i = 0; i < 400; i++) ctx.fillRect(rand() * 640, rand() * 360, 1, 1)
   })
-  t.wrapS = t.wrapT = THREE.RepeatWrapping
-  t.repeat.set(2, 1)
-  return t
+  return c.toDataURL('image/png')
 }

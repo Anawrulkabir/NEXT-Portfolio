@@ -1,110 +1,114 @@
 'use client'
 /**
- * FahadOS — the operating system on the desk monitor (a Win95-style shell in
- * the site's own palette). It renders at a fixed 1280×740 CSS px inside a
- * CSS3DObject, so it scales with the 3D screen.
+ * FahadOS: a Win95-style shell on the desk monitor. It renders at a fixed
+ * 1280×720 CSS px inside a CSS3DObject, so it scales with the 3D screen, and
+ * a CRT/glass layer sits on top so it reads as a physical screen.
  */
-import { useEffect, useRef, useState, type ComponentType } from 'react'
-import {
-  Award,
-  Briefcase,
-  FileText,
-  FlaskConical,
-  FolderGit2,
-  Gamepad2,
-  Mail,
-  Minus,
-  Power,
-  Terminal,
-  User,
-  Wrench,
-  X,
-  Sparkles,
-} from 'lucide-react'
-import { profile } from '@/content'
+import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
 import { SCREEN_PX } from '../scene'
-import {
-  AboutApp,
-  CertificatesApp,
-  ContactApp,
-  ExperienceApp,
-  ProjectsApp,
-  ResearchApp,
-  SkillsApp,
-  TerminalApp,
-  WelcomeApp,
-} from './apps'
+import { glassSmudgeDataUrl } from '../textures'
+import { useDesk } from '../DeskDataContext'
+import { Showcase, type Page } from './Showcase'
+import { CreditsApp, MinesweeperApp, TerminalApp } from './apps'
+import { PixelIcon, TitleGlyph, type IconName } from './Win95'
 
-type AppDef = {
-  id: string
-  title: string
-  icon: ComponentType<{ className?: string }>
-  color: string
-  w: number
-  h: number
-  href?: string // opens a page instead of a window
-  body?: ComponentType<{ open: (id: string) => void }>
+type AppId = 'showcase' | 'terminal' | 'minesweeper' | 'credits'
+type AppDef = { title: string; icon: IconName; w: number | 'auto'; h: number | 'auto'; x: number; y: number }
+
+const TASKBAR = 30
+const APPS: Record<AppId, AppDef> = {
+  showcase: { title: "Fahad Kabir - Showcase '26", icon: 'showcase', w: 1120, h: 640, x: 110, y: 14 },
+  terminal: { title: 'MS-DOS Prompt', icon: 'terminal', w: 660, h: 400, x: 300, y: 120 },
+  minesweeper: { title: 'Minesweeper', icon: 'mine', w: 'auto', h: 'auto', x: 520, y: 150 },
+  credits: { title: 'Credits.txt - Notepad', icon: 'notepad', w: 560, h: 320, x: 380, y: 200 },
 }
 
-const APPS: AppDef[] = [
-  { id: 'welcome', title: 'Welcome', icon: Sparkles, color: '#e0a23c', w: 560, h: 330, body: WelcomeApp },
-  { id: 'about', title: 'About me', icon: User, color: '#6fb7b9', w: 680, h: 420, body: AboutApp },
-  { id: 'experience', title: 'Experience', icon: Briefcase, color: '#4f7a4a', w: 760, h: 520, body: ExperienceApp },
-  { id: 'projects', title: 'Projects', icon: FolderGit2, color: '#9a7b4f', w: 760, h: 460, body: ProjectsApp },
-  { id: 'research', title: 'Research', icon: FlaskConical, color: '#a9c4d9', w: 640, h: 500, body: ResearchApp },
-  { id: 'certificates', title: 'Certificates', icon: Award, color: '#cbb26a', w: 800, h: 500, body: CertificatesApp },
-  { id: 'skills', title: 'Skills', icon: Wrench, color: '#8fa3a8', w: 720, h: 460, body: SkillsApp },
-  { id: 'terminal', title: 'Terminal', icon: Terminal, color: '#1d3436', w: 620, h: 360, body: TerminalApp },
-  { id: 'contact', title: 'Contact', icon: Mail, color: '#c9663a', w: 460, h: 300, body: ContactApp },
-  { id: 'resume', title: 'Resume.pdf', icon: FileText, color: '#e7e1d1', w: 0, h: 0, href: '/cv' },
-  { id: 'journey', title: 'The Journey (game)', icon: Gamepad2, color: '#b5523a', w: 0, h: 0, href: '/' },
-]
-const byId = Object.fromEntries(APPS.map((a) => [a.id, a]))
+type Win = { id: AppId; x: number; y: number; z: number; min: boolean; max: boolean }
+type Power = 'on' | 'shutdown' | 'off' | 'booting'
 
-type Win = { id: string; x: number; y: number; z: number; min: boolean }
+const SHUTDOWN: [string, number][] = [
+  ['Beginning shutdown sequence...', 500],
+  ['Saving open windows ................ done.', 450],
+  ['Closing terminal sessions .......... done.', 450],
+  ['Releasing GPU slices ............... done.', 600],
+  ['Asking Fahad to stop building things ', 900],
+  ['........................ [FAILED]', 700],
+  ['', 200],
+  ['ERROR 0x26: user is still building something.', 700],
+  ['Shutdown aborted. Rebooting...', 1200],
+]
 
 function Clock() {
   const [now, setNow] = useState<Date | null>(null)
   useEffect(() => {
     setNow(new Date())
-    const t = setInterval(() => setNow(new Date()), 20_000)
+    const t = setInterval(() => setNow(new Date()), 15_000)
     return () => clearInterval(t)
   }, [])
-  return <span>{now ? now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</span>
+  return <span>{now ? now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : ''}</span>
 }
 
-export function FahadOS({ onShutdown, active }: { onShutdown: () => void; active: boolean }) {
-  const [wins, setWins] = useState<Win[]>([{ id: 'welcome', x: 360, y: 90, z: 1, min: false }])
+export function FahadOS({
+  active,
+  muted,
+  onToggleMute,
+  onShutdown,
+}: {
+  active: boolean
+  muted: boolean
+  onToggleMute: () => void
+  onShutdown: () => void
+}) {
+  const { profile } = useDesk()
+  const [wins, setWins] = useState<Win[]>([{ id: 'showcase', ...pos('showcase'), z: 1, min: false, max: false }])
+  const [showcasePage, setShowcasePage] = useState<{ page: Page; key: number }>({ page: 'home', key: 0 })
   const [start, setStart] = useState(false)
+  const [power, setPower] = useState<Power>('on')
+  const [log, setLog] = useState<string[]>([])
   const z = useRef(1)
   const rootRef = useRef<HTMLDivElement>(null)
+  const smudge = useMemo(() => (typeof document !== 'undefined' ? glassSmudgeDataUrl() : ''), [])
 
-  const focus = (id: string) =>
-    setWins((ws) => ws.map((w) => (w.id === id ? { ...w, z: ++z.current, min: false } : w)))
+  // Only interactive (and tabbable) once the camera is at the screen.
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+    if (active) el.removeAttribute('inert')
+    else el.setAttribute('inert', '')
+  }, [active])
 
-  const open = (id: string) => {
-    const app = byId[id]
+  function pos(id: AppId) {
+    return { x: APPS[id].x, y: APPS[id].y }
+  }
+
+  const focus = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, z: ++z.current, min: false } : w)))
+
+  const open = (id: AppId) => {
     setStart(false)
-    if (app.href) {
-      window.open(app.href, '_blank')
-      return
-    }
     setWins((ws) => {
       if (ws.some((w) => w.id === id)) return ws.map((w) => (w.id === id ? { ...w, z: ++z.current, min: false } : w))
-      const n = ws.length
-      return [...ws, { id, x: 190 + n * 34, y: 40 + n * 28, z: ++z.current, min: false }]
+      return [...ws, { id, ...pos(id), z: ++z.current, min: false, max: false }]
     })
   }
-  const close = (id: string) => setWins((ws) => ws.filter((w) => w.id !== id))
-  const minimize = (id: string) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, min: true } : w)))
+  const openShowcase = (page: Page) => {
+    setShowcasePage((s) => ({ page, key: s.key + 1 }))
+    open('showcase')
+  }
+  const link = (href: string) => {
+    setStart(false)
+    window.open(href, '_blank', 'noopener')
+  }
+  const close = (id: AppId) => setWins((ws) => ws.filter((w) => w.id !== id))
+  const minimize = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, min: true } : w)))
+  const toggleMax = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, max: !w.max, z: ++z.current } : w)))
 
   // Drag: pointer deltas are in screen px; the OS is scaled by CSS3D, so divide.
-  const drag = (e: React.PointerEvent, id: string) => {
+  const drag = (e: React.PointerEvent, id: AppId) => {
     if ((e.target as HTMLElement).closest('button')) return
-    focus(id)
-    const root = rootRef.current!
-    const k = root.getBoundingClientRect().width / SCREEN_PX.w
     const w0 = wins.find((w) => w.id === id)!
+    if (w0.max) return
+    focus(id)
+    const k = rootRef.current!.getBoundingClientRect().width / SCREEN_PX.w
     const sx = e.clientX
     const sy = e.clientY
     const move = (ev: PointerEvent) =>
@@ -113,8 +117,8 @@ export function FahadOS({ onShutdown, active }: { onShutdown: () => void; active
           w.id === id
             ? {
                 ...w,
-                x: Math.max(-200, Math.min(SCREEN_PX.w - 120, w0.x + (ev.clientX - sx) / k)),
-                y: Math.max(0, Math.min(SCREEN_PX.h - 90, w0.y + (ev.clientY - sy) / k)),
+                x: Math.max(-300, Math.min(SCREEN_PX.w - 100, w0.x + (ev.clientX - sx) / k)),
+                y: Math.max(0, Math.min(SCREEN_PX.h - TASKBAR - 22, w0.y + (ev.clientY - sy) / k)),
               }
             : w
         )
@@ -127,126 +131,190 @@ export function FahadOS({ onShutdown, active }: { onShutdown: () => void; active
     window.addEventListener('pointerup', up)
   }
 
+  const shutdown = async () => {
+    setStart(false)
+    setPower('shutdown')
+    setLog([])
+    for (const [line, wait] of SHUTDOWN) {
+      await new Promise((r) => setTimeout(r, wait))
+      setLog((l) => (line.startsWith('....') ? [...l.slice(0, -1), l[l.length - 1] + line] : [...l, line]))
+    }
+    setPower('off')
+    setTimeout(onShutdown, 500)
+    setTimeout(() => setPower('booting'), 2200)
+    setTimeout(() => {
+      setPower('on')
+      setWins([])
+    }, 4200)
+  }
+
+  const desktopIcons: { label: string; icon: IconName; run: () => void }[] = [
+    { label: 'My Showcase', icon: 'showcase', run: () => openShowcase('home') },
+    { label: 'Certificates', icon: 'folder', run: () => openShowcase('certificates') },
+    { label: 'Resume.pdf', icon: 'document', run: () => link(profile.cv.view) },
+    { label: 'MS-DOS Prompt', icon: 'terminal', run: () => open('terminal') },
+    { label: 'Minesweeper', icon: 'mine', run: () => open('minesweeper') },
+    { label: 'The Journey', icon: 'gamepad', run: () => link('/') },
+    { label: 'Credits', icon: 'notepad', run: () => open('credits') },
+  ]
+
   return (
     <div
       ref={rootRef}
-      className="fahad-os relative overflow-hidden select-none"
+      className="fahad-os w95 relative overflow-hidden select-none"
       style={{ width: SCREEN_PX.w, height: SCREEN_PX.h }}
-      aria-hidden={active ? undefined : true}
-      // The OS is only interactive once the camera is at the screen.
-      {...(!active ? { tabIndex: -1 } : {})}
+      onPointerDown={() => start && setStart(false)}
     >
-      {/* Desktop icons */}
-      <ul className="absolute left-4 top-4 grid grid-flow-col grid-rows-6 gap-x-2 gap-y-1">
-        {APPS.filter((a) => a.id !== 'welcome').map((a) => (
-          <li key={a.id}>
-            <button
-              type="button"
-              tabIndex={active ? 0 : -1}
-              onClick={() => open(a.id)}
-              className="os-icon w-24 flex flex-col items-center gap-1 p-1.5 text-white text-[13px] text-center"
-            >
-              <span className="w-12 h-12 flex items-center justify-center os-bevel" style={{ background: a.color }}>
-                <a.icon className="w-7 h-7 text-[#101412]" aria-hidden="true" />
-              </span>
-              <span className="leading-tight drop-shadow-[1px_1px_0_#000]">{a.title}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {/* Watermark */}
-      <div className="absolute right-10 bottom-20 text-right text-white/25 pointer-events-none">
-        <p className="font-display text-7xl">FahadOS</p>
-        <p className="text-lg">{profile.positioning}</p>
-      </div>
-
-      {/* Windows */}
-      {wins.map((w) => {
-        const app = byId[w.id]
-        const Body = app.body!
-        return (
-          <section
-            key={w.id}
-            aria-label={app.title}
-            className="os-window absolute flex flex-col"
-            style={{ left: w.x, top: w.y, width: app.w, height: app.h, zIndex: w.z, display: w.min ? 'none' : 'flex' }}
-            onPointerDown={() => focus(w.id)}
-          >
-            <header
-              className="os-titlebar flex items-center gap-2 px-2 h-8 shrink-0 cursor-grab active:cursor-grabbing"
-              onPointerDown={(e) => drag(e, w.id)}
-            >
-              <app.icon className="w-4 h-4" aria-hidden="true" />
-              <span className="font-display text-sm flex-1 truncate">{app.title}</span>
-              <button type="button" tabIndex={active ? 0 : -1} className="os-btn w-6 h-5 flex items-center justify-center" aria-label="Minimize" onClick={() => minimize(w.id)}>
-                <Minus className="w-3 h-3" />
-              </button>
-              <button type="button" tabIndex={active ? 0 : -1} className="os-btn w-6 h-5 flex items-center justify-center" aria-label="Close" onClick={() => close(w.id)}>
-                <X className="w-3 h-3" />
-              </button>
-            </header>
-            <div className="flex-1 min-h-0 overflow-auto bg-[#f4f1e8] text-[#1e211d] m-1 os-inset">
-              <Body open={open} />
-            </div>
-          </section>
-        )
-      })}
-
-      {/* Start menu */}
-      {start && (
-        <nav aria-label="Start menu" className="os-window absolute left-1 bottom-11 w-64 z-[999] flex">
-          <div className="w-9 bg-gradient-to-t from-[#2f4a34] to-[#4f7a4a] text-white font-display text-lg [writing-mode:vertical-rl] rotate-180 flex items-center justify-start p-1">
-            FahadOS
-          </div>
-          <ul className="flex-1 py-1">
-            {APPS.map((a) => (
-              <li key={a.id}>
-                <button type="button" onClick={() => open(a.id)} className="w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-[#2f4a34] hover:text-white">
-                  <a.icon className="w-4 h-4" aria-hidden="true" /> {a.title}
+      {power === 'on' && (
+        <>
+          {/* Desktop icons */}
+          <ul className="absolute left-2 top-2 flex flex-col gap-2.5">
+            {desktopIcons.map((a) => (
+              <li key={a.label}>
+                <button
+                  type="button"
+                  onClick={a.run}
+                  className="w95-icon w-[76px] flex flex-col items-center gap-1 p-1 text-white text-[11px] text-center"
+                >
+                  <PixelIcon name={a.icon} />
+                  <span className="leading-tight px-0.5">{a.label}</span>
                 </button>
               </li>
             ))}
-            <li className="border-t border-[#8a8a8a] mt-1 pt-1">
-              <button type="button" onClick={onShutdown} className="w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-[#2f4a34] hover:text-white">
-                <Power className="w-4 h-4" aria-hidden="true" /> Shut down (back to desk)
-              </button>
-            </li>
           </ul>
-        </nav>
-      )}
 
-      {/* Taskbar */}
-      <footer className="os-taskbar absolute inset-x-0 bottom-0 h-10 flex items-center gap-1.5 px-1.5 z-[1000]">
-        <button
-          type="button"
-          tabIndex={active ? 0 : -1}
-          onClick={() => setStart((s) => !s)}
-          className="os-btn h-8 px-3 flex items-center gap-1.5 font-display text-sm"
-          aria-expanded={start}
-        >
-          <span className="w-4 h-4 bg-[#4f7a4a] inline-block" aria-hidden="true" /> Start
-        </button>
-        <div className="flex-1 flex gap-1 overflow-hidden">
+          {/* Windows */}
           {wins.map((w) => {
-            const app = byId[w.id]
+            const app = APPS[w.id]
+            const isTop = w.z === Math.max(...wins.filter((x) => !x.min).map((x) => x.z))
+            const box = w.max
+              ? { left: 0, top: 0, width: SCREEN_PX.w, height: SCREEN_PX.h - TASKBAR }
+              : { left: w.x, top: w.y, width: app.w, height: app.h }
             return (
-              <button
+              <section
                 key={w.id}
-                type="button"
-                tabIndex={active ? 0 : -1}
-                onClick={() => focus(w.id)}
-                className={`h-8 px-2 w-40 flex items-center gap-1.5 text-xs truncate ${w.min ? 'os-btn' : 'os-inset bg-[#e6e1d3]'}`}
+                aria-label={app.title}
+                className="w95-window absolute flex flex-col p-[3px]"
+                style={{ ...box, zIndex: w.z, display: w.min ? 'none' : 'flex' }}
+                onPointerDown={() => focus(w.id)}
               >
-                <app.icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> {app.title}
-              </button>
+                <header
+                  className={`w95-title ${isTop ? '' : 'inactive'} flex items-center gap-1 h-[20px] pl-1 pr-[2px] shrink-0`}
+                  onPointerDown={(e) => drag(e, w.id)}
+                  onDoubleClick={() => toggleMax(w.id)}
+                >
+                  <span className="scale-50 -mx-2 -my-2 origin-center">
+                    <PixelIcon name={app.icon} />
+                  </span>
+                  <span className="flex-1 truncate font-bold text-[12px] ml-1">{app.title}</span>
+                  <button type="button" className="w95-btn w-4 h-[14px] flex items-center justify-center" aria-label="Minimize" onClick={() => minimize(w.id)}>
+                    <TitleGlyph kind="min" />
+                  </button>
+                  <button type="button" className="w95-btn w-4 h-[14px] flex items-center justify-center" aria-label="Maximize" onClick={() => toggleMax(w.id)}>
+                    <TitleGlyph kind="max" />
+                  </button>
+                  <button type="button" className="w95-btn w-4 h-[14px] ml-[2px] flex items-center justify-center" aria-label="Close" onClick={() => close(w.id)}>
+                    <TitleGlyph kind="close" />
+                  </button>
+                </header>
+                <div className="flex-1 min-h-0 mt-[2px] w95-sunken p-[2px] bg-white overflow-hidden">
+                  {w.id === 'showcase' && <Showcase key={showcasePage.key} initial={showcasePage.page} />}
+                  {w.id === 'terminal' && <TerminalApp />}
+                  {w.id === 'minesweeper' && <MinesweeperApp />}
+                  {w.id === 'credits' && <CreditsApp />}
+                </div>
+              </section>
             )
           })}
+
+          {/* Start menu */}
+          {start && (
+            <nav aria-label="Start menu" className="w95-window absolute left-[2px] z-[999] flex p-[3px]" style={{ bottom: TASKBAR - 2 }} onPointerDown={(e) => e.stopPropagation()}>
+              <div className="w-[26px] bg-gradient-to-t from-[#000080] to-[#1084d0] flex items-end justify-center pb-2">
+                <span className="text-white font-bold text-[17px] [writing-mode:vertical-rl] rotate-180 tracking-wide">
+                  Fahad<span className="font-normal">OS</span>
+                </span>
+              </div>
+              <ul className="py-1 min-w-[190px]">
+                {desktopIcons.map((a) => (
+                  <li key={a.label}>
+                    <button type="button" onClick={a.run} className="w-full flex items-center gap-2.5 pl-2 pr-6 py-1 text-[12px] hover:bg-[#000080] hover:text-white">
+                      <PixelIcon name={a.icon} size={24} /> {a.label}
+                    </button>
+                  </li>
+                ))}
+                <li className="mx-1 my-1 border-t border-[#808080] border-b border-b-white" />
+                <li>
+                  <button type="button" onClick={shutdown} className="w-full flex items-center gap-2.5 pl-2 pr-6 py-1 text-[12px] hover:bg-[#000080] hover:text-white">
+                    <PixelIcon name="speaker" size={24} /> Shut Down...
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          )}
+
+          {/* Taskbar */}
+          <footer className="w95-taskbar absolute inset-x-0 bottom-0 flex items-center gap-1 px-[2px] z-[1000]" style={{ height: TASKBAR }}>
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => setStart((s) => !s)}
+              className={`w95-btn h-[22px] px-1.5 flex items-center gap-1 font-bold text-[12px] ${start ? 'pressed' : ''}`}
+              aria-expanded={start}
+            >
+              <PixelIcon name="showcase" size={16} /> Start
+            </button>
+            <span className="w-[2px] h-[22px] border-l border-[#808080] border-r border-r-white mx-0.5" aria-hidden="true" />
+            <div className="flex-1 flex gap-1 overflow-hidden">
+              {wins.map((w) => {
+                const top = !w.min && w.z === Math.max(...wins.filter((x) => !x.min).map((x) => x.z))
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={() => (top ? minimize(w.id) : focus(w.id))}
+                    className={`w95-btn h-[22px] px-1.5 w-[160px] flex items-center gap-1.5 text-[11px] ${top ? 'pressed font-bold' : ''}`}
+                  >
+                    <PixelIcon name={APPS[w.id].icon} size={16} />
+                    <span className="truncate">{APPS[w.id].title}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <div className="w95-sunken h-[22px] px-2 flex items-center gap-2 text-[11px]">
+              <button type="button" onClick={onToggleMute} aria-label={muted ? 'Unmute sounds' : 'Mute sounds'} className="flex items-center" title={muted ? 'Sound off' : 'Sound on'}>
+                <span className={muted ? 'opacity-40' : ''}>
+                  <PixelIcon name="speaker" size={16} />
+                </span>
+              </button>
+              <Clock />
+            </div>
+          </footer>
+        </>
+      )}
+
+      {power !== 'on' && (
+        <div className="absolute inset-0 bg-black text-[#c8c8c8] font-mono text-[15px] leading-[1.45] p-8">
+          {power === 'shutdown' && log.map((l, i) => <div key={i} className="whitespace-pre min-h-[1.45em]">{l}</div>)}
+          {power === 'booting' && (
+            <div className="h-full flex flex-col items-center justify-center gap-3">
+              <span className="w-16 h-16 bg-white border-4 border-[#c8c8c8] text-black font-showcase font-black text-[42px] flex items-center justify-center">F</span>
+              <span className="font-sans text-[20px] text-white">
+                Starting Fahad<b>OS</b>...
+              </span>
+            </div>
+          )}
         </div>
-        <div className="os-inset h-8 px-3 flex items-center text-xs">
-          <Clock />
-        </div>
-      </footer>
+      )}
+
+      {/* CRT + glass: scanlines, a drifting refresh band, smudges, glare, vignette. */}
+      <div aria-hidden="true" className={`crt pointer-events-none absolute inset-0 z-[2000] ${power === 'off' ? 'crt-off' : ''}`}>
+        <div className="crt-scan" />
+        <div className="crt-band" />
+        <div className="crt-smudge" style={{ backgroundImage: smudge ? `url(${smudge})` : undefined }} />
+        <div className="crt-glare" />
+        <div className="crt-vignette" />
+      </div>
     </div>
   )
 }
