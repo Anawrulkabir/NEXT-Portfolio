@@ -4,7 +4,8 @@
  * Step lengths are illustrative; only the totals (10–15 min, 3–5 min) are real.
  */
 
-export type Node = { id: string; x: number; y: number; title: string; sub: string; kind?: 'you' | 'svc' | 'data' | 'infra' | 'gpu' }
+export type Logo = 'you' | 'api' | 'postgresql' | 'temporal' | 'aws-ec2' | 'aws-ecr' | 'aws-s3' | 'kubernetes' | 'nvidia' | 'hami' | 'jupyter'
+export type Node = { id: string; x: number; y: number; title: string; sub: string; logo: Logo; kind?: 'you' | 'svc' | 'data' | 'infra' | 'gpu' }
 export type Group = { label: string; x: number; y: number; w: number; h: number; tone: 'aws' | 'k8s' | 'metal' }
 export type Step = { from: string; to: string; text: string; weight: number }
 export type Flow = {
@@ -20,10 +21,10 @@ export type Flow = {
 }
 
 const shared: Node[] = [
-  { id: 'you', x: 70, y: 215, title: 'You', sub: 'press Launch', kind: 'you' },
-  { id: 'api', x: 205, y: 215, title: 'AI Studio API', sub: 'REST', kind: 'svc' },
-  { id: 'pg', x: 345, y: 95, title: 'PostgreSQL', sub: 'sessions + slices', kind: 'data' },
-  { id: 'temporal', x: 345, y: 215, title: 'Temporal', sub: 'launch workflow', kind: 'svc' },
+  { id: 'you', x: 70, y: 215, title: 'You', sub: 'press Launch', logo: 'you', kind: 'you' },
+  { id: 'api', x: 205, y: 215, title: 'AI Studio API', sub: 'REST', logo: 'api', kind: 'svc' },
+  { id: 'pg', x: 345, y: 95, title: 'PostgreSQL', sub: 'sessions + slices', logo: 'postgresql', kind: 'data' },
+  { id: 'temporal', x: 345, y: 215, title: 'Temporal', sub: 'launch workflow', logo: 'temporal', kind: 'svc' },
 ]
 
 export const AWS: Flow = {
@@ -34,11 +35,11 @@ export const AWS: Flow = {
   seconds: 12,
   nodes: [
     ...shared,
-    { id: 'ec2', x: 510, y: 215, title: 'EC2 g4dn', sub: 'custom AMI · T4 GPU', kind: 'infra' },
-    { id: 'k8s', x: 665, y: 150, title: 'Kubernetes', sub: 'GPU node joins', kind: 'infra' },
-    { id: 'ecr', x: 510, y: 345, title: 'ECR', sub: 'TensorFlow image', kind: 'data' },
-    { id: 's3', x: 665, y: 345, title: 'JuiceFS on S3', sub: 'your files', kind: 'data' },
-    { id: 'pod', x: 815, y: 215, title: 'IDE pod', sub: '+ sidecar', kind: 'gpu' },
+    { id: 'ec2', x: 510, y: 215, title: 'EC2 g4dn', sub: 'custom AMI · T4', logo: 'aws-ec2', kind: 'infra' },
+    { id: 'k8s', x: 665, y: 150, title: 'Kubernetes', sub: 'GPU node joins', logo: 'kubernetes', kind: 'infra' },
+    { id: 'ecr', x: 510, y: 345, title: 'ECR', sub: 'TensorFlow image', logo: 'aws-ecr', kind: 'data' },
+    { id: 's3', x: 665, y: 345, title: 'JuiceFS on S3', sub: 'your files', logo: 'aws-s3', kind: 'data' },
+    { id: 'pod', x: 815, y: 215, title: 'IDE pod', sub: '+ sidecar', logo: 'jupyter', kind: 'gpu' },
   ],
   groups: [
     { label: 'AWS', x: 430, y: 60, w: 460, h: 340, tone: 'aws' },
@@ -66,10 +67,10 @@ export const METAL: Flow = {
   seconds: 4,
   nodes: [
     ...shared,
-    { id: 'k8s', x: 520, y: 215, title: 'Kubernetes', sub: 'on our own servers', kind: 'infra' },
-    { id: 'hami', x: 670, y: 110, title: 'HAMi', sub: 'GPU scheduler', kind: 'svc' },
-    { id: 'gpu', x: 670, y: 330, title: 'RTX 4090', sub: '6 slices × 8 GB', kind: 'gpu' },
-    { id: 'pod', x: 815, y: 215, title: 'IDE pod', sub: 'hard 8 GB limit', kind: 'gpu' },
+    { id: 'k8s', x: 520, y: 215, title: 'Kubernetes', sub: 'our own servers', logo: 'kubernetes', kind: 'infra' },
+    { id: 'hami', x: 670, y: 110, title: 'HAMi', sub: 'GPU slicing', logo: 'hami', kind: 'svc' },
+    { id: 'gpu', x: 670, y: 330, title: 'RTX 4090', sub: '6 slices × 8 GB', logo: 'nvidia', kind: 'gpu' },
+    { id: 'pod', x: 815, y: 215, title: 'IDE pod', sub: 'hard 8 GB limit', logo: 'jupyter', kind: 'gpu' },
   ],
   groups: [{ label: 'Bare-metal server · Kubernetes', x: 440, y: 60, w: 450, h: 340, tone: 'metal' }],
   steps: [

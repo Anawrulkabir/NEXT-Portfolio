@@ -26,7 +26,12 @@ export function TerminalApp() {
   const [hi, setHi] = useState(-1)
   const endRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  useEffect(() => endRef.current?.scrollIntoView({ block: 'end' }), [lines])
+  useEffect(() => {
+    // Scroll only the terminal's own box. (Keep the braces: scrollIntoView returns
+    // a Promise in newer browsers, and React would call a returned value as cleanup.)
+    const box = endRef.current?.parentElement
+    if (box) box.scrollTop = box.scrollHeight
+  }, [lines])
 
   const apps: Record<string, AppId> = { notes: 'notes', photos: 'photos', mail: 'mail', studio: 'gpu', gpu: 'gpu', soccer: 'soccer', resume: 'preview' }
 
@@ -311,7 +316,7 @@ export function AboutApp() {
         <a href="https://henryheffernan.com" target="_blank" rel="noopener noreferrer" className="underline">
           henryheffernan.com
         </a>
-        . Emoji from Noto Color Emoji by Google (Apache 2.0).
+        . Emoji from Noto Color Emoji (Apache 2.0). Logos: AWS Architecture Icons and Simple Icons; trademarks belong to their owners.
       </p>
     </div>
   )

@@ -154,6 +154,13 @@ export function runCell(code: string, env: Env, spec: Spec): { out: string; erro
         last = `torch.Size([${d[0]}, ${d[d.length - 1]}])`
         continue
       }
+      const unpack = /^([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*=\s*torch\.cuda\.mem_get_info\(\)$/.exec(line)
+      if (unpack) {
+        if (!spec.gpu) throw new Error('RuntimeError: No CUDA GPUs are available')
+        env.set(unpack[1], 8522825728)
+        env.set(unpack[2], 8589934592)
+        continue
+      }
       if (/torch\.cuda\.mem_get_info\(\)/.test(line)) {
         if (!spec.gpu) throw new Error('RuntimeError: No CUDA GPUs are available')
         last = '(8522825728, 8589934592)'

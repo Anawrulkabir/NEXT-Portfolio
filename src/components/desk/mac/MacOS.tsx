@@ -18,11 +18,11 @@ import { SoccerBotApp } from './soccer/SoccerBotApp'
 const MENU = 25
 const DOCK = 78
 
-type Def = { name: string; icon: IconId; w: number; h: number; x: number; y: number; dark?: boolean }
+type Def = { name: string; icon: IconId; w: number; h: number; x: number; y: number; dark?: boolean; max?: boolean }
 const APPS: Record<AppId, Def> = {
   notes: { name: 'Notes', icon: 'notes', w: 990, h: 580, x: 90, y: 42 },
   photos: { name: 'Photos', icon: 'photos', w: 860, h: 540, x: 210, y: 60 },
-  gpu: { name: 'AI Studio', icon: 'gpu', w: 1100, h: 615, x: 90, y: 28, dark: true },
+  gpu: { name: 'AI Studio', icon: 'gpu', w: 1100, h: 615, x: 90, y: 28, max: true },
   soccer: { name: 'Soccer Bot', icon: 'soccer', w: 1080, h: 610, x: 100, y: 30, dark: true },
   terminal: { name: 'Terminal', icon: 'terminal', w: 660, h: 410, x: 330, y: 140, dark: true },
   mail: { name: 'Mail', icon: 'mail', w: 620, h: 470, x: 360, y: 100 },
@@ -97,7 +97,7 @@ export function MacOS({
     setWins((ws) => {
       const has = ws.find((w) => w.id === id)
       if (has) return ws.map((w) => (w.id === id ? { ...w, z: ++z.current, min: false, ...(arg && id !== 'notes' ? { arg, key: w.key + 1 } : {}) } : w))
-      return [...ws, { id, ...pos(id), z: ++z.current, min: false, max: false, arg, key: 0 }]
+      return [...ws, { id, ...pos(id), z: ++z.current, min: false, max: APPS[id].max ?? false, arg, key: 0 }]
     })
   }
   const close = (id: AppId) => setWins((ws) => ws.filter((w) => w.id !== id))
