@@ -22,7 +22,7 @@ function Ext({ href, children }: { href: string; children: ReactNode }) {
   )
 }
 
-function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg?: string) => void, touch: boolean): Note[] {
+function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg?: string) => void): Note[] {
   const Go = ({ id, children }: { id: string; children: ReactNode }) => (
     <button type="button" onClick={() => go(id)} className="inline text-[#b3261e] underline decoration-[#b3261e]/40 underline-offset-2 hover:decoration-[#b3261e] text-left">
       {children}
@@ -80,7 +80,7 @@ function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg
           </ul>
           <p className="flex flex-wrap gap-2 pt-1">
             <App id="gpu">Try GPU Slices</App>
-            {!touch && <App id="soccer">Play Soccer Bot</App>}
+            <App id="soccer">Build my first robot</App>
             <App id="preview">Open my résumé</App>
           </p>
         </>
@@ -230,18 +230,28 @@ function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg
           <h1>Where it started: a soccer robot</h1>
           {bot && <p>{bot.oneLine}</p>}
           {bot?.role && <p className="meta">{bot.role}</p>}
-          {botCert && (
-            <button type="button" onClick={() => open('photos', botCert.id)} className="block w-full mt-3">
+          <p>
+            My team and I built it for the Robo Soccer event at Chittagong Science Carnival 2.0: an Arduino Uno, two
+            BTS7960 motor drivers, four DC motors, a 3S LiPo, buck converters and an HC-05 Bluetooth module, in a
+            plywood body.
+          </p>
+          {bot?.images.map((im) => (
+            <button key={im.id} type="button" onClick={() => open('photos', im.id)} className="block w-full mt-3 text-left">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={botCert.src} alt={botCert.alt} className="w-full rounded-lg border border-black/10" />
-              <span className="meta block mt-1.5 text-left">{botCert.name}</span>
+              <img src={im.src} alt={im.alt} className="w-full rounded-lg border border-black/10" loading="lazy" />
+              <span className="meta block mt-1.5">{im.caption}</span>
+            </button>
+          ))}
+          {botCert && (
+            <button type="button" onClick={() => open('photos', botCert.id)} className="block w-full mt-3 text-left">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={botCert.src} alt={botCert.alt} className="w-full rounded-lg border border-black/10" loading="lazy" />
+              <span className="meta block mt-1.5">{botCert.name}</span>
             </button>
           )}
-          {!touch && (
-            <p className="pt-2">
-              <App id="soccer">Drive one yourself</App>
-            </p>
-          )}
+          <p className="pt-2">
+            <App id="soccer">Build it yourself, then play</App>
+          </p>
         </>
       ),
     },
@@ -372,7 +382,7 @@ export function NotesApp({ selected, onSelect, compact = false }: { selected: st
     onSelect(id)
     setShowList(false)
   }
-  const notes = buildNotes(d, go, open, compact)
+  const notes = buildNotes(d, go, open)
   const shown = q ? notes.filter((n) => (n.title + n.preview).toLowerCase().includes(q.toLowerCase())) : notes
   const note = notes.find((n) => n.id === selected) ?? notes[0]
 

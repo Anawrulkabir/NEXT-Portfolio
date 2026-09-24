@@ -209,3 +209,53 @@ button.hud-pill:hover {
   border-color: rgb(255 255 255 / 0.1);
   color: #f2f0ea;
 }
+
+/* ------------------------------------------------------------ Soccer Bot build */
+@keyframes bb-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+.bb-pulse {
+  animation: bb-pulse 1.1s ease-in-out infinite;
+}
+@keyframes bb-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.bb-pop {
+  animation: bb-pop 0.25s ease-out;
+}
+@keyframes bb-wire {
+  from {
+    stroke-dashoffset: 600;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.bb-wire {
+  stroke-dasharray: 600;
+  animation: bb-wire 0.5s ease-out;
+}
+@keyframes bb-fade {
+  from {
+    opacity: 0;
+  }
+}
+.bb-fade {
+  animation: bb-fade 0.35s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-pulse,
+  .bb-pop,
+  .bb-wire,
+  .bb-fade {
+    animation: none;
+  }
+}
+:root[data-motion='reduce'] :is(.bb-pulse, .bb-pop, .bb-wire, .bb-fade) {
+  animation: none;
+}

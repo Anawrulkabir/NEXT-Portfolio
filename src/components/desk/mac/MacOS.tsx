@@ -13,7 +13,7 @@ import { AppIcon, FMark, type IconId } from './icons'
 import { NotesApp } from './Notes'
 import { AboutApp, MailApp, PhotosApp, PreviewApp, TerminalApp } from './apps'
 import { GpuSlicesApp } from './GpuSlices'
-import { SoccerBotApp } from './SoccerBot'
+import { SoccerBotApp } from './soccer/SoccerBotApp'
 
 const MENU = 25
 const DOCK = 78
@@ -23,7 +23,7 @@ const APPS: Record<AppId, Def> = {
   notes: { name: 'Notes', icon: 'notes', w: 990, h: 580, x: 90, y: 42 },
   photos: { name: 'Photos', icon: 'photos', w: 860, h: 540, x: 210, y: 60 },
   gpu: { name: 'GPU Slices', icon: 'gpu', w: 900, h: 560, x: 190, y: 45, dark: true },
-  soccer: { name: 'Soccer Bot', icon: 'soccer', w: 660, h: 510, x: 310, y: 60, dark: true },
+  soccer: { name: 'Soccer Bot', icon: 'soccer', w: 1080, h: 610, x: 100, y: 30, dark: true },
   terminal: { name: 'Terminal', icon: 'terminal', w: 660, h: 410, x: 330, y: 140, dark: true },
   mail: { name: 'Mail', icon: 'mail', w: 620, h: 470, x: 360, y: 100 },
   preview: { name: 'Résumé.pdf', icon: 'preview', w: 620, h: 600, x: 330, y: 38 },
@@ -44,7 +44,7 @@ function useNow(ms: number) {
   return now
 }
 
-const TODO = ['Score a goal in Soccer Bot', 'Launch 7 sessions in GPU Slices', 'Type neofetch in Terminal', 'Press a key on your real keyboard']
+const TODO = ['Build the Soccer Bot, then score', 'Launch 7 sessions in GPU Slices', 'Type neofetch in Terminal', 'Press a key on your real keyboard']
 
 export function MacOS({
   active,

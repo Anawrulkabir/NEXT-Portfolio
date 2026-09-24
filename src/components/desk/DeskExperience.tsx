@@ -10,6 +10,7 @@ import { MacOS } from './mac/MacOS'
 import { NotesApp } from './mac/Notes'
 import { GpuSlicesApp } from './mac/GpuSlices'
 import { MailApp, PhotosApp, PreviewApp } from './mac/apps'
+import { SoccerBotApp } from './mac/soccer/SoccerBotApp'
 import { OSProvider, type AppId } from './mac/context'
 import { FMark } from './mac/icons'
 import { onMotionChange, prefersReducedMotion } from '@/lib/motion'
@@ -53,7 +54,7 @@ function PhoneScreen({ onClose }: { onClose: () => void }) {
     if (id === 'notes') {
       if (a) setNote(a)
       setApp(null)
-    } else if (id === 'soccer' || id === 'terminal' || id === 'about') {
+    } else if (id === 'terminal' || id === 'about') {
       setApp(null) // keyboard-only toys stay on desktop
     } else {
       setArg(a)
@@ -84,6 +85,8 @@ function PhoneScreen({ onClose }: { onClose: () => void }) {
             <MailApp />
           ) : app === 'preview' ? (
             <PreviewApp />
+          ) : app === 'soccer' ? (
+            <SoccerBotApp />
           ) : app === 'gpu' ? (
             <div className="h-full overflow-y-auto">
               <GpuSlicesApp />
