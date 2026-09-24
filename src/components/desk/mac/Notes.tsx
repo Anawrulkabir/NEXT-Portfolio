@@ -79,7 +79,7 @@ function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg
             </li>
           </ul>
           <p className="flex flex-wrap gap-2 pt-1">
-            <App id="gpu">Try GPU Slices</App>
+            <App id="gpu">Open AI Studio</App>
             <App id="soccer">Build my first robot</App>
             <App id="preview">Open my résumé</App>
           </p>
@@ -120,7 +120,7 @@ function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg
             </>
           )}
           <p className="pt-1">
-            <App id="gpu">Open GPU Slices to play with it</App>
+            <App id="gpu">See it in AI Studio, then launch a notebook</App>
           </p>
         </>
       ),

@@ -8,7 +8,7 @@ import { DeskDataProvider } from './DeskDataContext'
 import type { DeskData } from './data'
 import { MacOS } from './mac/MacOS'
 import { NotesApp } from './mac/Notes'
-import { GpuSlicesApp } from './mac/GpuSlices'
+import { StudioApp } from './mac/studio/StudioApp'
 import { MailApp, PhotosApp, PreviewApp } from './mac/apps'
 import { SoccerBotApp } from './mac/soccer/SoccerBotApp'
 import { OSProvider, type AppId } from './mac/context'
@@ -89,7 +89,7 @@ function PhoneScreen({ onClose }: { onClose: () => void }) {
             <SoccerBotApp />
           ) : app === 'gpu' ? (
             <div className="h-full overflow-y-auto">
-              <GpuSlicesApp />
+              <StudioApp />
             </div>
           ) : (
             <NotesApp selected={note} onSelect={setNote} compact />

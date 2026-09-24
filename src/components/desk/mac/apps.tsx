@@ -28,7 +28,7 @@ export function TerminalApp() {
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => endRef.current?.scrollIntoView({ block: 'end' }), [lines])
 
-  const apps: Record<string, AppId> = { notes: 'notes', photos: 'photos', mail: 'mail', gpu: 'gpu', soccer: 'soccer', resume: 'preview' }
+  const apps: Record<string, AppId> = { notes: 'notes', photos: 'photos', mail: 'mail', studio: 'gpu', gpu: 'gpu', soccer: 'soccer', resume: 'preview' }
 
   const run = (raw: string) => {
     const [c0, ...args] = raw.trim().split(/\s+/)
@@ -45,7 +45,7 @@ export function TerminalApp() {
           'projects     things I built',
           'skills       tools I use',
           'contact      how to reach me',
-          'open <app>   notes · photos · mail · gpu · soccer · resume',
+          'open <app>   notes · photos · mail · studio · soccer · resume',
           'clear'
         )
         break
@@ -85,7 +85,7 @@ export function TerminalApp() {
         break
       }
       case 'ls':
-        out.push('notes/  photos/  resume.pdf  soccer-bot.app  gpu-slices.app')
+        out.push('notes/  photos/  resume.pdf  soccer-bot.app  ai-studio.app')
         break
       case 'pwd':
         out.push('/Users/fahad')

@@ -23,6 +23,12 @@
   mix-blend-mode: overlay;
   pointer-events: none;
 }
+/* The OS sits inside a CSS3D transform with a tiny scale that perspective
+   then magnifies. Chrome sizes SVG text from the tiny scale alone and drops
+   it; geometric precision makes it lay text out at its real size. */
+.fahad-mac svg text {
+  text-rendering: geometricPrecision;
+}
 .mac-menubar {
   background: rgb(246 244 239 / 0.72);
   backdrop-filter: blur(24px) saturate(1.6);
