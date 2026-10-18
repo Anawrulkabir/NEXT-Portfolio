@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './site.css'
 import { mountSite } from './figures'
 import { currentTheme, setTheme } from '@/lib/theme'
@@ -17,9 +17,19 @@ type Section = 'work' | 'research' | 'about'
  * One page of the site: the shared topbar and footer around a page body from ./pages. The body is
  * plain HTML (rendered on the server); figures, the reading rail and the Work catalogue are wired
  * in the browser by mountSite. Links to the island are plain anchors, so it always starts fresh.
+ * On a phone the topbar folds into a menu, and a case study gets a way back to its list.
  */
-export function SitePage({ body, section }: { body: string; section: Section }) {
+export function SitePage({
+  body,
+  section,
+  back,
+}: {
+  body: string
+  section: Section
+  back?: { href: string; label: string }
+}) {
   const host = useRef<HTMLDivElement>(null)
+  const [menu, setMenu] = useState(false)
 
   useEffect(() => {
     const root = host.current
@@ -35,11 +45,24 @@ export function SitePage({ body, section }: { body: string; section: Section }) 
     }
   }, [body])
 
+  // the phone menu: Esc closes it, and the page behind it doesn't scroll
+  useEffect(() => {
+    if (!menu) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenu(false)
+    document.addEventListener('keydown', onKey)
+    document.documentElement.classList.add('menu-open')
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.documentElement.classList.remove('menu-open')
+    }
+  }, [menu])
+
   const nav = (href: string, label: string, key: Section) => (
     <Link href={href} aria-current={section === key ? 'page' : undefined}>
       {label}
     </Link>
   )
+  const close = () => setMenu(false)
 
   return (
     <div className="v3">
@@ -78,8 +101,53 @@ export function SitePage({ body, section }: { body: string; section: Section }) 
                 <path d="M13.5 9.5A6 6 0 0 1 6.5 2.5a6 6 0 1 0 7 7z" />
               </svg>
             </button>
+            <button
+              className="menubtn"
+              type="button"
+              aria-label={menu ? 'Close the menu' : 'Open the menu'}
+              aria-expanded={menu}
+              aria-controls="site-menu"
+              onClick={() => setMenu((m) => !m)}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                {menu ? <path d="M4.5 4.5l9 9M13.5 4.5l-9 9" /> : <path d="M3 5.5h12M3 9h12M3 12.5h12" />}
+              </svg>
+            </button>
           </nav>
         </header>
+        <div id="site-menu" className="sitemenu" data-open={menu || undefined} hidden={!menu}>
+          <nav aria-label="Pages">
+            <Link href="/work" onClick={close} aria-current={section === 'work' ? 'page' : undefined}>
+              Work
+            </Link>
+            <Link className="sub" href="/work/snake-robot" onClick={close}>
+              Compliant snake robot
+            </Link>
+            <Link className="sub" href="/work/propbench" onClick={close}>
+              PropBench
+            </Link>
+            <Link href="/research" onClick={close} aria-current={section === 'research' ? 'page' : undefined}>
+              Research
+            </Link>
+            <Link href="/about" onClick={close} aria-current={section === 'about' ? 'page' : undefined}>
+              About
+            </Link>
+            <a href="/">The island</a>
+          </nav>
+          <div className="sitemenu-cv">
+            <a className="btn" href={CV.swe} download>
+              Software engineering CV <small>PDF</small>
+            </a>
+            <a className="btn" href={CV.academic} download>
+              Academic CV <small>PDF</small>
+            </a>
+          </div>
+        </div>
+        {back && (
+          <nav className="crumb" aria-label="Back">
+            <Link href={back.href}>← {back.label}</Link>
+          </nav>
+        )}
         <div ref={host} dangerouslySetInnerHTML={{ __html: body }} />
         <footer className="foot">
           <p>Md Anawrul Kabir Fahad · Mechanical Engineering, CUET</p>
