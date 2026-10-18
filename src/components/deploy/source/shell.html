@@ -317,7 +317,25 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .x.is-mobile .x-tr { top: 10px; right: 10px; gap: 6px; }
 .x.is-mobile .svc, .x.is-mobile .tools .dk, .x.is-mobile .snd span:not(.bars) { display: none; }
 .x.is-mobile .tools .m { display: inline; } .x.is-mobile .tools .d { display: none; }
-.x.is-mobile .chip { height: 36px; } .x.is-mobile .chip img { width: 28px; height: 28px; }
+.x.is-mobile .chip { height: 40px; padding: 0 4px; } .x.is-mobile .chip img { width: 32px; height: 32px; } .x.is-mobile .chip > div { display: none; }
+/* phones: the view modes stay in the bar; pages, terminal, theme, sound and the CVs move into the menu */
+.menu-btn { display: none; width: 40px; height: 40px; padding: 0; justify-content: center; }
+.x.is-mobile .menu-btn { display: inline-flex; }
+.x.is-mobile .tools [data-termtoggle], .x.is-mobile .tools [data-theme-toggle], .x.is-mobile .snd-more { display: none; }
+.x.is-mobile[data-phase="live"] .sndwrap { display: none; }
+.x.is-mobile .tools button { height: 34px; padding: 0 11px; font-size: 12.5px; }
+.mmenu { position: absolute; z-index: 10; top: 58px; left: 10px; right: 10px; max-height: calc(100% - 70px); overflow-y: auto; display: grid; gap: 14px; padding: 8px 14px 16px; border-radius: 18px; background: var(--canvas); box-shadow: var(--lift-lg); opacity: 0; visibility: hidden; transform: translateY(-6px); transition: opacity 160ms ease, transform 220ms var(--ease-out), visibility 0s 220ms; }
+.mmenu[data-open] { opacity: 1; visibility: visible; transform: none; transition: opacity 180ms ease, transform 260ms var(--ease-out); }
+.mm-pages { display: grid; }
+.mm-pages a { display: flex; align-items: center; min-height: 46px; font-size: 17px; font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--line); }
+.mm-pages a.sub { min-height: 40px; padding-left: 14px; font-size: 14.5px; font-weight: 400; color: var(--muted); }
+.mm-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.mm-row button { flex: 1 1 auto; height: 40px; padding: 0 12px; border-radius: 10px; background: var(--stone); font-size: 13px; font-weight: 500; }
+.mm-row [data-sound][aria-pressed="false"] { color: var(--muted); }
+.mm-row [data-mode][aria-pressed="true"] { background: var(--ink); color: var(--canvas); }
+.mm-cv { display: grid; gap: 6px; }
+.mm-cv a { display: flex; justify-content: space-between; align-items: center; height: 42px; padding: 0 12px; border-radius: 10px; box-shadow: var(--card); font-size: 13px; font-weight: 500; text-decoration: none; }
+.mm-cv small { font: 400 10.5px var(--mono); color: var(--faint); }
 .x.is-mobile .term { left: 0; right: 0; bottom: 0; width: auto; height: 46%; border-radius: 18px 18px 0 0; }
 .x.is-mobile[data-phase="assemble"] .term { top: 0; bottom: auto; height: 34%; border-radius: 0 0 18px 18px; }
 .x.is-mobile[data-phase="live"]:not([data-term="open"]) .term { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -332,8 +350,14 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .x.is-mobile .w-panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: 50%; border-radius: 18px 18px 0 0; transform: translateY(102%); opacity: 1; transition: transform 220ms var(--ease-drawer), height 300ms var(--ease-out), visibility 0s 220ms; padding-bottom: env(safe-area-inset-bottom, 0px); }
 .x.is-mobile .w-panel[data-open] { transform: none; transition: transform 340ms var(--ease-out), height 300ms var(--ease-out), visibility 0s; }
 .x.is-mobile .w-panel[data-sheet="peek"] { height: 132px; }
+.x.is-mobile .w-panel[data-sheet="full"] { height: calc(100% - 60px); }
+.w-full { display: none; }
+.x.is-mobile .w-full { display: grid; place-items: center; flex: none; width: 30px; height: 30px; margin: -4px 0 0; border-radius: 50%; font-size: 15px; color: var(--muted); }
+.x.is-mobile .w-ph > div:last-child { display: flex; gap: 2px; }
+.x.is-mobile .w-grab { touch-action: none; height: 22px; margin: 0 auto; background: none; position: relative; width: 80px; }
+.x.is-mobile .w-grab::before { content: ""; position: absolute; left: 20px; right: 20px; top: 8px; height: 5px; border-radius: 3px; background: var(--lo); }
 .x.is-mobile .w-panel[data-sheet="peek"] .w-body { display: none; }
-.x.is-mobile .w-grab { display: block; order: -2; width: 40px; height: 5px; margin: 8px auto 0; border-radius: 3px; background: var(--lo); cursor: pointer; }
+.x.is-mobile .w-grab { display: block; order: -2; cursor: pointer; }
 .x.is-mobile .w-panel .w-nav { order: -1; border-top: 0; border-bottom: 1px solid var(--line); padding: 4px 8px; }
 .x.is-mobile .idpop { top: 54px; left: 10px; right: 10px; width: auto; max-height: calc(100% - 64px); overflow-y: auto; }
 @media (prefers-reduced-motion: reduce) { .cert, .cert-card, .w-panel, .w-lightbox, .w-lb, .toast, .idpop, .em, .chip, .term, .dev { transition: none !important; } .snd .bars i { animation: none !important; } }
@@ -363,6 +387,13 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
       <button type="button" data-termtoggle aria-label="Terminal" aria-pressed="true" title="Terminal ( ` )">&gt;_</button>
       <button type="button" data-theme-toggle aria-label="Day or night">◐</button>
     </div>
+    <button class="pill glass menu-btn" type="button" data-menu data-live-only aria-expanded="false" aria-controls="x-menu" aria-label="Menu"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 5.5h12M3 9h12M3 12.5h12"/></svg></button>
+  </div>
+  <div class="mmenu" id="x-menu" data-mmenu role="dialog" aria-label="Menu">
+    <nav class="mm-pages" aria-label="Pages"><a href="/work">Work</a><a class="sub" href="/work/snake-robot">Compliant snake robot</a><a class="sub" href="/work/propbench">PropBench</a><a href="/research">Research</a><a href="/about">About</a></nav>
+    <div class="mm-row"><button type="button" data-mode="read">Everything as text</button><button type="button" data-mode="tour">Ride the tour</button></div>
+    <div class="mm-row"><button type="button" data-termtoggle>Terminal</button><button type="button" data-theme-toggle data-keep>Day or night</button><button type="button" data-sound data-keep aria-pressed="true"><span>Sound on</span></button></div>
+    <div class="mm-cv"><a href="/cv/Md-Anawrul-Kabir-Fahad-SWE-CV.pdf" download>Software engineering CV <small>PDF</small></a><a href="/cv/Md-Anawrul-Kabir-Fahad-Academic-CV.pdf" download>Academic CV <small>PDF</small></a></div>
   </div>
 
   <div class="dev" data-dev><div class="dev-stack"><div class="dev-lap" data-lap><div class="scr" data-scr><div class="scr-out" data-scr-out aria-live="polite"></div></div></div><div class="dev-kb" data-kb></div></div></div>

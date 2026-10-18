@@ -91,7 +91,7 @@ function renderPanel() {
   const s = STATIONS[ui.cur], last = STATIONS.length - 1;
   panel.style.setProperty("--a", ACC[s.ns]);
   panel.innerHTML = html`<div class="w-grab" data-act="sheet" aria-hidden="true"></div>
-    <div class="w-ph"><div><p class="w-tag"><i></i>svc/${s.svc} · ns/${s.ns} · <b>Running</b></p><h3 class="w-title">${s.name}</h3><p class="w-sub">${s.tag}</p></div><button class="w-x" type="button" data-act="close" aria-label="Back to the island">×</button></div>
+    <div class="w-ph"><div><p class="w-tag"><i></i>svc/${s.svc} · ns/${s.ns} · <b>Running</b></p><h3 class="w-title">${s.name}</h3><p class="w-sub">${s.tag}</p></div><div><button class="w-full" type="button" data-act="sheetfull" aria-label="${ui.sheet === "full" ? "Make the sheet smaller" : "Full screen"}">${ui.sheet === "full" ? "⤡" : "⤢"}</button><button class="w-x" type="button" data-act="close" aria-label="Back to the island">×</button></div></div>
     <div class="w-body"><p class="w-sum">${s.sum}</p>${controlHTML(s)}<ul class="w-facts">${s.facts.map((f) => `<li>${f}</li>`).join("")}</ul>
     <p class="w-more"><a class="w-page" href="${s.page[0]}">${s.page[1]} →</a><a href="#" data-act="read">Everything as text</a></p></div>
     <div class="w-nav"><button type="button" data-act="prev" ${ui.cur === 0 ? "disabled" : ""}>← ${ui.cur > 0 ? STATIONS[ui.cur - 1].name : ""}</button><span>${ui.cur + 1} / ${STATIONS.length}</span><button type="button" data-act="next" ${ui.cur === last ? "disabled" : ""}>${ui.cur < last ? STATIONS[ui.cur + 1].name : ""} →</button></div>`;
@@ -185,6 +185,7 @@ window.addEventListener("popstate", () => {
 
 /* ---------- one way to dismiss: Esc, ×, or a click outside always closes the top layer ---------- */
 function dismissTop() {
+  if (mMenu.hasAttribute("data-open")) return toggleMenu(false);
   if (sndPop.hasAttribute("data-open")) return toggleSnd(false);
   if (certK >= 0) return closeCert();
   if (lbOpen) return closeLightbox();
@@ -407,7 +408,9 @@ ROOT.addEventListener("click", (e) => {
   if (certK >= 0 && e.target === cv) return closeCert();
   if (idPop.hasAttribute("data-open") && !e.target.closest("[data-idpop],[data-chip]")) toggleId(false);
   if (sndPop.hasAttribute("data-open") && !e.target.closest(".sndwrap")) toggleSnd(false);
-  const t = e.target.closest("[data-act],[data-mode],[data-card],[data-photo],[data-goto],[data-rot],[data-zoom],[data-theme-toggle],[data-copy],[data-sound],[data-chip],[data-skip],[data-termtoggle],[data-term-size],[data-term-close],[data-svc-fold],[data-sound-menu]");
+  // the phone menu closes on a tap outside it, or on any choice in it except the switches
+  if (mMenu.hasAttribute("data-open") && (!e.target.closest("[data-mmenu],[data-menu]") || (e.target.closest("[data-mmenu] a, [data-mmenu] button") && !e.target.closest("[data-keep]")))) toggleMenu(false);
+  const t = e.target.closest("[data-act],[data-mode],[data-card],[data-photo],[data-goto],[data-rot],[data-zoom],[data-theme-toggle],[data-copy],[data-sound],[data-chip],[data-skip],[data-termtoggle],[data-term-size],[data-term-close],[data-svc-fold],[data-sound-menu],[data-menu]");
   // the root carries data-mode itself, so closest() can land on it: that is not a control, and plain links must work
   if (!t || t === ROOT) return;
   if (t.tagName === "A" && !t.dataset.act) return;
@@ -415,6 +418,7 @@ ROOT.addEventListener("click", (e) => {
   if (t.hasAttribute("data-skip")) return skipBoot();
   if (t.hasAttribute("data-sound")) return SFX.set(!SFX.on);
   if (t.hasAttribute("data-sound-menu")) return toggleSnd();
+  if (t.hasAttribute("data-menu")) return toggleMenu();
   if (t.hasAttribute("data-chip")) return toggleId();
   if (t.hasAttribute("data-termtoggle")) return setTerm(termShown() ? "closed" : "open");
   if (t.hasAttribute("data-term-size")) return setTerm(ui.term === "open" ? "compact" : "open");
@@ -433,7 +437,8 @@ ROOT.addEventListener("click", (e) => {
   // the essentials: skip the opening and land on the text version, with both CVs at the top
   if (a === "essentials") { setRoute("read", true); return skipBoot(); }
   if (a === "close") { SFX.close(); return overview(); }
-  if (a === "sheet") return setSheet(ui.sheet === "peek" ? "half" : "peek");
+  if (a === "sheet") { if (sheetSwiped) { sheetSwiped = false; return; } return setSheet(ui.sheet === "peek" ? "half" : ui.sheet === "half" ? "full" : "half"); }
+  if (a === "sheetfull") return setSheet(ui.sheet === "full" ? "half" : "full");
   if (a === "next") return go(Math.min(STATIONS.length - 1, ui.cur + 1));
   if (a === "prev") return go(Math.max(0, ui.cur - 1));
   if (a === "tour") return setMode("tour");
@@ -452,7 +457,25 @@ ROOT.addEventListener("click", (e) => {
   if (a === "toast-x") return $("[data-toast]").removeAttribute("data-open");
   if (a === "idclose") return toggleId(false);
 });
-function setSheet(s) { ui.sheet = s; panel.dataset.sheet = s; layoutOffsets(); }
+function setSheet(s) {
+  ui.sheet = s; panel.dataset.sheet = s; layoutOffsets();
+  const b = panel.querySelector(".w-full"); if (b) { b.textContent = s === "full" ? "⤡" : "⤢"; b.setAttribute("aria-label", s === "full" ? "Make the sheet smaller" : "Full screen"); }
+}
+// swipe the grab bar: up grows the sheet (peek → half → full), down shrinks it, and down from a peek closes it
+let sheetSwiped = false, sheetY = null;
+panel.addEventListener("pointerdown", (e) => { if (e.target.closest(".w-grab")) sheetY = e.clientY; });
+panel.addEventListener("pointerup", (e) => {
+  if (sheetY === null) return; const dy = e.clientY - sheetY; sheetY = null;
+  if (Math.abs(dy) < 28) return;
+  sheetSwiped = true; setTimeout(() => (sheetSwiped = false), 400);
+  const order = ["peek", "half", "full"], k = order.indexOf(ui.sheet);
+  if (dy < 0) setSheet(order[Math.min(2, k + 1)]); else if (k === 0) { SFX.close(); overview(); } else setSheet(order[k - 1]);
+});
+/* ---------- the phone menu: pages, text, tour, terminal, theme, sound and both CVs ---------- */
+const mMenu = $("[data-mmenu]");
+// a touch anywhere outside the menu closes it: on the canvas the pointer is captured, so a click may never come
+ROOT.addEventListener("pointerdown", (e) => { if (mMenu.hasAttribute("data-open") && !e.target.closest("[data-mmenu],[data-menu]")) toggleMenu(false); }, true);
+function toggleMenu(force) { const open = force !== undefined ? force : !mMenu.hasAttribute("data-open"); mMenu.toggleAttribute("data-open", open); $("[data-menu]").setAttribute("aria-expanded", String(open)); if (open) SFX.open(); }
 /* ---------- sound settings: a level and the optional hum, beside the one-click mute ---------- */
 const sndPop = $("[data-sndpop]"), volIn = $("[data-vol]"), humIn = $("[data-hum]");
 function toggleSnd(force) { const open = force !== undefined ? force : !sndPop.hasAttribute("data-open"); sndPop.toggleAttribute("data-open", open); $("[data-sound-menu]").setAttribute("aria-expanded", String(open)); }
@@ -460,7 +483,7 @@ volIn.addEventListener("input", () => { const v = +volIn.value / 100; SFX.unlock
 // read the control before unlocking: unlocking notifies listeners, which re-sync the controls from the stored values
 humIn.addEventListener("change", () => { const v = humIn.checked; SFX.unlock(); SFX.setHum(v); });
 SFX.onChange(() => { volIn.value = String(Math.round(SFX.volume * 100)); $("[data-vol-out]").textContent = volIn.value; humIn.checked = SFX.hum; });
-SFX.onChange(() => { const b = $("[data-sound]"); b.setAttribute("aria-pressed", String(SFX.on)); b.querySelector("span:not(.bars)").textContent = SFX.on ? "Sound on" : "Sound off"; });
+SFX.onChange(() => ROOT.querySelectorAll("[data-sound]").forEach((b) => { b.setAttribute("aria-pressed", String(SFX.on)); b.querySelector("span:not(.bars)").textContent = SFX.on ? "Sound on" : "Sound off"; }));
 
 /* ---------- keys: during boot they write the command; afterwards they reach the terminal ---------- */
 window.addEventListener("keydown", (e) => {

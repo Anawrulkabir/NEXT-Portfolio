@@ -511,12 +511,25 @@ export function mountSite(root) {
     const e = ENTRIES.find((x) => x.id === id), s = shelfOf(e.shelf);
     picked = id;
     work.querySelectorAll(".tile").forEach((t) => t.toggleAttribute("data-picked", t.dataset.entry === id));
-    drawer.innerHTML = `<div class="dr" style="--gc:${s.color}"><div class="dr-h"><div><p class="dr-name">${e.name}</p><p class="dr-meta"><span style="display:inline-flex;align-items:center;gap:6px">${ICON[s.icon]}${s.title}</span><span class="tag">${e.status}</span></p></div><button class="x-close" type="button" data-close aria-label="Close">${ICON.x}</button></div><div class="figwrap"><div class="stage" data-fig="${e.fig}" data-intensity="0.6" data-play></div>${e.fig.startsWith("ghost") ? "" : '<div class="readout"><span data-read></span></div>'}</div><p class="dr-sum">${e.sum}</p><ul class="facts">${e.facts.map((f) => `<li>${f}</li>`).join("")}</ul><p class="dr-ask">${e.go ? `<a class="more" href="${GO[e.go][0]}">${GO[e.go][1]}</a>` : ""}${e.go && e.svc ? " · " : ""}${e.svc ? `<a class="more" href="/#/${e.svc}">See it on the island</a>` : ""}</p></div>`;
+    drawer.innerHTML = `<div class="dr" style="--gc:${s.color}"><button class="dr-back" type="button" data-close>← Back to all work</button><div class="dr-h"><div><p class="dr-name">${e.name}</p><p class="dr-meta"><span style="display:inline-flex;align-items:center;gap:6px">${ICON[s.icon]}${s.title}</span><span class="tag">${e.status}</span></p></div><button class="x-close" type="button" data-close aria-label="Close">${ICON.x}</button></div><div class="figwrap"><div class="stage" data-fig="${e.fig}" data-intensity="0.6" data-play></div>${e.fig.startsWith("ghost") ? "" : '<div class="readout"><span data-read></span></div>'}</div><p class="dr-sum">${e.sum}</p><ul class="facts">${e.facts.map((f) => `<li>${f}</li>`).join("")}</ul><p class="dr-ask">${e.go ? `<a class="more" href="${GO[e.go][0]}">${GO[e.go][1]}</a>` : ""}${e.go && e.svc ? " · " : ""}${e.svc ? `<a class="more" href="/#/${e.svc}">See it on the island</a>` : ""}</p></div>`;
     drawer.setAttribute("data-open", "");
+    document.documentElement.classList.add("drawer-open");
+    // an open drawer is a step in history, so the phone's Back button closes it instead of leaving the page
+    if (history.state && history.state.drawer) history.replaceState({ ...history.state, drawer: id }, "");
+    else history.pushState({ ...history.state, drawer: id }, "");
     mountAll(drawer);
   }
-  function closeDrawer() { drawer.removeAttribute("data-open"); picked = null; work.querySelectorAll(".tile").forEach((t) => t.removeAttribute("data-picked")); }
+  function closeDrawer(fromHistory) {
+    if (!drawer.hasAttribute("data-open")) return;
+    if (!fromHistory && history.state && history.state.drawer) { history.back(); return; }
+    drawer.removeAttribute("data-open"); document.documentElement.classList.remove("drawer-open");
+    picked = null; work.querySelectorAll(".tile").forEach((t) => t.removeAttribute("data-picked"));
+  }
+  on(window, "popstate", () => { if (!(history.state && history.state.drawer)) closeDrawer(true); });
+  // the drawer sits beside the catalogue, not inside it, so it answers its own close and back buttons
+  on(drawer, "click", (e) => { if (e.target.closest("[data-close]")) closeDrawer(); });
   on(document, "keydown", (e) => { if (e.key === "Escape" && drawer.hasAttribute("data-open")) closeDrawer(); });
+  off.push(() => document.documentElement.classList.remove("drawer-open"));
   renderShelves();
   renderBody();
   }

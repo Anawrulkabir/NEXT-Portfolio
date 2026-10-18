@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <SitePage body={body} section="work" />
+  return <SitePage body={body} section="work" back={{ href: '/work', label: 'All work' }} />
 }
