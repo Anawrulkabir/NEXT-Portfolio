@@ -66,7 +66,7 @@ function layoutOffsets() {
 }
 
 /* ---------- panels ---------- */
-let panelField = null;
+let panelField = null, panelRiffle = null;
 function controlHTML(s) {
   switch (s.control) {
     case "identity": return html`<div class="w-id" data-id-here></div>`;
@@ -76,13 +76,15 @@ function controlHTML(s) {
     case "loupe": return html`<div class="w-ctl"><p class="w-read" data-read="loupe"></p><p class="w-read" data-read="lock"></p><p class="w-note">Move the loupe over the sheet. The laptop lid follows your pointer’s height; the padlock opens when you reach for it.</p></div>`;
     case "race": return html`<div class="w-ctl"><button class="w-btn" type="button" data-act="race">Launch a session both ways</button><div class="w-race"><div><span>AWS · new EC2 machine</span><b data-race="aws">—</b></div><i><s data-bar="aws"></s></i><div><span>Bare metal · HAMi slice</span><b data-race="bm">—</b></div><i><s data-bar="bm"></s></i></div><p class="w-note">One launch drawn from each stated range (10–15 and 3–5 minutes), a second of animation per 2.5 minutes.</p></div>`;
     case "kick": return html`<div class="w-ctl"><button class="w-btn" type="button" data-act="kick">Kick off</button><div class="w-thumbs">${PHOTOS.map(([id, alt], k) => `<button type="button" data-photo="${k}"><img alt="${alt}" src="${IMG[id]}"></button>`).join("")}</div></div>`;
-    case "certs": return html`<div class="w-thumbs w-thumbs-c">${CERTS.map(([id, n], k) => `<button type="button" data-card="${k}" title="${n}"><img alt="${n}" src="${IMG[id]}"></button>`).join("")}</div>`;
+    case "certs": return html`<div class="w-ctl w-riffle"><div class="w-riffle-fig" data-riffle></div><p class="w-read" data-riffle-read>Point at the tray to pull a card · click it to read</p></div>
+      <ol class="w-certs">${CERTS.map(([, t, iss, d], k) => `<li><button type="button" data-card="${k}"><span>${String(k + 1).padStart(2, "0")}</span><b>${t}</b><em>${iss} · ${d}</em></button></li>`).join("")}</ol>`;
     case "contact": return html`<div class="w-ctl w-contact"><p class="w-read"><b>${LINKS.email}</b></p><div class="id-links"><button type="button" data-copy="${LINKS.email}">Copy email</button>${cvLinks()}<a href="${LINKS.linkedin}" target="_blank" rel="noopener">LinkedIn</a><a href="${LINKS.github}" target="_blank" rel="noopener">GitHub</a></div></div>`;
     default: return "";
   }
 }
 function renderPanel() {
   if (panelField) { panelField.destroy(); panelField = null; }
+  if (panelRiffle) { panelRiffle.destroy(); panelRiffle = null; }
   if (ui.cur < 0) { panel.removeAttribute("data-open"); return; }
   const s = STATIONS[ui.cur], last = STATIONS.length - 1;
   panel.style.setProperty("--a", ACC[s.ns]);
@@ -93,6 +95,19 @@ function renderPanel() {
     <div class="w-nav"><button type="button" data-act="prev" ${ui.cur === 0 ? "disabled" : ""}>← ${ui.cur > 0 ? STATIONS[ui.cur - 1].name : ""}</button><span>${ui.cur + 1} / ${STATIONS.length}</span><button type="button" data-act="next" ${ui.cur === last ? "disabled" : ""}>${ui.cur < last ? STATIONS[ui.cur + 1].name : ""} →</button></div>`;
   panel.setAttribute("data-open", ""); panel.dataset.sheet = ui.sheet;
   const idHere = panel.querySelector("[data-id-here]"); if (idHere) panelField = identityCard(idHere, true);
+  // the Hall's tray is Hairline's own Riffle: eight cards for eight certificates; the pulled one opens on click
+  const rf = panel.querySelector("[data-riffle]");
+  if (rf && HLIB && HLIB.riffle) {
+    let cur = -1; const rd = panel.querySelector("[data-riffle-read]");
+    panelRiffle = HLIB.riffle(rf, { intensity: 0.5, label: "A tray of eight certificates. Point at a card to pull it, click to read it; the arrow keys walk the tray and Enter opens the pulled card.", onRead: (t) => {
+      cur = t === "rest" ? -1 : +t - 1;
+      rd.innerHTML = cur < 0 ? "Point at the tray to pull a card · click it to read" : `<b>${String(cur + 1).padStart(2, "0")}</b> · ${CERTS[cur][1]}`;
+      if (cur >= 0) SFX.flick(cur);
+    } });
+    const open = () => { if (cur >= 0) openCert(cur, rf.getBoundingClientRect(), "tray"); };
+    rf.addEventListener("click", open);
+    rf.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+  } else if (rf) rf.closest(".w-riffle").remove();
   const ain = panel.querySelector('[data-in="aoa"]'); if (ain) { ain.value = aoaGoal; ain.addEventListener("input", () => { aoaGoal = +ain.value; }); }
   const gin = panel.querySelector('[data-in="G"]'); if (gin) { gin.value = Ggoal; gin.addEventListener("input", () => { Ggoal = +gin.value; SFX.flick(Math.round(Ggoal * 4)); }); }
 }
@@ -111,6 +126,7 @@ function updateReads() {
 function go(i, opts = {}) {
   if (BOOT.phase !== "live") return;
   if (lbOpen) closeLightbox();
+  if (certK >= 0 && i !== 2) closeCert();
   const from = ui.cur;
   ui.cur = i; if (mobile) ui.sheet = "half";
   ROOT.dataset.view = "station";
@@ -122,7 +138,7 @@ function go(i, opts = {}) {
   if (!opts.quiet) logLine([seg("→ ", "dim"), seg("svc/" + STATIONS[i].svc, "acc"), seg("  200 OK", "ok")]);
 }
 function focus(i) { const s = STATIONS[i]; ctl.tween = null; ctl.tg.set(s.c[0] + 0.5, S(s.c[0], s.c[1]) + 1, s.c[1] + 0.5); ctl.zg = s.zoom * (mobile ? 0.62 : 1); SFX.whoosh(); }
-function overview(opts = {}) { if (!opts.fromHistory) setRoute(""); ui.cur = -1; ROOT.dataset.view = "overview"; ctl.tween = null; ctl.tg.copy(OVER); ctl.zg = overviewZoom(); renderPanel(); layoutOffsets(); syncNav(); }
+function overview(opts = {}) { if (!opts.fromHistory) setRoute(""); closeCert(); ui.cur = -1; ROOT.dataset.view = "overview"; ctl.tween = null; ctl.tg.copy(OVER); ctl.zg = overviewZoom(); renderPanel(); layoutOffsets(); syncNav(); }
 function startTravel(from, to) {
   const n = PATH.length, a = stopAt[from], b = stopAt[to], fwd = (b - a + n) % n, back = (a - b + n) % n, seq = [];
   if (fwd <= back) for (let k = 0; k <= fwd; k++) seq.push((a + k) % n); else for (let k = 0; k <= back; k++) seq.push((a - k + n) % n);
@@ -167,6 +183,8 @@ window.addEventListener("popstate", () => {
 
 /* ---------- one way to dismiss: Esc, ×, or a click outside always closes the top layer ---------- */
 function dismissTop() {
+  if (sndPop.hasAttribute("data-open")) return toggleSnd(false);
+  if (certK >= 0) return closeCert();
   if (lbOpen) return closeLightbox();
   if (idPop.hasAttribute("data-open")) return toggleId(false);
   if (ui.mode === "read") return setMode(mobile ? "tour" : "explore");
@@ -203,12 +221,38 @@ function drawLightbox() {
   lb.querySelector("img").src = it.src; lb.querySelector("img").alt = it.alt;
   lb.querySelector("[data-lbt]").textContent = it.title; lb.querySelector("[data-lbs]").textContent = it.sub;
   lb.querySelector("[data-lbn]").textContent = lbList.length > 1 ? `${lbK + 1} / ${lbList.length}` : "";
-  riffle.pick = it.card !== undefined ? it.card : -1;
 }
-function closeLightbox() { lbOpen = false; lb.removeAttribute("data-open"); riffle.pick = -1; SFX.close(); }
-const certItems = CERTS.map(([id, t, iss, d], k) => ({ src: IMG[id], alt: t, title: t, sub: `${iss} · ${d}`, card: k }));
+function closeLightbox() { lbOpen = false; lb.removeAttribute("data-open"); SFX.close(); }
 const photoItems = PHOTOS.map(([id, alt]) => ({ src: IMG[id], alt, title: alt, sub: "Robo Soccer, 2022" }));
-function pullCard(k) { if (ui.cur !== 2) go(2, { jump: true, quiet: true }); SFX.whoosh(); setTimeout(() => openLightbox(certItems, k), ui.cur === 2 ? 260 : 600); }
+/* ---------- certificates: the pulled card keeps rising, into a framed reading card with the tray's punched tab ---------- */
+const cv = $("[data-cert]"), cvCard = cv.querySelector(".cert-card");
+let certK = -1, certSrc = null, certFrom = null;
+/** where a frame sits on screen, so the card can rise from (and return to) its wall */
+function frameRect(k) { const v = new V3(); frames[k].getWorldPosition(v); v.project(cam); const R = ROOT.getBoundingClientRect(), x = R.left + (v.x * 0.5 + 0.5) * W, y = R.top + (-v.y * 0.5 + 0.5) * Hh; return { left: x - 34, top: y - 24, width: 68, height: 48 }; }
+const flip = (f) => { const to = cvCard.getBoundingClientRect(); return `translate(${f.left - to.left}px, ${f.top - to.top}px) scale(${f.width / to.width}, ${f.height / to.height})`; };
+function drawCert() {
+  const [id, t, iss, d] = CERTS[certK], img = cv.querySelector("img");
+  img.src = IMG[id]; img.alt = t;
+  cv.querySelector("[data-cert-t]").textContent = t; cv.querySelector("[data-cert-s]").textContent = `${iss} · ${d}`;
+  cv.querySelector("[data-cert-n]").textContent = `No. ${String(certK + 1).padStart(2, "0")} of ${CERTS.length}`;
+  cv.querySelectorAll(".cert-punch i").forEach((p, k) => p.classList.toggle("on", k === certK));
+  certOpen.k = certK;
+}
+function openCert(k, from, src = "wall") {
+  if (ui.cur !== 2) go(2, { jump: true, quiet: true });
+  certK = k; certSrc = src; certFrom = from || frameRect(k); drawCert();
+  cv.setAttribute("data-open", "");
+  cvCard.style.transition = "none"; cvCard.style.transform = flip(certFrom); cvCard.offsetWidth;
+  cvCard.style.transition = ""; cvCard.style.transform = "";
+  SFX.whoosh(); cv.querySelector("[data-act='certclose']").focus({ preventScroll: true });
+}
+function stepCert(d) { certK = (certK + d + CERTS.length) % CERTS.length; if (certSrc === "wall") certFrom = frameRect(certK); drawCert(); SFX.flick(certK); }
+function closeCert() {
+  if (certK < 0) return;
+  cvCard.style.transform = flip(certSrc === "wall" ? frameRect(certK) : certFrom);
+  cv.removeAttribute("data-open"); certK = -1; certOpen.k = -1; SFX.close();
+  setTimeout(() => { if (certK >= 0) return; cvCard.style.transition = "none"; cvCard.style.transform = ""; cvCard.offsetWidth; cvCard.style.transition = ""; }, 420);
+}
 
 /* ---------- terminal: log lines and commands ---------- */
 function logLine(segs) { TERM.push(segs); }
@@ -224,7 +268,7 @@ function exec(raw) {
   const a = args.join(" ");
   const out = (t, c) => TERM.push([seg(t, c)]);
   switch (cmd) {
-    case "help": [["ls", "list the services"], ["open <svc>", "go there   (or just type its name)"], ["logs <svc>", "what it did"], ["whoami", "who runs this cluster"], ["tour", "ride the cart through every service"], ["certs", "the card tray in the hall"], ["contact", "how to reach me"], ["cv swe|academic", "download a CV"], ["sound on|off", "the clicks and the hum"], ["theme dark|light", "day or night"], ["home", "back to the whole island"], ["clear", "clear this window"]].forEach(([c, d]) => TERM.push([seg("  " + pad(c, 18), "acc"), seg(d, "mute")])); break;
+    case "help": [["ls", "list the services"], ["open <svc>", "go there   (or just type its name)"], ["logs <svc>", "what it did"], ["whoami", "who runs this cluster"], ["tour", "ride the cart through every service"], ["certs", "the card tray in the hall"], ["contact", "how to reach me"], ["cv swe|academic", "download a CV"], ["sound on|off|0-100|hum", "mute, volume, ambient hum"], ["theme dark|light", "day or night"], ["home", "back to the whole island"], ["clear", "clear this window"]].forEach(([c, d]) => TERM.push([seg("  " + pad(c, 18), "acc"), seg(d, "mute")])); break;
     case "ls": TERM.push([seg(pad("NAME", 18) + pad("NAMESPACE", 12) + "STATUS", "dim")]); STATIONS.forEach((s) => TERM.push([seg(pad(s.svc, 18), "fg"), seg(pad(s.ns, 12), "mute"), seg("Running", "ok")])); break;
     case "open": case "cd": case "go": case "describe": {
       if (cmd === "cd" && (!a || a === "~" || a === ".." || a === "/")) { overview(); out("~", "mute"); break; }
@@ -233,7 +277,7 @@ function exec(raw) {
     case "whoami": ["Md Anawrul Kabir Fahad", "B.Sc. Mechanical Engineering, CUET (2022 →)", "Research software · scientific ML · GPU platforms"].forEach((t, k) => out(t, k ? "fg" : "hi")); toggleId(true); break;
     case "tour": setMode("tour"); out("riding the mesh, stop 1 of 10", "mute"); break;
     case "contact": go(9); out(LINKS.email, "hi"); break;
-    case "certs": case "certificates": go(2); out("8 cards in the tray · point to riffle, click to pull one", "mute"); break;
+    case "certs": case "certificates": go(2); out("8 certificates on the walls · click a frame, or pull a card from the tray in the panel", "mute"); break;
     case "cv": {
       const kind = /^a/.test(a) ? "academic" : /^(s|e)/.test(a) ? "swe" : "";
       if (!kind) { TERM.push([seg("  cv swe      ", "acc"), seg("software engineering CV · " + LINKS.cv.swe, "mute")]); TERM.push([seg("  cv academic ", "acc"), seg("academic CV · " + LINKS.cv.academic, "mute")]); break; }
@@ -241,7 +285,9 @@ function exec(raw) {
       out(`downloading ${l.download}`, "ok"); SFX.latch(true); break; }
     case "clear": TERM.clear(); break;
     case "home": case "exit": overview(); break;
-    case "sound": SFX.set(a ? a === "on" : !SFX.on); out(`sound ${SFX.on ? "on" : "off"}`, "mute"); break;
+    case "sound": {
+      if (/^\d+$/.test(a)) SFX.setVolume(+a / 100); else if (a === "hum") SFX.setHum(!SFX.hum); else SFX.set(a ? a === "on" : !SFX.on);
+      out(`sound ${SFX.on ? "on" : "off"} · volume ${Math.round(SFX.volume * 100)} · hum ${SFX.hum ? "on" : "off"}`, "mute"); break; }
     case "theme": document.documentElement.setAttribute("data-theme", a === "light" || a === "dark" ? a : dark ? "light" : "dark"); break;
     case "ping": [3, 2, 4].forEach((ms, k) => setTimeout(() => out(`64 bytes from fahad-kabir: icmp_seq=${k + 1} ttl=64 time=${ms} ms`, "fg"), 260 * (k + 1))); break;
     case "reboot": store.set("booted", false); out("rebooting…", "warn"); setTimeout(() => location.reload(), 500); break;
@@ -308,27 +354,31 @@ function deploy(fast) {
   let t = typeAt(1.5, "kubectl describe configmap/identity", 34);
   const who = [["Name:     ", "Md Anawrul Kabir Fahad", "hi"], ["Studies:  ", "Mechanical Engineering · CUET (2022 →)", "fg"], ["Builds:   ", "research software · scientific ML", "fg"], ["Ran:      ", "GPU platforms at Poridhi.io (2025–26)", "fg"], ["Status:   ", "Running", "ok"]];
   who.forEach(([k, v, c], j) => at(t + 0.08 + j * 0.11, () => TERM.push([seg(k, "mute"), seg(v, c)])));
-  const e0 = t + 0.25;
+  // the identity: a print slides out of the screen, exposes, develops into colour, holds with the name, then docks
+  const e0 = t + 0.3;
   at(e0, () => DEV.emerge());
-  for (let r = 0; r <= 24; r++) at(e0 + 0.75 + (r / 24) * 1.6, () => { DEV.reveal(r / 24); SFX.print(); });
-  [..."Md Anawrul Kabir Fahad"].forEach((ch, k) => at(e0 + 2.4 + k * 0.03, () => DEV.name("Md Anawrul Kabir Fahad".slice(0, k + 1))));
-  for (let k = 1; k <= 16; k++) at(e0 + 2.45 + k * 0.05, () => DEV.develop(k / 16));
-  at(e0 + 3.7, () => DEV.dock());
-  t = e0 + 4.2;
-  at(t, () => { ROOT.dataset.phase = "assemble"; DEV.leave(); tweenCam(OVER, overviewZoom(), 3.4, BOOT.bt); });
-  t = typeAt(t + 0.45, "kubectl get pods -w", 40);
+  for (let r = 0; r <= 14; r++) at(e0 + 0.8 + (r / 14) * 1.4, () => { DEV.reveal(r / 14); if (r % 2 === 0) SFX.print(); });
+  for (let k = 1; k <= 20; k++) at(e0 + 1.6 + (k / 20) * 1.6, () => DEV.develop(k / 20));
+  at(e0 + 2.2, () => DEV.hold());
+  [..."Md Anawrul Kabir Fahad"].forEach((ch, k) => at(e0 + 2.4 + k * 0.035, () => DEV.name("Md Anawrul Kabir Fahad".slice(0, k + 1))));
+  at(e0 + 3.3, () => DEV.role("Mechanical · research software · GPU"));
+  at(e0 + 5.0, () => DEV.dock());
+  t = e0 + 5.6;
+  // the island: each area rises, builds and comes up in turn, while the camera settles slowly over it
+  at(t, () => { ROOT.dataset.phase = "assemble"; DEV.leave(); tweenCam(OVER, overviewZoom(), 5.2, BOOT.bt); });
+  t = typeAt(t + 0.5, "kubectl get pods -w", 40);
   at(t + 0.05, () => TERM.push([seg(pad("NAME", 22) + pad("READY", 7) + pad("STATUS", 19) + "AGE", "dim")]));
-  const T0 = t + 0.25;
+  const T0 = t + 0.3, RISE = 0.6, BUILD = 1.4, UP = 3.2, STEP = 0.5;
   STATIONS.forEach((s, i) => {
-    const name = `${s.svc}-${hash(s.svc)}`;
+    const name = `${s.svc}-${hash(s.svc)}`, t1 = T0 + i * RISE, t2 = T0 + BUILD + i * 0.55, t3 = T0 + UP + i * STEP;
     const row = (st, c, ready, age) => [seg(pad(name, 22), "fg"), seg(pad(ready, 7), "mute"), seg(pad(st, 19), c), seg(age, "mute")];
-    at(T0 + i * 0.34, () => { BOOT.rows[i] = TERM.push(row("Pending", "warn", "0/1", "0s")); REG[i].riseT = BOOT.bt; SFX.relay(i); });
-    at(T0 + 1.1 + i * 0.3, () => { TERM.set(BOOT.rows[i], row("ContainerCreating", "info", "0/1", `${(1.1 + i * 0.3 - i * 0.34 + 0.1).toFixed(0)}s`)); REG[i].printT = BOOT.bt; SFX.thunk(); });
-    at(T0 + 2.7 + i * 0.28, () => { TERM.set(BOOT.rows[i], row("Running", "ok", "1/1", `${Math.round(2.7 + i * 0.28 - i * 0.34)}s`)); REG[i].svcT = BOOT.bt; SFX.blip(i); });
+    at(t1, () => { BOOT.rows[i] = TERM.push(row("Pending", "warn", "0/1", "0s")); REG[i].riseT = BOOT.bt; SFX.relay(i); });
+    at(t2, () => { TERM.set(BOOT.rows[i], row("ContainerCreating", "info", "0/1", `${Math.max(1, Math.round(t2 - t1))}s`)); REG[i].printT = BOOT.bt; SFX.thunk(); });
+    at(t3, () => { TERM.set(BOOT.rows[i], row("Running", "ok", "1/1", `${Math.round(t3 - t1)}s`)); REG[i].svcT = BOOT.bt; SFX.blip(i); });
   });
-  const TN = T0 + 2.7 + 9 * 0.28 + 0.6;
+  const TN = T0 + UP + 9 * STEP + 0.8;
   at(TN, () => { TERM.push(""); TERM.push([seg("Connecting the service mesh ", "fg"), seg("···", "mute")]); BOOT.netT = BOOT.bt; SFX.sweep(); });
-  at(TN + 1.3, () => { TERM.push([seg("✓ ", "ok"), seg("Connected to ", "fg"), seg("fahad-kabir", "hi"), seg(" · 10/10 services Running", "ok")]); SFX.hush(false); SFX.chord(); goLive(); });
+  at(TN + 1.6, () => { TERM.push([seg("✓ ", "ok"), seg("Connected to ", "fg"), seg("fahad-kabir", "hi"), seg(" · 10/10 services Running", "ok")]); SFX.hush(false); SFX.chord(); goLive(); });
   BOOT.events = E.sort((a, b) => a.t - b.t);
 }
 function goLive() {
@@ -352,14 +402,17 @@ function skipBoot() { if (BOOT.phase === "live") return; if (BOOT.phase !== "dep
 /* ---------- clicks ---------- */
 ROOT.addEventListener("click", (e) => {
   if (lbOpen && e.target === lb) return closeLightbox();
+  if (certK >= 0 && e.target === cv) return closeCert();
   if (idPop.hasAttribute("data-open") && !e.target.closest("[data-idpop],[data-chip]")) toggleId(false);
-  const t = e.target.closest("[data-act],[data-mode],[data-card],[data-photo],[data-goto],[data-rot],[data-zoom],[data-theme-toggle],[data-copy],[data-sound],[data-chip],[data-skip],[data-termtoggle],[data-term-size],[data-term-close],[data-svc-fold]");
+  if (sndPop.hasAttribute("data-open") && !e.target.closest(".sndwrap")) toggleSnd(false);
+  const t = e.target.closest("[data-act],[data-mode],[data-card],[data-photo],[data-goto],[data-rot],[data-zoom],[data-theme-toggle],[data-copy],[data-sound],[data-chip],[data-skip],[data-termtoggle],[data-term-size],[data-term-close],[data-svc-fold],[data-sound-menu]");
   // the root carries data-mode itself, so closest() can land on it: that is not a control, and plain links must work
   if (!t || t === ROOT) return;
   if (t.tagName === "A" && !t.dataset.act) return;
   e.preventDefault(); SFX.unlock();
   if (t.hasAttribute("data-skip")) return skipBoot();
   if (t.hasAttribute("data-sound")) return SFX.set(!SFX.on);
+  if (t.hasAttribute("data-sound-menu")) return toggleSnd();
   if (t.hasAttribute("data-chip")) return toggleId();
   if (t.hasAttribute("data-termtoggle")) return setTerm(termShown() ? "closed" : "open");
   if (t.hasAttribute("data-term-size")) return setTerm(ui.term === "open" ? "compact" : "open");
@@ -367,7 +420,7 @@ ROOT.addEventListener("click", (e) => {
   if (t.hasAttribute("data-svc-fold")) return foldSvc(!svcList.hasAttribute("data-folded"));
   if (t.dataset.copy) { const done = () => { t.textContent = "Copied"; setTimeout(() => (t.textContent = "Copy email"), 1400); }; navigator.clipboard?.writeText(t.dataset.copy).then(done, done); SFX.latch(true); return; }
   if (t.dataset.mode) return setMode(t.dataset.mode);
-  if (t.dataset.card) return openLightbox(certItems, +t.dataset.card);
+  if (t.dataset.card) return openCert(+t.dataset.card, t.getBoundingClientRect(), "list");
   if (t.dataset.photo) return openLightbox(photoItems, +t.dataset.photo);
   if (t.dataset.goto) { if (ui.mode === "read") setMode(mobile ? "tour" : "explore"); return go(+t.dataset.goto, { jump: true }); }
   if (t.dataset.rot) { ctl.azg += (+t.dataset.rot * Math.PI) / 2; SFX.whoosh(); return; }
@@ -388,6 +441,9 @@ ROOT.addEventListener("click", (e) => {
   if (a === "read") return setMode("read");
   if (a === "readclose") return setMode(mobile ? "tour" : "explore");
   if (a === "lbclose") return closeLightbox();
+  if (a === "certclose") return closeCert();
+  if (a === "certprev") return stepCert(-1);
+  if (a === "certnext") return stepCert(1);
   if (a === "lbprev") { lbK = (lbK - 1 + lbList.length) % lbList.length; SFX.flick(lbK); return drawLightbox(); }
   if (a === "lbnext") { lbK = (lbK + 1) % lbList.length; SFX.flick(lbK); return drawLightbox(); }
   if (a === "resume") { $("[data-toast]").removeAttribute("data-open"); return go(+t.dataset.at); }
@@ -395,11 +451,19 @@ ROOT.addEventListener("click", (e) => {
   if (a === "idclose") return toggleId(false);
 });
 function setSheet(s) { ui.sheet = s; panel.dataset.sheet = s; layoutOffsets(); }
+/* ---------- sound settings: a level and the optional hum, beside the one-click mute ---------- */
+const sndPop = $("[data-sndpop]"), volIn = $("[data-vol]"), humIn = $("[data-hum]");
+function toggleSnd(force) { const open = force !== undefined ? force : !sndPop.hasAttribute("data-open"); sndPop.toggleAttribute("data-open", open); $("[data-sound-menu]").setAttribute("aria-expanded", String(open)); }
+volIn.addEventListener("input", () => { const v = +volIn.value / 100; SFX.unlock(); SFX.setVolume(v); if (v > 0 && !SFX.on) SFX.set(true); SFX.blip(4); });
+// read the control before unlocking: unlocking notifies listeners, which re-sync the controls from the stored values
+humIn.addEventListener("change", () => { const v = humIn.checked; SFX.unlock(); SFX.setHum(v); });
+SFX.onChange(() => { volIn.value = String(Math.round(SFX.volume * 100)); $("[data-vol-out]").textContent = volIn.value; humIn.checked = SFX.hum; });
 SFX.onChange(() => { const b = $("[data-sound]"); b.setAttribute("aria-pressed", String(SFX.on)); b.querySelector("span:not(.bars)").textContent = SFX.on ? "Sound on" : "Sound off"; });
 
 /* ---------- keys: during boot they write the command; afterwards they reach the terminal ---------- */
 window.addEventListener("keydown", (e) => {
-  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  // a figure that claimed the key (the Riffle walking its cards, or putting one back) keeps it
+  if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
   SFX.unlock();
   const inInput = e.target === hudIn;
   if (BOOT.phase === "idle" || BOOT.phase === "typed") {
@@ -420,8 +484,11 @@ window.addEventListener("keydown", (e) => {
     if (e.key.length === 1 || e.key === "Backspace") { DEV.press(e.key === "Backspace" ? "Backspace" : e.key); e.key === " " ? SFX.space() : SFX.key(); }
     return;
   }
+  // Esc dismisses from anywhere, including a slider or checkbox inside a panel or the sound settings
+  if (e.key === "Escape") { const inSnd = sndPop.hasAttribute("data-open"); dismissTop(); if (inSnd) $("[data-sound-menu]").focus(); return; }
   if (e.target.matches && e.target.matches("input, textarea")) return;
-  if (e.key === "Escape") return dismissTop();
+  if (certK >= 0 && (e.key === "ArrowRight" || e.key === "ArrowLeft")) return stepCert(e.key === "ArrowRight" ? 1 : -1);
+  if (e.target.closest && e.target.closest("[data-riffle]")) return;
   if (lbOpen && (e.key === "ArrowRight" || e.key === "ArrowLeft")) { lbK = (lbK + (e.key === "ArrowRight" ? 1 : -1) + lbList.length) % lbList.length; SFX.flick(lbK); drawLightbox(); return; }
   if (e.key === "ArrowRight") return go(Math.min(STATIONS.length - 1, ui.cur + 1));
   if (e.key === "ArrowLeft") return go(Math.max(0, ui.cur - 1));
@@ -480,8 +547,6 @@ canvas.addEventListener("pointermove", (e) => {
   const hv = u.station !== undefined ? u.station : -1;
   if (hv !== ui.hover) ui.hover = hv;
   canvas.style.cursor = h && (u.station !== undefined || u.go !== undefined || u.card !== undefined || u.photo !== undefined || u.kick || u.slice !== undefined || u.stack || u.drag || u.laptop || u.lock) ? "pointer" : "grab";
-  const card = u.card !== undefined && h.object !== trophy.children[0] ? u.card : -1;
-  if (card !== riffle.hover) { riffle.hover = card; if (card >= 0) SFX.flick(card); }
   if (u.drag === "loupe" && ui.cur === 7) machineDrag("loupe", h);
   const lk = !!u.lock; if (lk !== !!lockGoal) { lockGoal = lk ? 1 : 0; SFX.latch(lk); }
 });
@@ -493,7 +558,7 @@ const endPtr = (e) => {
   if (d.moved || d.drag) return;
   const h = d.hit; if (!h) return;
   const u = h.object.userData;
-  if (u.card !== undefined) return pullCard(u.card);
+  if (u.card !== undefined) return openCert(u.card, null, "wall");
   if (u.photo !== undefined) { if (u.photo === "chart") return openLightbox([{ src: IMG.chart, alt: "Success rate against compliance G", title: "Success rate vs compliance", sub: "Three runs, 95% Wilson intervals · simulation, not hardware" }], 0); return openLightbox(photoItems, u.photo); }
   if (u.laptop) { if (ui.cur !== 7) go(7); return openLightbox([{ src: IMG.pbresults, alt: "PropBench results", title: "PropBench · results view", sub: "Cross-validated AARD, physics checks and the locked selection rule" }], 0); }
   if (u.lock) { if (ui.cur !== 7) go(7); lockGoal = lockGoal ? 0 : 1; SFX.latch(!!lockGoal); return; }
@@ -507,7 +572,7 @@ const endPtr = (e) => {
 canvas.addEventListener("pointerup", endPtr);
 DEV.el.addEventListener("pointerup", (e) => { if (e.target.closest("button")) return; SFX.unlock(); if (BOOT.phase === "typed") deploy(false); else if (BOOT.phase === "idle") for (let k = 0; k < (mobile ? 4 : 3); k++) typeNext(true); });
 canvas.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); down = null; });
-canvas.addEventListener("pointerleave", () => { ui.hover = -1; if (riffle.hover !== -1) riffle.hover = -1; pointerY = null; if (lockGoal) lockGoal = 0; });
+canvas.addEventListener("pointerleave", () => { ui.hover = -1; pointerY = null; if (lockGoal) lockGoal = 0; });
 canvas.addEventListener("wheel", (e) => { if (BOOT.phase !== "live") return; e.preventDefault(); ctl.zg = clamp(ctl.zg * Math.exp(-e.deltaY * 0.0022), 0.5, 4); }, { passive: false });
 
 /* ---------- the frame loop ---------- */
@@ -624,17 +689,8 @@ function frame(now) {
     ball.position.x = BALL0.x + v * 7.4; ball.position.z = BALL0.z + Math.sin(v * Math.PI) * 0.4; ball.rotation.z = -v * 12;
     if (kickT > 3.6) { kickT = -1; ball.position.copy(BALL0); bot.position.copy(BOT0); }
   }
-  // the card tray riffles: the card under the pointer stands up, its neighbours follow less
-  cards.forEach((c) => {
-    const d = riffle.hover < 0 ? 99 : Math.abs(c.k - riffle.hover);
-    const lt = riffle.pick === c.k ? 0 : d === 0 ? 1 : d === 1 ? 0.32 : d === 2 ? 0.1 : 0;
-    c.lift.v += ((lt - c.lift.x) * 100 - c.lift.v * 18) * dt; c.lift.x += c.lift.v * dt;
-    const ot = riffle.pick === c.k ? 1 : 0; c.out.v += ((ot - c.out.x) * 100 - c.out.v * 18) * dt; c.out.x += c.out.v * dt;
-    const L = clamp(c.lift.x, -0.2, 1.3), O = clamp(c.out.x, -0.1, 1.2);
-    c.g.position.set(0, c.y0 + L * 0.95 + O * 1.6, c.z0 + O * 2.4);
-    c.g.rotation.x = -0.22 * (1 - clamp(L)) * (1 - clamp(O));
-    c.g.scale.setScalar(1 + O * 0.35);
-  });
+  // the certificate being read comes off its wall, the way the island prototype did it
+  frames.forEach((f, k) => { const u = f.userData; u.pop = damp(u.pop, certOpen.k === k ? 1 : 0, 7, dt); f.position.copy(u.home).addScaledVector(u.dir, u.pop * 1.3); f.position.y = u.home.y + u.pop * 0.3; f.scale.setScalar(1 + u.pop * 0.15); });
   // PropBench: loupe, laptop lid, padlock
   lp.u = damp(lp.u, lp.gu, 9, dt); lp.v = damp(lp.v, lp.gv, 9, dt);
   loupe.position.set(62.5 - 2.8 + lp.u * 5.6, 3.02, 25.5 - 1.97 + lp.v * 3.94);
@@ -672,4 +728,4 @@ SFX.onChange(() => {}); SFX.set(SFX.on);
 if (store.get("booted", false) || routeOf()) { BOOT.typed = CMD; TERM.input = CMD; deploy(true); }
 if (REDUCED) skipBoot();
 start();
-const API = { cardScreen: (k) => { const v = new V3(0, 0.88 * 1.76, 0); cards[k].g.localToWorld(v); v.project(cam); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * Hh]; }, state: () => ({ phase: BOOT.phase, hover: riffle.hover, pick: riffle.pick, lb: lbOpen }), exec, go, overview, setMode, skip: skipBoot, deploy, reboot: () => { store.set("booted", false); location.reload(); } };
+const API = { cert: (k) => openCert(k), state: () => ({ phase: BOOT.phase, cert: certK, lb: lbOpen }), exec, go, overview, setMode, skip: skipBoot, deploy, reboot: () => { store.set("booted", false); location.reload(); } };

@@ -5,13 +5,15 @@
  * ========================================================================== */
 const SFX = (() => {
   let ctx = null, master = null, noiseBuf = null, unlocked = false, hush = false, on = store.get("sound", true), hum = null;
+  // the visitor's level (0–1) and the ambient hum, which is off unless asked for
+  let vol = store.get("vol", 0.6), humOn = store.get("hum", false);
   const listeners = new Set();
   function ensure() {
     if (ctx) return ctx;
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
     ctx = new AC();
     const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
-    master = ctx.createGain(); master.gain.value = on ? 0.8 : 0; master.connect(comp); comp.connect(ctx.destination);
+    master = ctx.createGain(); master.gain.value = on ? vol : 0; master.connect(comp); comp.connect(ctx.destination);
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     return ctx;
@@ -34,13 +36,17 @@ const SFX = (() => {
     get on() { return on; },
     get live() { return !!ctx && unlocked; },
     unlock() { const c = ensure(); if (!c) return; if (c.state === "suspended") c.resume(); unlocked = true; listeners.forEach((f) => f()); },
-    set(v) { on = v; store.set("sound", v); if (ctx) master.gain.setTargetAtTime(v ? 0.8 : 0, ctx.currentTime, 0.05); if (v && ctx) api.unlock(); listeners.forEach((f) => f()); },
+    get volume() { return vol; },
+    get hum() { return humOn; },
+    setVolume(v) { vol = Math.max(0, Math.min(1, v)); store.set("vol", vol); if (ctx) master.gain.setTargetAtTime(on ? vol : 0, ctx.currentTime, 0.05); listeners.forEach((f) => f()); },
+    setHum(v) { humOn = v; store.set("hum", v); if (v) api.humStart(); else if (hum && ctx) hum.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.4); listeners.forEach((f) => f()); },
+    set(v) { on = v; store.set("sound", v); if (ctx) master.gain.setTargetAtTime(v ? vol : 0, ctx.currentTime, 0.05); if (v && ctx) api.unlock(); listeners.forEach((f) => f()); },
     onChange(f) { listeners.add(f); },
     hush(v) { hush = v; },
     /** a mechanical key: a bright click and a short thock, never twice the same */
-    key() { if (!ok()) return; const t = T(), r = 0.9 + Math.random() * 0.2; noise(t, 0.022, "bandpass", 3400 * r, 1.4, 0.22); tone(t, 170 * r, 85, 0.045, "sine", 0.16); },
-    space() { if (!ok()) return; const t = T(); noise(t, 0.03, "bandpass", 1900, 1.1, 0.24); tone(t, 120, 70, 0.06, "sine", 0.2); },
-    enter() { if (!ok()) return; const t = T(); noise(t, 0.05, "bandpass", 1500, 0.9, 0.32); tone(t, 110, 55, 0.11, "sine", 0.3); },
+    key() { if (!ok()) return; const t = T(), r = 0.9 + Math.random() * 0.2; noise(t, 0.022, "bandpass", 3400 * r, 1.4, 0.13); tone(t, 170 * r, 85, 0.045, "sine", 0.1); },
+    space() { if (!ok()) return; const t = T(); noise(t, 0.03, "bandpass", 1900, 1.1, 0.15); tone(t, 120, 70, 0.06, "sine", 0.12); },
+    enter() { if (!ok()) return; const t = T(); noise(t, 0.05, "bandpass", 1500, 0.9, 0.22); tone(t, 110, 55, 0.11, "sine", 0.2); },
     /** a node allocated: a relay closing, pitched by node */
     relay(i = 0) { if (!ok()) return; const t = T(); noise(t, 0.007, "highpass", 5200, 0.7, 0.28); noise(t + 0.032, 0.006, "highpass", 4300, 0.7, 0.16); tone(t, 330 * Math.pow(2, notes[i % 10] / 12), null, 0.05, "triangle", 0.035); },
     /** a block landing */
@@ -62,7 +68,8 @@ const SFX = (() => {
     chord() { if (!ok()) return; const t = T(); [392, 493.88, 587.33, 783.99].forEach((f, i) => tone(t + i * 0.07, f, null, 1.1, "sine", 0.06, 0.02)); },
     /** a server room breathing under everything, very low */
     humStart() {
-      if (!ctx || hum) return;
+      if (!ctx || !humOn) return;
+      if (hum) { hum.gain.setTargetAtTime(0.5, ctx.currentTime, 1.2); return; }
       const g = ctx.createGain(); g.gain.value = 0.0001; g.connect(master);
       const o1 = ctx.createOscillator(); o1.frequency.value = 55; const g1 = ctx.createGain(); g1.gain.value = 0.05; o1.connect(g1).connect(g);
       const o2 = ctx.createOscillator(); o2.frequency.value = 110.5; const g2 = ctx.createGain(); g2.gain.value = 0.018; o2.connect(g2).connect(g);

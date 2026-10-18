@@ -160,21 +160,20 @@ PHOTOS.forEach(([id, alt], k) => {
   world.add(p); PICK.push(p); own(1, p, k ? 0.95 : 0.78);
 });
 
-/* ---------- 2 hall: a card tray that riffles ---------- */
-const tray = new THREE.Group(); tray.position.set(16, 3, 39.5); tray.rotation.y = Math.PI / 4; world.add(tray); own(2, tray);
-{ const tb = box(3.2, 0.5, 4.4, "plank"); tb.position.set(0, 0.25, -1.4); tray.add(tb); }
-const cards = CERTS.map(([id], k) => {
-  const g = new THREE.Group(), w = 2.5, h = 1.76;
-  const back = box(w + 0.1, h + 0.1, 0.05, "white"); back.position.y = h / 2;
-  const pic = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex(IMG[id]) })); pic.position.set(0, h / 2, 0.03);
-  g.add(back, pic); tray.add(g);
-  return { g, k, lift: { x: 0, v: 0 }, out: { x: 0, v: 0 }, z0: 0.2 - k * 0.42, y0: 0.45 + k * 0.2 };
+/* ---------- 2 hall: eight certificates framed on two walls; the one being read comes off its wall ---------- */
+const frames = CERTS.map(([id], k) => {
+  const g = new THREE.Group(), w = 2.3, h = 1.62;
+  const back = box(w + 0.24, h + 0.24, 0.12, "plank");
+  const pic = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex(IMG[id]) })); pic.position.z = 0.07;
+  g.add(back, pic);
+  if (k < 5) g.position.set(10.4 + k * 2.6, 4.6, 35.1); else { g.position.set(9.1, 4.6, 37 + (k - 5) * 2.6); g.rotation.y = Math.PI / 2; }
+  g.userData.home = g.position.clone(); g.userData.dir = k < 5 ? new V3(0, 0, 1) : new V3(1, 0, 0); g.userData.pop = 0;
+  pic.userData = { card: k }; back.userData = { card: k }; PICK.push(pic, back);
+  world.add(g); own(2, g); return g;
 });
-// hit bands at each card's rest pose: they never move, so a rising card cannot slide out from under the pointer
-cards.forEach((c) => { const b = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.86), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })); b.position.set(0, c.y0 + 0.88, c.z0); b.rotation.x = -0.22; b.visible = false; b.userData = { card: c.k }; tray.add(b); PICK.push(b); });
 const trophy = new THREE.Group(); trophy.position.set(10.5, 3, 42.5); world.add(trophy); own(2, trophy);
 { const cup = part(new THREE.CylinderGeometry(0.4, 0.2, 0.62, 12), "gold", { th: 40 }); cup.position.y = 0.7; const st = part(new THREE.CylinderGeometry(0.08, 0.12, 0.38, 8), "gold", { th: 40 }); st.position.y = 0.2; trophy.add(cup, st); cup.userData = { card: 0 }; PICK.push(cup); }
-const riffle = { hover: -1, pick: -1 };
+const certOpen = { k: -1 };
 
 /* ---------- 3 GPU datacenter ---------- */
 const leds = [];

@@ -65,23 +65,24 @@ const DEV = (() => {
     if (TERM.showInput) h += `<div><span class="t-mute">${TERM.prompt}</span><span class="t-hi">${TERM.input.replace(/</g, "&lt;")}</span><span class="t-cur">█</span></div>`;
     scrOut.innerHTML = h;
   }
-  /* the identity: a card rises out of the screen, prints as glyphs, develops into the photo, then docks */
-  const card = $("[data-emerge]"), cardP = card.querySelector("[data-em-p]"), cardName = card.querySelector("[data-em-name]");
-  let field = null;
+  /* the identity: a print rises out of the screen, develops like a Polaroid, holds with the name, then docks */
+  const card = $("[data-emerge]"), cardName = card.querySelector("[data-em-name]"), cardRole = card.querySelector("[data-em-role]");
   function screenRect() { const b = scr.getBoundingClientRect(), R = ROOT.getBoundingClientRect(); return { x: b.left - R.left, y: b.top - R.top, w: b.width, h: b.height }; }
   function emerge() {
     const s = screenRect(), R = ROOT.getBoundingClientRect();
-    const w = Math.min(300, R.width * 0.62), h = w * 1.25, x = (R.width - w) / 2, y = Math.max(70, (R.height - h) / 2 - 30);
+    const w = Math.min(300, R.width * 0.62), h = w * 1.2, x = (R.width - w) / 2, y = Math.max(70, (R.height - h) / 2 - 30);
     card.style.cssText = `left:${s.x + s.w / 2 - 30}px;top:${s.y + s.h / 2 - 38}px;width:60px;height:76px`;
-    card.setAttribute("data-on", ""); cardName.textContent = "";
-    if (!field) field = asciiField(cardP.querySelector("canvas"), { cell: 8, reveal: true });
-    field.reveal(0); develop(0);
+    card.setAttribute("data-on", ""); card.removeAttribute("data-hold"); cardName.textContent = ""; cardRole.textContent = "";
+    reveal(0); develop(0);
     requestAnimationFrame(() => requestAnimationFrame(() => { card.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px`; }));
     SFX.whoosh();
   }
-  const reveal = (v) => field && field.reveal(v);
+  const reveal = (v) => card.style.setProperty("--rv", String(v));
   const develop = (v) => card.style.setProperty("--dev", String(v));
   const name = (t) => { cardName.textContent = t; };
+  const role = (t) => { cardRole.textContent = t; };
+  /** the print straightens as it finishes developing */
+  const hold = () => card.setAttribute("data-hold", "");
   function dock() {
     const R = ROOT.getBoundingClientRect(); chip.removeAttribute("hidden");
     const c = chip.querySelector("img").getBoundingClientRect();
@@ -91,5 +92,5 @@ const DEV = (() => {
     setTimeout(() => { card.removeAttribute("data-on"); card.removeAttribute("data-dock"); chip.setAttribute("data-docked", ""); SFX.latch(true); }, 820);
   }
   function leave() { dev.setAttribute("data-leaving", ""); setTimeout(closeLid, 250); setTimeout(() => dev.setAttribute("data-gone", ""), 1300); }
-  return { press, ready, render, fitScreen, emerge, reveal, develop, name, dock, leave, hasLib, el: dev };
+  return { press, ready, render, fitScreen, emerge, reveal, develop, name, role, hold, dock, leave, hasLib, el: dev };
 })();

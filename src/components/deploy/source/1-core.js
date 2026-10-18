@@ -27,7 +27,7 @@ const STATIONS = [
     sum: "Where it started: a remote-controlled soccer robot for Robo Soccer at Chittagong Science Carnival 2.0, which earned a Certificate of Recognition. The billboard holds the real photos of both versions and the parts.",
     facts: ["Arduino Uno, BTS7960 motor drivers, 3S LiPo, HC-05 Bluetooth", "Plywood chassis, rebuilt into a second version"] },
   { id: "hall", page: ["/about#ab-awards", "Every award"], svc: "hall-of-fame", ns: "contests", name: "Hall of fame", tag: "8 certificates", c: [15, 39], hit: [8, 34, 22, 44, 6], zoom: 2.4, marker: [25, 41], control: "certs",
-    sum: "Eight certificates stand in a card tray. Point at one and it rises above the others; click to pull it out and read it. Arrow keys walk the tray.",
+    sum: "Every certificate hangs here in a frame. Click one to take it off the wall and read it, or pull it from the tray below: point at a card, click it, and it rises into your hands. The trophy is for Break The Monolith, the one we won.",
     facts: ["Champion, Break The Monolith Hackathon 2025 (Team_Deadlock)", "Finalist and CUET Rising Team, API Avengers, Televerse 1.0", "7th, Brain Station 23 AI Engineering · 9th, NSU TechFest WebXtreme", "ICPC Dhaka Regional preliminary, CUET IUPC, ASRRO Robocoder"] },
   { id: "gpu", page: ["/about#ab-work", "The work at Poridhi.io"], svc: "gpu-datacenter", ns: "infra", name: "GPU datacenter", tag: "Poridhi.io · 2025–26", c: [10, 26], hit: [4, 20, 17, 32, 6], zoom: 2.1, marker: [17, 27], control: "race",
     sum: "AI Studio gives each user a GPU workspace with Jupyter or VS Code. It used to boot a fresh EC2 GPU machine for every session (the cloud floating offshore). We moved it to a Kubernetes cluster on the company’s own GPU server, where one RTX 4090 is cut into isolated slices.",
@@ -125,11 +125,11 @@ for (let x = 27; x < 42; x++) { setTop(x, 43, "chalk"); setTop(x, 51, "chalk"); 
 for (let z = 43; z < 52; z++) { setTop(27, z, "chalk"); setTop(41, z, "chalk"); setTop(34, z, "chalk"); }
 for (const gx of [26, 42]) { fill(gx, 1, 45, gx + 1, 3, 46, "ink"); fill(gx, 1, 49, gx + 1, 3, 50, "ink"); fill(gx, 3, 45, gx + 1, 4, 50, "ink"); }
 fill(28, 1, 42, 29, 4, 43, "ink"); fill(33, 1, 42, 34, 4, 43, "ink"); fill(28, 4, 42, 34, 5, 43, "plank");
-// hall of fame: two walls open to the viewer, a long table for the card tray
+// hall of fame: two walls open to the viewer, the certificates framed on them, a bench to look from
 fill(8, 1, 34, 23, 2, 45, "stone");
 fill(8, 2, 34, 23, 8, 35, "white"); fill(8, 2, 35, 9, 8, 45, "white");
 fill(8, 8, 34, 23, 9, 35, "contests"); fill(8, 8, 35, 9, 9, 45, "contests");
-fill(12, 2, 37, 20, 3, 42, "plank");
+fill(14, 2, 39, 19, 3, 40, "plank");
 fill(10, 2, 42, 11, 3, 43, "stone");
 // GPU datacenter
 fill(4, 1, 20, 17, 2, 33, "stone");

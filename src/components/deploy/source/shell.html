@@ -17,12 +17,11 @@
   --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --serif: "Instrument Serif", Georgia, serif;
-  --ascii-dark: 0;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --canvas: #0b0b0c; --stone: #1c1c1f; --ink: #fafafa; --muted: #a1a1aa; --faint: #71717a; --line: rgba(255, 255, 255, 0.09); --lo: #27272a; --sea: #0e1620; --glass: color-mix(in srgb, #0b0b0c 78%, transparent); --card: 0 0 0 1px #ffffff14, 0 1px 2px -1px #00000066; --lift: 0 0 0 1px #ffffff17, 0 10px 28px -16px #000000aa; --lift-lg: 0 0 0 1px #ffffff17, 0 32px 64px -34px #000000cc; --ascii-dark: 1; color-scheme: dark; }
+  :root:not([data-theme="light"]) { --canvas: #0b0b0c; --stone: #1c1c1f; --ink: #fafafa; --muted: #a1a1aa; --faint: #71717a; --line: rgba(255, 255, 255, 0.09); --lo: #27272a; --sea: #0e1620; --glass: color-mix(in srgb, #0b0b0c 78%, transparent); --card: 0 0 0 1px #ffffff14, 0 1px 2px -1px #00000066; --lift: 0 0 0 1px #ffffff17, 0 10px 28px -16px #000000aa; --lift-lg: 0 0 0 1px #ffffff17, 0 32px 64px -34px #000000cc; color-scheme: dark; }
 }
-:root[data-theme="dark"] { --canvas: #0b0b0c; --stone: #1c1c1f; --ink: #fafafa; --muted: #a1a1aa; --faint: #71717a; --line: rgba(255, 255, 255, 0.09); --lo: #27272a; --sea: #0e1620; --glass: color-mix(in srgb, #0b0b0c 78%, transparent); --card: 0 0 0 1px #ffffff14, 0 1px 2px -1px #00000066; --lift: 0 0 0 1px #ffffff17, 0 10px 28px -16px #000000aa; --lift-lg: 0 0 0 1px #ffffff17, 0 32px 64px -34px #000000cc; --ascii-dark: 1; color-scheme: dark; }
+:root[data-theme="dark"] { --canvas: #0b0b0c; --stone: #1c1c1f; --ink: #fafafa; --muted: #a1a1aa; --faint: #71717a; --line: rgba(255, 255, 255, 0.09); --lo: #27272a; --sea: #0e1620; --glass: color-mix(in srgb, #0b0b0c 78%, transparent); --card: 0 0 0 1px #ffffff14, 0 1px 2px -1px #00000066; --lift: 0 0 0 1px #ffffff17, 0 10px 28px -16px #000000aa; --lift-lg: 0 0 0 1px #ffffff17, 0 32px 64px -34px #000000cc; color-scheme: dark; }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body { margin: 0; background: var(--sea); color: var(--ink); font: 400 13px/1.55 var(--sans); -webkit-font-smoothing: antialiased; overflow: hidden; }
@@ -55,14 +54,18 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .scr-out div { white-space: pre-wrap; word-break: break-word; }
 .t-cur { color: #c4b5fd; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
-.em { position: absolute; z-index: 9; display: none; overflow: hidden; border-radius: 14px; background: var(--canvas); box-shadow: 0 0 0 1px var(--line), var(--lift-lg); pointer-events: none; transition: left 700ms var(--ease-drawer), top 700ms var(--ease-drawer), width 700ms var(--ease-drawer), height 700ms var(--ease-drawer), border-radius 700ms var(--ease-drawer); --dev: 0; }
+.em { position: absolute; z-index: 9; display: none; overflow: hidden; border-radius: 6px; background: #fcfcfa; box-shadow: 0 0 0 1px #0000000f, 0 2px 6px #0000000d, 0 32px 64px -30px #00000059; pointer-events: none; transition: left 700ms var(--ease-drawer), top 700ms var(--ease-drawer), width 700ms var(--ease-drawer), height 700ms var(--ease-drawer), border-radius 700ms var(--ease-drawer), transform 700ms var(--ease-drawer); --dev: 0; --rv: 0; transform: rotate(-2deg); }
 .em[data-on] { display: block; }
-.em[data-dock] { border-radius: 50%; transition-duration: 800ms; }
-.em-p { position: absolute; inset: 0; }
-.em-p canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.em-p img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; -webkit-mask-image: radial-gradient(ellipse calc(var(--dev) * 120%) calc(var(--dev) * 95%) at 50% 38%, #000 70%, transparent 100%); mask-image: radial-gradient(ellipse calc(var(--dev) * 120%) calc(var(--dev) * 95%) at 50% 38%, #000 70%, transparent 100%); }
-.em-n { position: absolute; left: 10px; right: 10px; bottom: 10px; min-height: 26px; padding: 4px 10px; border-radius: 8px; background: var(--glass); font: 500 12px/18px var(--mono); text-align: center; transition: opacity 200ms ease; }
-.em-n:empty { opacity: 0; }
+.em[data-dock] { border-radius: 50%; transform: none; transition-duration: 800ms; }
+.em[data-hold] { transform: rotate(0deg); }
+/* a Polaroid: the photo sits in a white frame with a deeper strip for the name, and develops from pale to full colour */
+.em-p { position: absolute; inset: 7% 7% 22% 7%; overflow: hidden; border-radius: 2px; background: #e9e7e1; transition: inset 700ms var(--ease-drawer), border-radius 700ms var(--ease-drawer); }
+.em[data-dock] .em-p { inset: 0; border-radius: 50%; }
+.em-p img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; opacity: var(--rv); filter: blur(calc((1 - var(--rv)) * 8px)) grayscale(calc(1 - var(--dev))) contrast(calc(0.55 + var(--dev) * 0.45)) brightness(calc(1.45 - var(--dev) * 0.45)); }
+.em-n { position: absolute; left: 7%; right: 7%; bottom: 0; height: 22%; display: grid; place-items: center; font: 500 13px/1.2 var(--mono); color: #27272a; text-align: center; transition: opacity 200ms ease; }
+.em-n { align-content: center; gap: 3px; }
+.em-n b { font-weight: 500; }
+.em-n span { font: 400 10.5px/1.2 var(--mono); color: #71717a; }
 .em[data-dock] .em-n { opacity: 0; }
 .x.is-mobile .dev { padding: 64px 12px 96px; align-content: center; }
 .x.is-mobile .dev-stack { width: 100%; }
@@ -91,6 +94,16 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .pill { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 11px; border-radius: 10px; font-size: 12px; font-weight: 500; transition: transform 160ms var(--ease-out); white-space: nowrap; }
 .pill:active { transform: scale(0.96); }
 .pill svg { flex: none; }
+.sndwrap { position: relative; display: inline-flex; gap: 2px; }
+.snd-more { padding: 0 9px; }
+.sndpop { position: absolute; right: 0; top: 42px; z-index: 8; width: 236px; display: grid; gap: 10px; padding: 12px; border-radius: 14px; background: var(--canvas); box-shadow: var(--lift-lg); opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity 160ms ease, transform 200ms var(--ease-out), visibility 0s 200ms; }
+.sndpop[data-open] { opacity: 1; visibility: visible; transform: none; transition: opacity 180ms ease, transform 240ms var(--ease-out); }
+.snd-vol { display: grid; grid-template-columns: auto minmax(0, 1fr) 30px; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; }
+.snd-vol input { width: 100%; accent-color: var(--ink); }
+.snd-vol output { font: 400 11px var(--mono); color: var(--muted); text-align: right; }
+.snd-hum { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; }
+.snd-hum input { accent-color: var(--ink); }
+.sndpop p { font-size: 11px; line-height: 1.45; color: var(--faint); }
 .snd .bars { display: inline-flex; gap: 2px; align-items: end; height: 12px; }
 .snd .bars i { width: 2px; height: 4px; border-radius: 1px; background: currentColor; }
 .snd[aria-pressed="true"] .bars i { animation: eq 900ms ease-in-out infinite alternate; }
@@ -162,13 +175,8 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .idpop { position: absolute; z-index: 8; top: 60px; left: 12px; width: min(340px, calc(100% - 24px)); border-radius: 18px; background: var(--canvas); box-shadow: var(--lift-lg); padding: 10px; opacity: 0; visibility: hidden; transform: translateY(-6px) scale(0.98); transform-origin: top left; transition: opacity 180ms ease, transform 220ms var(--ease-out), visibility 0s 220ms; }
 .idpop[data-open] { opacity: 1; visibility: visible; transform: none; transition: opacity 220ms ease, transform 320ms var(--ease-out); }
 .idpop .x-close { position: absolute; top: 14px; right: 14px; z-index: 2; width: 28px; height: 28px; border-radius: 50%; background: var(--glass); font-size: 16px; }
-.id-portrait { position: relative; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 12px; background: var(--stone); cursor: crosshair; --mx: 50%; --my: 40%; }
-.id-ascii { position: absolute; inset: 0; width: 100%; height: 100%; }
-.id-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; -webkit-mask-image: radial-gradient(circle 74px at var(--mx) var(--my), #000 55%, transparent 100%); mask-image: radial-gradient(circle 74px at var(--mx) var(--my), #000 55%, transparent 100%); transition: opacity 300ms ease; }
-.id-portrait[data-lit] .id-photo { opacity: 1; }
-.id-portrait[data-full] .id-photo { opacity: 1; -webkit-mask-image: none; mask-image: none; }
-.id-hint { position: absolute; left: 8px; bottom: 8px; padding: 2px 8px; border-radius: 7px; background: var(--glass); font: 400 10.5px/1.6 var(--mono); color: var(--muted); transition: opacity 200ms ease; }
-.id-portrait[data-lit] .id-hint, .id-portrait[data-full] .id-hint { opacity: 0; }
+.id-portrait { position: relative; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 12px; background: var(--stone); margin: 0; }
+.id-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
 .id-meta { padding: 12px 6px 4px; display: grid; gap: 4px; }
 .id-k { display: inline-flex; align-items: center; gap: 6px; font: 400 10.5px/1.4 var(--mono); color: var(--muted); }
 .id-k i { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
@@ -272,6 +280,31 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .w-lb-f nav button { width: 32px; height: 32px; border-radius: 8px; font-size: 15px; }
 .w-lb-f nav span { font: 400 11px var(--mono); padding: 0 4px; }
 @media (hover: hover) { .w-lb-f nav button:hover { background: var(--stone); } }
+/* the Hall's tray (Hairline's Riffle) and the card it gives you: a white plate with a hairline edge and the tray's punched number */
+.w-riffle { padding: 8px 12px 12px; }
+.w-riffle-fig { width: 100%; max-width: 300px; aspect-ratio: 400 / 320; margin: 0 auto; cursor: pointer; --hairline-plate: var(--stone); }
+.w-riffle .w-read { text-align: center; min-height: 2.4em; }
+.w-certs { display: grid; gap: 2px; counter-reset: c; }
+.w-certs button { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 0 6px; width: 100%; padding: 7px 8px; border-radius: 9px; text-align: left; }
+.w-certs span { grid-row: span 2; font: 400 11px/18px var(--mono); color: var(--faint); }
+.w-certs b { font-size: 12.5px; font-weight: 500; line-height: 1.35; }
+.w-certs em { font: 400 11px/1.4 var(--sans); font-style: normal; color: var(--muted); }
+@media (hover: hover) { .w-certs button:hover { background: var(--stone); } }
+.cert { position: absolute; z-index: 9; inset: 0; display: grid; place-items: center; padding: 64px 16px 24px; background: color-mix(in srgb, var(--canvas) 55%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: opacity 260ms ease, visibility 0s 420ms; }
+.cert[data-open] { opacity: 1; visibility: visible; transition: opacity 260ms ease; }
+.cert-card { display: grid; gap: 10px; width: min(760px, 100%); max-height: 100%; padding: 10px 12px 14px; border-radius: 14px; background: var(--canvas); box-shadow: 0 0 0 1px #a4a4ac, var(--lift-lg); transform-origin: 0 0; transition: transform 460ms var(--ease-out); }
+.cert-h { display: flex; align-items: center; gap: 10px; padding-left: 4px; }
+.cert-punch { display: grid; grid-template-columns: repeat(4, 5px); gap: 3px; }
+.cert-punch i { width: 5px; height: 5px; border-radius: 50%; box-shadow: inset 0 0 0 1px #a4a4ac; }
+.cert-punch i.on { background: var(--ink); box-shadow: none; }
+.cert-n { flex: 1; font: 400 11px/1 var(--mono); letter-spacing: 0.04em; color: var(--muted); }
+.cert-h nav { display: flex; gap: 2px; }
+.cert-h nav button { width: 32px; height: 32px; border-radius: 8px; font-size: 15px; color: var(--muted); }
+@media (hover: hover) { .cert-h nav button:hover { background: var(--stone); color: var(--ink); } }
+.cert-card img { display: block; width: 100%; max-height: min(58vh, 540px); object-fit: contain; border-radius: 6px; background: var(--stone); }
+.cert-f { padding: 0 4px; }
+.cert-f b { display: block; font-weight: 500; }
+.cert-f span { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
 .toast { position: absolute; z-index: 7; left: 50%; top: 14px; display: flex; align-items: center; gap: 10px; max-width: calc(100% - 24px); padding: 6px 6px 6px 14px; border-radius: 12px; background: var(--canvas); box-shadow: var(--lift-lg); transform: translate(-50%, -8px); opacity: 0; visibility: hidden; transition: opacity 200ms ease, transform 300ms var(--ease-out), visibility 0s 200ms; }
 .toast[data-open] { transform: translate(-50%, 0); opacity: 1; visibility: visible; transition: opacity 300ms ease 400ms, transform 400ms var(--ease-out) 400ms, visibility 0s; }
 .toast span { color: var(--muted); } .toast b { color: var(--ink); font-weight: 500; }
@@ -303,7 +336,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .x.is-mobile .w-grab { display: block; order: -2; width: 40px; height: 5px; margin: 8px auto 0; border-radius: 3px; background: var(--lo); cursor: pointer; }
 .x.is-mobile .w-panel .w-nav { order: -1; border-top: 0; border-bottom: 1px solid var(--line); padding: 4px 8px; }
 .x.is-mobile .idpop { top: 54px; left: 10px; right: 10px; width: auto; max-height: calc(100% - 64px); overflow-y: auto; }
-@media (prefers-reduced-motion: reduce) { .w-panel, .w-lightbox, .w-lb, .toast, .idpop, .em, .chip, .term, .dev { transition: none !important; } .snd .bars i { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .cert, .cert-card, .w-panel, .w-lightbox, .w-lb, .toast, .idpop, .em, .chip, .term, .dev { transition: none !important; } .snd .bars i { animation: none !important; } }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 
@@ -320,7 +353,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
   <div class="x-tr">
     <nav class="pages glass" data-live-only aria-label="Pages"><a href="/work">Work</a><a href="/research">Research</a><a href="/about">About</a></nav>
     <button class="pill glass skip" type="button" data-skip data-boot-only>Skip ⏭</button>
-    <button class="pill glass snd" type="button" data-sound aria-pressed="true" aria-label="Sound"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span>Sound on</span></button>
+    <div class="sndwrap"><button class="pill glass snd" type="button" data-sound aria-pressed="true" aria-label="Sound"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span>Sound on</span></button><button class="pill glass snd-more" type="button" data-sound-menu aria-expanded="false" aria-label="Sound settings"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.75 5 6.25l2.5-2.5"/></svg></button><div class="sndpop" data-sndpop><label class="snd-vol">Volume <input type="range" min="0" max="100" step="5" data-vol aria-label="Volume"><output data-vol-out></output></label><label class="snd-hum"><input type="checkbox" data-hum> Ambient hum</label><p>Every sound is one action you took. Nothing plays until you click or type.</p></div></div>
     <div class="tools glass" data-live-only role="group" aria-label="View">
       <button type="button" data-mode="explore" aria-pressed="true"><span class="d">Explore</span><span class="m">Map</span></button>
       <button type="button" data-mode="tour" aria-pressed="false">Tour</button>
@@ -352,8 +385,9 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
   <aside class="w-panel" data-panel aria-live="polite"></aside>
   <div class="w-readmode" data-readmode><h3>fahad-kabir, as text</h3><p>Every service on the island, in order. This is also what screen readers and devices without WebGL get.</p><nav class="w-rnav" aria-label="Pages"><a href="/work">Work</a><a href="/work/snake-robot">Snake robot</a><a href="/work/propbench">PropBench</a><a href="/research">Research</a><a href="/about">About</a></nav><div class="id-links" data-read-cv></div><ol data-read-list></ol><p style="margin-top:20px"><button class="w-btn" type="button" data-act="readclose">Back to the island</button></p></div>
   <div class="w-lightbox" data-lightbox role="dialog" aria-label="Image"><div class="w-lb"><img alt=""><div class="w-lb-f"><div><b data-lbt></b><span data-lbs></span></div><nav><button type="button" data-act="lbprev" aria-label="Previous">←</button><span data-lbn></span><button type="button" data-act="lbnext" aria-label="Next">→</button><button type="button" data-act="lbclose" aria-label="Close">×</button></nav></div></div></div>
+  <div class="cert" data-cert role="dialog" aria-modal="false" aria-label="Certificate"><div class="cert-card"><div class="cert-h"><span class="cert-punch" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="cert-n" data-cert-n></span><nav><button type="button" data-act="certprev" aria-label="Previous certificate">←</button><button type="button" data-act="certnext" aria-label="Next certificate">→</button><button type="button" data-act="certclose" aria-label="Put it back">×</button></nav></div><img alt=""><div class="cert-f"><b data-cert-t></b><span data-cert-s></span></div></div></div>
   <div class="toast" data-toast role="status"><span>Welcome back. Pick up at <b data-resume-name></b>?</span><button class="w-btn" type="button" data-act="resume">Continue</button><button class="x2" type="button" data-act="toast-x" aria-label="Dismiss">×</button></div>
-  <div class="em" data-emerge aria-hidden="true"><div class="em-p" data-em-p><canvas></canvas><img alt="" src="__PORTRAIT__"></div><p class="em-n" data-em-name></p></div>
+  <div class="em" data-emerge aria-hidden="true"><div class="em-p" data-em-p><img alt="" src="__PORTRAIT__"></div><p class="em-n"><b data-em-name></b><span data-em-role></span></p></div>
   <div class="nogl">This device can’t draw the 3D island. The portfolio opens as text instead.</div>
 </div>
 
