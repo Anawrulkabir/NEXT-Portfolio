@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "build:deploy": "tsx scripts/build-deploy.ts",
     "gaps": "tsx scripts/content-gaps.ts",
     "gaps:check": "tsx scripts/content-gaps.ts --check-blockers",
     "optimize-images": "tsx scripts/optimize-images.ts",
