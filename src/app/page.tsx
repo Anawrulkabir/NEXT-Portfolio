@@ -1,14 +1,14 @@
 import type { Metadata } from 'next'
-import { DeskLoader } from '@/components/desk/DeskLoader'
+import { DeployExperience } from '@/components/deploy/DeployExperience'
 import { buildDeskData, type DeskData } from '@/components/desk/data'
 
 export const metadata: Metadata = {
-  description: 'Fahad’s real desk in 3D. Sit down, use the computer, read the notes.',
+  description: 'Deploy Fahad’s portfolio: type kubectl apply and watch an island of his research, robots and software assemble.',
 }
 
 /**
- * The whole site is the desk. Search engines and screen readers get this
- * plain text version of the same content, rendered on the server.
+ * The home page is a deployment you start by typing. Search engines and screen
+ * readers get this plain text version of the same content, rendered on the server.
  */
 function TextVersion({ d }: { d: DeskData }) {
   return (
@@ -79,7 +79,7 @@ export default function Home() {
   return (
     <>
       <TextVersion d={data} />
-      <DeskLoader data={data} />
+      <DeployExperience />
     </>
   )
 }

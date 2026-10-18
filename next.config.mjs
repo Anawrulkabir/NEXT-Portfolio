@@ -2,8 +2,8 @@
 
 const CV = '/cv/Md-Anawrul-Kabir-Fahad-CV.pdf'
 
-// The site is now a single page (the desk). Old URLs land somewhere useful.
-const OLD_PAGES = ['about', 'academic', 'archive', 'contact', 'experience', 'hire', 'journey', 'projects', 'research', 'skills', 'desk', 'animate', 'review']
+// The site is one page (the deploy experience, with the desk at /desk). Old URLs land somewhere useful.
+const OLD_PAGES = ['about', 'academic', 'archive', 'contact', 'experience', 'hire', 'journey', 'projects', 'research', 'skills', 'animate', 'review']
 
 const nextConfig = {
   async redirects() {
