@@ -327,18 +327,235 @@ export function mountSite(root) {
     },
   };
 
-  /* ---------- ghosts: figures still to draw, dashed and still ---------- */
-  const ghost = (K, draw) => ({ vb: "-232 -180 464 371", label: "A figure still to be drawn", ghost: true, build(svg) { const P = proj(K); draw(svg, P); return {}; } });
-  const plateG = (svg, P, A = 3.6, B = 2.6) => new Solid(svg).set(P, ring(-A, -B, A, B, 0.5, 8), 0, 0.18);
-  const lineG = (svg, P, pts, z, closed) => mk("path", { class: "ln", d: D(pts.map((q) => P(q[0], q[1], z)), closed) }, svg);
-  FIGS["ghost-airfoil"] = ghost(27, (svg, P) => { plateG(svg, P); for (const y0 of [-1.9, -1.2, 1.4, 2.0]) lineG(svg, P, streamline(y0, 0.15, -3.2, 3.2), 0.18); new Solid(svg).set(P, airfoil(-1.9, 0.15, 3.6), 0.18, 0.9); });
-  FIGS["ghost-hx"] = ghost(27, (svg, P) => { plateG(svg, P); for (let i = 0; i < 5; i++) new Solid(svg).set(P, ring(-1.5, -2.3, 1.5, 2.3, 0.3), 0.3 + i * 0.32, 0.07); const z = 0.3 + 4 * 0.32 + 0.07; for (const [x, y] of [[-0.9, -1.7], [0.9, -1.7], [-0.9, 1.7], [0.9, 1.7]]) lineG(svg, P, circ(x, y, 0.28, 16), z, true); for (let k = 0; k < 4; k++) { const y = -0.9 + k * 0.6; lineG(svg, P, [[-1.1, y], [0, y + 0.3], [1.1, y]], z); } });
-  FIGS["ghost-curve"] = ghost(27, (svg, P) => { plateG(svg, P); lineG(svg, P, [[-3, -2.1], [-3, 2.1], [3.2, 2.1]], 0.18); const c = []; for (let x = -2.9; x <= 3.1; x += 0.2) c.push([x, -1.8 + 3.5 * Math.pow((x + 3) / 6.2, 0.8)]); lineG(svg, P, c, 0.18); for (let x = -2.6; x <= 2.8; x += 0.6) lineG(svg, P, circ(x, -1.8 + 3.5 * Math.pow((x + 3) / 6.2, 0.8) - 0.18, 0.08, 8), 0.18, true); });
-  FIGS["ghost-soccer"] = ghost(27, (svg, P) => { plateG(svg, P); for (const [x, y] of [[-1.1, -1.2], [1.1, -1.2]]) new Solid(svg).set(P, circ(x, y, 0.42, 16), 0.18, 0.22); new Solid(svg).set(P, ring(-1.5, -1.05, 1.5, 1.05, 0.22), 0.4, 0.62); for (const [x, y] of [[-1.1, 1.2], [1.1, 1.2]]) new Solid(svg).set(P, circ(x, y, 0.42, 16), 0.18, 0.22); const b = P(2.5, 0.2, 0.55); mk("circle", { class: "s-top", cx: r2(b[0]), cy: r2(b[1]), r: 13 }, svg); });
-  FIGS["ghost-notebook"] = ghost(27, (svg, P) => { plateG(svg, P); new Solid(svg).set(P, ring(-2.8, -2, 2.8, 2, 0.3), 0.18, 0.14); const z = 0.32; lineG(svg, P, [[-2.8, -1.4], [2.8, -1.4]], z); for (let k = 0; k < 5; k++) lineG(svg, P, [[-2.2, -0.9 + k * 0.5], [-2.2 + 1.4 + (k % 3) * 0.9, -0.9 + k * 0.5]], z); lineG(svg, P, [[-2.6, -0.95], [-2.45, -0.8], [-2.6, -0.65]], z); });
-  FIGS["ghost-store"] = ghost(27, (svg, P) => { plateG(svg, P); new Solid(svg).set(P, ring(-1.8, -1.4, 1.8, 1.4, 0.12), 0.18, 1.2); lineG(svg, P, [[1.8, -0.4], [1.8, 0.4]], 0.18); mk("path", { class: "ln", d: D([P(1.8, -0.4, 0.18), P(1.8, -0.4, 0.95), P(1.8, 0.4, 0.95), P(1.8, 0.4, 0.18)]) }, svg); const aw = []; for (let k = 0; k <= 12; k++) { const y = -1.4 + (2.8 * k) / 12; aw.push(P(2.1, y, 1.25 - (k % 2) * 0.12)); } mk("path", { class: "ln", d: D(aw) }, svg); });
-  FIGS["ghost-waves"] = ghost(27, (svg, P) => { plateG(svg, P); new Solid(svg).set(P, ring(-2.8, -1.6, 2.8, 1.6, 0.3), 0.18, 0.12); let d = ""; for (let k = 0; k < 17; k++) { const x = -2.4 + k * 0.3, h = 0.15 + 0.7 * Math.abs(Math.sin(k * 0.9) * Math.cos(k * 0.37)); d += D([P(x, 0, 0.3), P(x, 0, 0.3 + h)]); } mk("path", { class: "ln", d }, svg); });
-  FIGS["ghost-podium"] = ghost(27, (svg, P) => { plateG(svg, P); new Solid(svg).set(P, ring(-2.4, -0.8, -0.9, 0.8, 0.1), 0.18, 0.7); new Solid(svg).set(P, ring(-0.75, -0.8, 0.75, 0.8, 0.1), 0.18, 1.15); new Solid(svg).set(P, ring(0.9, -0.8, 2.4, 0.8, 0.1), 0.18, 0.45); });
+  /* ---------- the other eight projects: one object each that answers the pointer and teaches one true thing ---------- */
+  const VB8 = "-232 -180 464 371";
+  const base = (svg, P) => new Solid(svg).set(P, ring(-3.6, -2.6, 3.6, 2.6, 0.5, 8), 0, 0.18);
+  const line = (svg, P, pts, z, closed, cls = "ln") => mk("path", { class: cls, d: D(pts.map((q) => P(q[0], q[1], z)), closed) }, svg);
+  const ease = (o, tgt, dt, st, w) => { if (st.still) { o.x = tgt; o.v = 0; } else spring(o, tgt, dt, w); return o.x; };
+
+  /* Thesis: pitch the airfoil; past the surrogate's training range the flow over the top separates */
+  FIGS.airfoil = {
+    vb: VB8, label: "An airfoil in a flow; moving across the figure changes its angle of attack",
+    build(svg, st) {
+      const K = 27, P = proj(K), Z = 0.18, Y0 = [-1.9, -1.2, 1.4, 2.0];
+      base(svg, P);
+      const lines = Y0.map(() => mk("path", { class: "ln" }, svg)), foil = new Solid(svg), F = airfoil(-1.9, 0.15, 3.6);
+      const a = { x: 4, v: 0 }; let goal = 4;
+      const turn = (pts, deg) => { const r = (-deg * Math.PI) / 180, c = Math.cos(r), s = Math.sin(r), cx = -0.3, cy = 0.15; return pts.map(([x, y]) => [cx + (x - cx) * c - (y - cy) * s, cy + (x - cx) * s + (y - cy) * c]); };
+      return {
+        tour: [[-170, 0], [170, 0]],
+        frame(dt, p, st) {
+          if (p) goal = clamp(Math.round(lerp(-4, 18, (p[0] + 190) / 380) * 2) / 2, -4, 18);
+          ease(a, goal, dt, st, 7);
+          const sep = a.x > 12;
+          lines.forEach((el, i) => {
+            const y0 = Y0[i], up = y0 < 0.15;
+            const pts = streamline(y0, 0.15, -3.2, 3.2).map(([x, y]) => {
+              let yy = y - 0.035 * a.x * Math.exp(-(((x + 0.2) / 1.7) ** 2)) * (up ? 1 : 0.6);
+              if (sep && up && x > -0.2) yy += Math.sin(x * 4.2 - st.t * 6) * 0.16 * ((x + 0.2) / 3.4) * Math.min(1, (a.x - 12) / 4);
+              return [x, yy];
+            });
+            el.setAttribute("d", D(pts.map((q) => P(q[0], q[1], Z))));
+            el.classList.toggle("lit", sep && up);
+          });
+          foil.set(P, turn(F, a.x), Z, 0.9);
+          foil.top.classList.toggle("lit", sep);
+        },
+        read: () => `${Math.round(a.x * 2) / 2}° · ${a.x > 12 ? "outside the training range: adapted with low-rank updates, forgetting measured" : "inside the surrogate's training range"}`,
+      };
+    },
+  };
+
+  /* Refrigerant papers: a plate heat exchanger whose plates lift apart above the pointer */
+  FIGS.hx = {
+    vb: VB8, label: "A plate heat exchanger; pointing at the stack lifts the plates apart to show the channels",
+    build(svg, st) {
+      const K = 27, P = proj(K), N = 6, PL = ring(-1.5, -2.3, 1.5, 2.3, 0.3);
+      base(svg, P);
+      const plates = Array.from({ length: N }, (_, i) => ({ i, s: new Solid(svg), o: { x: 0, v: 0 } }));
+      const ports = mk("path", { class: "ln" }, svg);
+      let pick = -1;
+      return {
+        tour: [[0, 60], [0, -10], [0, -80]],
+        frame(dt, p, st) {
+          // the plate is chosen from the pointer's height over the whole figure, never from the moving plates
+          pick = p && Math.abs(p[0]) < 170 ? clamp(N - 1 - Math.floor((p[1] + 130) / (240 / N)), 0, N - 1) : -1;
+          let top = 0;
+          plates.forEach((pl) => {
+            const lift = ease(pl.o, pick >= 0 && pl.i > pick ? 0.45 + 0.9 * st.I : 0, dt, st, 9);
+            const z = 0.3 + pl.i * 0.3 + lift;
+            pl.s.set(P, PL, z, 0.07); pl.s.top.classList.toggle("lit", pl.i === pick);
+            top = z + 0.07;
+          });
+          let d = ""; for (const [x, y] of [[-0.9, -1.7], [0.9, -1.7], [-0.9, 1.7], [0.9, 1.7]]) d += D(circ(x, y, 0.26, 14).map((q) => P(q[0], q[1], top)), true);
+          ports.setAttribute("d", d);
+        },
+        read: () => (pick < 0 ? "two low-GWP refrigerants · one industrial plate heat exchanger" : `channel ${pick + 1} · ${pick % 2 === 0 ? "refrigerant side (R455A evaporating, R1336mzz(E) condensing)" : "water side"}`),
+      };
+    },
+  };
+
+  /* CF₃I: three published datasets around one updated model, on a chart card standing on the plate; the pointer reads the points near it */
+  FIGS.curve = {
+    vb: VB8, label: "Viscosity data from three published datasets around a fitted curve; the pointer reads the points near it",
+    build(svg, st) {
+      const K = 27, P = proj(K), X0 = -2.4, X1 = 2.4, f = (x) => 0.5 + 1.75 * Math.pow((x - X0) / (X1 - X0), 0.75);
+      base(svg, P);
+      // the card stands on the plate's diagonal, square to the viewer: temperature runs across, viscosity goes up
+      const V = (u, z) => P(u / Math.SQRT2, -u / Math.SQRT2, z);
+      mk("path", { class: "s-edge", d: D([V(X0 - 0.2, 0.18), V(X0 - 0.2, 2.5), V(X1 + 0.2, 2.5), V(X1 + 0.2, 0.18)]) }, svg);
+      mk("path", { class: "ln", d: D([V(X0, 2.35), V(X0, 0.3), V(X1, 0.3)]) }, svg);
+      const c = []; for (let x = X0 + 0.1; x <= X1; x += 0.15) c.push(V(x, f(x)));
+      mk("path", { class: "ln lit", d: D(c) }, svg);
+      const rnd = mulberry(7), marks = [];
+      [21, 21, 21].forEach((n, k) => { for (let i = 0; i < n; i++) {
+        const x = X0 + 0.25 + ((X1 - X0 - 0.5) * i) / (n - 1) + (rnd() - 0.5) * 0.12, [sx, sy] = V(x, f(x) + (k - 1) * 0.15 + (rnd() - 0.5) * 0.16);
+        const el = k === 0 ? mk("circle", { cx: r2(sx), cy: r2(sy), r: 2.6, class: "ln" }, svg) : mk("path", { class: "ln", d: k === 1 ? `M${r2(sx - 2.4)},${r2(sy - 2.4)}h4.8v4.8h-4.8Z` : `M${r2(sx)},${r2(sy - 3.2)}l3,5.2h-6Z` }, svg);
+        marks.push({ el, sx, sy, k });
+      } });
+      const cursor = mk("path", { class: "foot-line" }, svg);
+      let near = [];
+      return {
+        tour: [4, 31, 58].map((k) => [marks[k].sx, marks[k].sy]),
+        frame(dt, p) {
+          near = [];
+          marks.forEach((m) => { const on = !!p && Math.hypot(m.sx - p[0], m.sy - p[1]) < 14; m.el.classList.toggle("lit", on); if (on) near.push(m.k); });
+          cursor.setAttribute("d", p ? `M${r2(p[0])},-150V170` : "");
+        },
+        read: () => (near.length ? `${near.length} point${near.length > 1 ? "s" : ""} here · from dataset${new Set(near).size > 1 ? "s" : ""} ${[...new Set(near)].sort().map((k) => k + 1).join(" and ")} of 3` : "63 published points · 3 datasets · one updated model"),
+      };
+    },
+  };
+
+  /* Robo soccer: the pointer drives the 2022 bot; push the ball far enough and it's a goal */
+  FIGS.soccer = {
+    vb: VB8, label: "The 2022 soccer robot on a pitch; moving across the figure drives it into the ball",
+    build(svg, st) {
+      const K = 27, P = proj(K), Z = 0.18;
+      base(svg, P);
+      mk("path", { class: "ln", d: D(ring(-3.2, -2.2, 3.2, 2.2, 0.05, 1).map((q) => P(q[0], q[1], Z)), true) + D([P(0, -2.2, Z), P(0, 2.2, Z)]) + D(circ(0, 0, 0.7, 28).map((q) => P(q[0], q[1], Z)), true) + D([[3.2, -0.9], [2.6, -0.9], [2.6, 0.9], [3.2, 0.9]].map((q) => P(q[0], q[1], Z))) }, svg);
+      const tyreFar = new Solid(svg), body = new Solid(svg), deck = mk("path", { class: "ln" }, svg), tyreNear = new Solid(svg), ball = new Solid(svg);
+      const bx = { x: -2, v: 0 }; let goal = -2, bl = 0.8, scored = false;
+      return {
+        tour: [[-170, 0], [170, 0]],
+        frame(dt, p, st) {
+          if (p) goal = clamp(lerp(-2.5, 2.2, (p[0] + 170) / 340), -2.5, 2.2);
+          ease(bx, goal, dt, st, 6);
+          const front = bx.x + 0.72;
+          bl = front > bl - 0.26 ? Math.min(3.0, front + 0.26) : Math.max(0.8, bl - (st.still ? 9 : dt * 0.6) * (p ? 0 : 1));
+          scored = bl >= 2.75;
+          tyreFar.set(P, ring(bx.x - 0.5, -0.66, bx.x + 0.5, -0.5, 0.06, 2), Z, 0.42);
+          body.set(P, ring(bx.x - 0.72, -0.5, bx.x + 0.72, 0.5, 0.14, 3), Z + 0.12, 0.42);
+          deck.setAttribute("d", D(ring(bx.x - 0.4, -0.28, bx.x + 0.3, 0.28, 0.06, 2).map((q) => P(q[0], q[1], Z + 0.54)), true));
+          tyreNear.set(P, ring(bx.x - 0.5, 0.5, bx.x + 0.5, 0.66, 0.06, 2), Z, 0.42);
+          ball.set(P, circ(bl, 0, 0.22, 16), Z, 0.4); ball.top.classList.toggle("lit", scored);
+        },
+        read: () => (scored ? "goal · remote-controlled over HC-05 Bluetooth" : Math.abs(bx.x + 2) > 0.2 ? "Arduino Uno · BTS7960 motor drivers · 3S LiPo" : "2022 · Robo Soccer, Chittagong Science Carnival 2.0"),
+      };
+    },
+  };
+
+  /* TensorCode: a notebook of three cells; pointing at a cell runs it, and the last one draws its output */
+  FIGS.notebook = {
+    vb: VB8, label: "A notebook of three cells; pointing at a cell runs it",
+    build(svg, st) {
+      const K = 27, P = proj(K), Z = 0.32;
+      base(svg, P);
+      new Solid(svg).set(P, ring(-2.8, -2, 2.8, 2, 0.3), 0.18, 0.14);
+      line(svg, P, [[-2.8, -1.45], [2.8, -1.45]], Z);
+      const cells = [0, 1, 2].map((i) => ({ i, y0: -1.25 + i * 1.05, s: new Solid(svg), o: { x: 0, v: 0 }, code: mk("path", { class: "ln" }, svg) }));
+      const out = mk("path", { class: "ln lit" }, svg);
+      let pick = -1, ran = 0;
+      return {
+        tour: [[0, -40], [0, 0], [0, 40]],
+        frame(dt, p, st) {
+          pick = -1;
+          if (p && Math.abs(p[0]) < 180) { let best = 1e9; cells.forEach((c) => { const d = Math.abs(P(0, c.y0 + 0.42, Z)[1] - p[1]); if (d < best) { best = d; pick = c.i; } }); }
+          ran = pick === 2 ? Math.min(1, ran + dt * (st.still ? 99 : 0.9)) : Math.max(0, ran - dt * 2);
+          cells.forEach((c) => {
+            const z = Z + 0.04 + ease(c.o, c.i === pick ? 0.28 : 0, dt, st, 10);
+            c.s.set(P, ring(-2.4, c.y0, 2.4, c.y0 + 0.85, 0.12, 3), Z, z - Z); c.s.top.classList.toggle("lit", c.i === pick);
+            let d = ""; for (let k = 0; k < 2; k++) { const y = c.y0 + 0.3 + k * 0.26; d += D([[-2.1, y], [-2.1 + 1.2 + ((c.i * 5 + k * 3) % 4) * 0.35, y]].map((q) => P(q[0], q[1], z))); }
+            c.code.setAttribute("d", d);
+            if (c.i === 2) { const pts = []; for (let x = 0; x <= ran * 1.9 + 1e-6; x += 0.1) pts.push([0.2 + x, c.y0 + 0.2 + 0.5 * (1 - Math.exp(-x * 1.6))]); out.setAttribute("d", D(pts.map((q) => P(q[0], q[1], z)))); }
+          });
+        },
+        read: () => (pick < 0 ? "TensorCode · AI, GPU and kernel programming in the browser" : `cell ${pick + 1} · run${pick === 2 && ran > 0.98 ? " · output ready" : ""}`),
+      };
+    },
+  };
+
+  /* Zeenah Store: the pointer sends products from the shop into the cart */
+  FIGS.store = {
+    vb: VB8, label: "A small storefront and a cart; pointing at the shop sends products to the cart",
+    build(svg, st) {
+      const K = 27, P = proj(K), Z = 0.18;
+      base(svg, P);
+      new Solid(svg).set(P, ring(-2.4, -1.6, 0.6, 1.2, 0.12), Z, 1.2);
+      let aw = ""; for (let k = 0; k <= 6; k++) { const y = -1.6 + k * 0.467; aw += D([P(0.6, y, Z + 1.2), P(1.1, y, Z + 0.95)]); }
+      mk("path", { class: "ln", d: aw + D([P(0.6, -0.35, Z), P(0.6, -0.35, Z + 0.8), P(0.6, 0.35, Z + 0.8), P(0.6, 0.35, Z)]) }, svg);
+      const cart = new Solid(svg); cart.set(P, ring(2.0, 0.5, 3.0, 1.5, 0.08, 2), Z + 0.15, 0.5);
+      mk("path", { class: "ln", d: D([P(2.0, 0.5, Z + 0.65), P(1.7, 0.2, Z + 0.95)]) }, svg);
+      const box = new Solid(svg); let t = -1, count = 0;
+      return {
+        tour: [[-40, -20], [-40, 10]],
+        frame(dt, p, st) {
+          if (t < 0 && p && p[0] < 60) t = 0;
+          if (t >= 0) { t += st.still ? 1 : dt * 0.9; if (t >= 1) { t = -1; count = Math.min(99, count + 1); } }
+          const u = smooth(Math.max(0, t)), x = lerp(0.9, 2.5, u), y = lerp(0, 1.0, u), zz = Z + 0.15 + 0.6 + Math.sin(u * Math.PI) * 0.6;
+          box.set(P, ring(x - 0.2, y - 0.2, x + 0.2, y + 0.2, 0.04, 1), zz, 0.3); box.g.style.display = t >= 0 ? "" : "none";
+          cart.top.classList.toggle("lit", count > 0);
+        },
+        read: () => (count ? `${count} in the cart · guest checkout or Google sign-in · order history` : "handloom sarees and jewellery · a live store"),
+      };
+    },
+  };
+
+  /* Olly Labs: scrub a recorded call; what's behind the playhead turns into notes */
+  FIGS.waves = {
+    vb: VB8, label: "A recorded call as a waveform; moving across it turns the audio behind the playhead into notes",
+    build(svg, st) {
+      const K = 27, P = proj(K), Z = 0.32;
+      base(svg, P);
+      new Solid(svg).set(P, ring(-2.8, -1.9, 2.8, 1.9, 0.3), 0.18, 0.14);
+      const bars = []; for (let k = 0; k < 17; k++) { const x = -2.4 + k * 0.3, h = 0.15 + 0.6 * Math.abs(Math.sin(k * 0.9) * Math.cos(k * 0.37)); bars.push({ x, el: mk("path", { class: "ln", d: D([P(x, -1.2 - h, Z), P(x, -1.2 + h, Z)]) }, svg) }); }
+      const head = mk("path", { class: "ln lit" }, svg), notes = mk("path", { class: "ln" }, svg);
+      const ph = { x: -2.6, v: 0 }; let goal = -2.6;
+      return {
+        tour: [[-160, 0], [160, 0]],
+        frame(dt, p, st) {
+          if (p) goal = clamp(lerp(-2.6, 2.6, (p[0] + 170) / 340), -2.6, 2.6);
+          ease(ph, goal, dt, st, 8);
+          bars.forEach((b) => b.el.classList.toggle("lit", b.x < ph.x));
+          head.setAttribute("d", D([P(ph.x, -2.0, Z), P(ph.x, -0.4, Z)]));
+          const prog = (ph.x + 2.6) / 5.2; let d = "";
+          [4.4, 3.6, 4.0, 2.4].forEach((L, k) => { const len = clamp(prog * 4 - k) * L; if (len > 0.05) d += D([P(-2.4, 0.1 + k * 0.42, Z), P(-2.4 + len, 0.1 + k * 0.42, Z)]); });
+          notes.setAttribute("d", d);
+        },
+        read: () => { const prog = (ph.x + 2.6) / 5.2; return prog < 0.03 ? "a recorded call → notes and an AI summary" : prog > 0.97 ? "notes and AI summary ready" : `${Math.round(prog * 100)}% of the call into notes`; },
+      };
+    },
+  };
+
+  /* Contests: a podium; pointing at a step names the placing */
+  FIGS.podium = {
+    vb: VB8, label: "A podium of three steps; pointing at a step names the placing",
+    build(svg, st) {
+      const K = 27, P = proj(K), Z = 0.18;
+      base(svg, P);
+      const steps = [[-2.4, -0.9, 0.7, "Finalist · API Avengers, Televerse 1.0 · Rising Team Award"], [-0.75, 0.75, 1.15, "Champion · Break The Monolith Hackathon 2025"], [0.9, 2.4, 0.5, "7th · Brain Station 23 AI Engineering · 9th · NSU WebXtreme"]].map(([x0, x1, h, txt], i) => ({ i, x0, x1, h, txt, s: new Solid(svg), o: { x: 0, v: 0 }, cx: P((x0 + x1) / 2, 0, Z + h)[0] }));
+      let pick = -1;
+      return {
+        tour: steps.map((s) => [s.cx, 0]),
+        frame(dt, p, st) {
+          pick = -1;
+          if (p) { let best = 1e9; steps.forEach((s) => { const d = Math.abs(s.cx - p[0]); if (d < best) { best = d; pick = s.i; } }); if (best > 90) pick = -1; }
+          steps.forEach((s) => { s.s.set(P, ring(s.x0, -0.8, s.x1, 0.8, 0.1), Z, s.h + ease(s.o, s.i === pick ? 0.35 : 0, dt, st, 10)); s.s.top.classList.toggle("lit", s.i === pick); });
+        },
+        read: () => (pick < 0 ? "champion · finalist · 7th · 9th, 2022–25" : steps[pick].txt),
+      };
+    },
+  };
 
   /* ---------- runtime ---------- */
   function mountFig(host) {
@@ -477,14 +694,14 @@ export function mountSite(root) {
     { id: "snake", svc: "robotics-yard", shelf: "robotics", fig: "snake", name: "Compliant snake robot", tag: "2026", status: "Simulation · ongoing", sum: "A MuJoCo simulation of a 7-segment, cable-driven snake robot, built to test a Science Robotics result on body compliance and to size its servos before buying parts.", facts: ["433 paired, randomized trials", "133 tests, each shown to fail on a planted fault", "Pass/fail rules written before every run"], go: "snake" },
     { id: "propbench", svc: "propbench", shelf: "software", fig: "loupe", name: "PropBench", tag: "2026", status: "Open source · pre-alpha · MIT", sum: "A desktop workbench that takes researchers from lab measurements to a validated thermophysical property model, without writing code.", facts: ["~32,000 lines across Rust, Python, Svelte and TypeScript", "450+ automated tests, CI on Windows, macOS and Linux", "Reproduces a NIST check value to 5 × 10⁻⁶"], go: "propbench" },
     { id: "aistudio", svc: "gpu-datacenter", shelf: "infra", fig: "gpu", name: "AI Studio", tag: "2025–26", status: "Poridhi.io", sum: "On-demand GPU workspaces for Jupyter and VS Code. I helped move it from AWS to a Kubernetes cluster on the company GPU server.", facts: ["Launch time cut by about 70%, from 10–15 to 3–5 minutes", "Six users share 48 GB of VRAM as isolated 8 GB slices (HAMi)", "Built the Next.js frontend for session setup"], go: "poridhi" },
-    { id: "thesis", svc: "wind-tunnel", shelf: "research", fig: "ghost-airfoil", name: "Localized forgetting in PEFT", tag: "thesis", status: "Under review · BSME ICTFE", sum: "Adapting a released physics-informed airfoil surrogate beyond its training range with low-rank updates, and measuring what it forgets.", facts: ["CFD reference data generated in SU2", "Eight adaptation methods compared on accuracy and forgetting"], go: "research" },
-    { id: "refrig", svc: "heat-exchanger", shelf: "research", fig: "ghost-hx", name: "Refrigerant heat transfer ML", tag: "2 papers", status: "Under review · Int. J. Refrigeration", sum: "Models that predict evaporation and condensation heat transfer of low-GWP R455A and R1336mzz(E) in an industrial plate heat exchanger, from Saga University experiments.", facts: ["Tested on operating conditions left out of training", "Measurement uncertainty analysis for the R455A study"], go: "research" },
-    { id: "cf3i", svc: "propbench", shelf: "research", fig: "ghost-curve", name: "CF₃I viscosity model", tag: "in prep", status: "In preparation", sum: "An updated residual-entropy scaling model for the viscosity of CF₃I (R13I1), and PropBench’s first case study.", facts: ["63 published data points from 3 datasets"], go: "research" },
-    { id: "soccer", svc: "soccer-pitch", shelf: "robotics", fig: "ghost-soccer", name: "Robo soccer bot", tag: "2022", status: "Certificate of Recognition", sum: "A remote-controlled soccer robot for Chittagong Science Carnival 2.0.", facts: ["Arduino Uno, BTS7960 drivers, 3S LiPo, HC-05", "Plywood chassis"] },
-    { id: "tensorcode", svc: "gpu-datacenter", shelf: "infra", fig: "ghost-notebook", name: "TensorCode and TensorRAG", tag: "2025–26", status: "Poridhi.io", sum: "A browser platform for AI, GPU and kernel programming, and a visual tool for building ML training pipelines from Python steps.", facts: ["Owned the frontend from the first version", "Built the workflow that brings lab content in from GitHub"], go: "poridhi" },
-    { id: "zeenah", svc: "market-street", shelf: "products", fig: "ghost-store", name: "Zeenah Store", tag: "live", status: "Live site", sum: "A store for handloom sarees and jewellery with cart, guest checkout, Google sign-in and order history.", facts: ["Next.js, Supabase, Google OAuth, Vercel"] },
-    { id: "olly", svc: "market-street", shelf: "products", fig: "ghost-waves", name: "AI meeting notes", tag: "Olly Labs", status: "Shipped", sum: "A meeting assistant that records calls and turns the audio into notes and AI summaries.", facts: ["React, Supabase, Microsoft Azure"] },
-    { id: "contests", svc: "hall-of-fame", shelf: "contests", fig: "ghost-podium", name: "Hackathons and contests", tag: "2022–25", status: "Champion · finalist · 7th · 9th", sum: "Champion at Break The Monolith. Finalist and Rising Team Award at API Avengers. 7th at Brain Station 23 AI Engineering, 9th at NSU TechFest WebXtreme.", facts: ["ICPC Dhaka Regional preliminary contestant", "CUET IUPC and ASRRO Robocoder"], go: "about" },
+    { id: "thesis", svc: "wind-tunnel", shelf: "research", fig: "airfoil", name: "Localized forgetting in PEFT", tag: "thesis", status: "Under review · BSME ICTFE", sum: "Adapting a released physics-informed airfoil surrogate beyond its training range with low-rank updates, and measuring what it forgets.", facts: ["CFD reference data generated in SU2", "Eight adaptation methods compared on accuracy and forgetting"], go: "research" },
+    { id: "refrig", svc: "heat-exchanger", shelf: "research", fig: "hx", name: "Refrigerant heat transfer ML", tag: "2 papers", status: "Under review · Int. J. Refrigeration", sum: "Models that predict evaporation and condensation heat transfer of low-GWP R455A and R1336mzz(E) in an industrial plate heat exchanger, from Saga University experiments.", facts: ["Tested on operating conditions left out of training", "Measurement uncertainty analysis for the R455A study"], go: "research" },
+    { id: "cf3i", svc: "propbench", shelf: "research", fig: "curve", name: "CF₃I viscosity model", tag: "in prep", status: "In preparation", sum: "An updated residual-entropy scaling model for the viscosity of CF₃I (R13I1), and PropBench’s first case study.", facts: ["63 published data points from 3 datasets"], go: "research" },
+    { id: "soccer", svc: "soccer-pitch", shelf: "robotics", fig: "soccer", name: "Robo soccer bot", tag: "2022", status: "Certificate of Recognition", sum: "A remote-controlled soccer robot for Chittagong Science Carnival 2.0.", facts: ["Arduino Uno, BTS7960 drivers, 3S LiPo, HC-05", "Plywood chassis"] },
+    { id: "tensorcode", svc: "gpu-datacenter", shelf: "infra", fig: "notebook", name: "TensorCode and TensorRAG", tag: "2025–26", status: "Poridhi.io", sum: "A browser platform for AI, GPU and kernel programming, and a visual tool for building ML training pipelines from Python steps.", facts: ["Owned the frontend from the first version", "Built the workflow that brings lab content in from GitHub"], go: "poridhi" },
+    { id: "zeenah", svc: "market-street", shelf: "products", fig: "store", name: "Zeenah Store", tag: "live", status: "Live site", sum: "A store for handloom sarees and jewellery with cart, guest checkout, Google sign-in and order history.", facts: ["Next.js, Supabase, Google OAuth, Vercel"] },
+    { id: "olly", svc: "market-street", shelf: "products", fig: "waves", name: "AI meeting notes", tag: "Olly Labs", status: "Shipped", sum: "A meeting assistant that records calls and turns the audio into notes and AI summaries.", facts: ["React, Supabase, Microsoft Azure"] },
+    { id: "contests", svc: "hall-of-fame", shelf: "contests", fig: "podium", name: "Hackathons and contests", tag: "2022–25", status: "Champion · finalist · 7th · 9th", sum: "Champion at Break The Monolith. Finalist and Rising Team Award at API Avengers. 7th at Brain Station 23 AI Engineering, 9th at NSU TechFest WebXtreme.", facts: ["ICPC Dhaka Regional preliminary contestant", "CUET IUPC and ASRRO Robocoder"], go: "about" },
   ];
   const shelfOf = (id) => SHELVES.find((s) => s.id === id);
   const work = root.querySelector(".work");
