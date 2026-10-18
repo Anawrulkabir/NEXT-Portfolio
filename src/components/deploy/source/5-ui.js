@@ -19,6 +19,8 @@ function applyTheme() {
   beamPivot.visible = dark;
   buildRegions(); recolor();
 }
+/** show a theme and remember it: the site's pages restore it before they paint (src/lib/theme.ts) */
+function setTheme(t) { document.documentElement.setAttribute("data-theme", t); store.set("theme", t); }
 new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
 applyTheme();
@@ -288,7 +290,7 @@ function exec(raw) {
     case "sound": {
       if (/^\d+$/.test(a)) SFX.setVolume(+a / 100); else if (a === "hum") SFX.setHum(!SFX.hum); else SFX.set(a ? a === "on" : !SFX.on);
       out(`sound ${SFX.on ? "on" : "off"} · volume ${Math.round(SFX.volume * 100)} · hum ${SFX.hum ? "on" : "off"}`, "mute"); break; }
-    case "theme": document.documentElement.setAttribute("data-theme", a === "light" || a === "dark" ? a : dark ? "light" : "dark"); break;
+    case "theme": setTheme(a === "light" || a === "dark" ? a : dark ? "light" : "dark"); break;
     case "ping": [3, 2, 4].forEach((ms, k) => setTimeout(() => out(`64 bytes from fahad-kabir: icmp_seq=${k + 1} ttl=64 time=${ms} ms`, "fg"), 260 * (k + 1))); break;
     case "reboot": store.set("booted", false); out("rebooting…", "warn"); setTimeout(() => location.reload(), 500); break;
     case "sudo": if (/hire/.test(a)) { out("[sudo] permission granted. Opening the lighthouse…", "ok"); setTimeout(() => go(9), 500); } else { out("fahad is not in the sudoers file. This incident will be reported.", "warn"); SFX.error(); } break;
@@ -425,7 +427,7 @@ ROOT.addEventListener("click", (e) => {
   if (t.dataset.goto) { if (ui.mode === "read") setMode(mobile ? "tour" : "explore"); return go(+t.dataset.goto, { jump: true }); }
   if (t.dataset.rot) { ctl.azg += (+t.dataset.rot * Math.PI) / 2; SFX.whoosh(); return; }
   if (t.dataset.zoom) { ctl.zg = clamp(ctl.zg * (+t.dataset.zoom > 0 ? 1.3 : 1 / 1.3), 0.5, 6); return; }
-  if (t.hasAttribute("data-theme-toggle")) { document.documentElement.setAttribute("data-theme", dark ? "light" : "dark"); return; }
+  if (t.hasAttribute("data-theme-toggle")) return setTheme(dark ? "light" : "dark");
   const a = t.dataset.act;
   if (a === "deploy") return BOOT.phase === "live" ? null : deploy(false);
   // the essentials: skip the opening and land on the text version, with both CVs at the top

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import './site.css'
 import { mountSite } from './figures'
+import { currentTheme, setTheme } from '@/lib/theme'
 
 const CV = {
   swe: '/cv/Md-Anawrul-Kabir-Fahad-SWE-CV.pdf',
@@ -66,6 +67,17 @@ export function SitePage({ body, section }: { body: string; section: Section }) 
             <a className="island opt" href="/">
               Island
             </a>
+            <button
+              className="themebtn"
+              type="button"
+              aria-label="Day or night"
+              title="Day or night"
+              onClick={() => setTheme(currentTheme() === 'dark' ? 'light' : 'dark')}
+            >
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                <path d="M13.5 9.5A6 6 0 0 1 6.5 2.5a6 6 0 1 0 7 7z" />
+              </svg>
+            </button>
           </nav>
         </header>
         <div ref={host} dangerouslySetInnerHTML={{ __html: body }} />
