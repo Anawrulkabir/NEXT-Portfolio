@@ -89,7 +89,7 @@ function renderPanel() {
   panel.innerHTML = html`<div class="w-grab" data-act="sheet" aria-hidden="true"></div>
     <div class="w-ph"><div><p class="w-tag"><i></i>svc/${s.svc} · ns/${s.ns} · <b>Running</b></p><h3 class="w-title">${s.name}</h3><p class="w-sub">${s.tag}</p></div><button class="w-x" type="button" data-act="close" aria-label="Back to the island">×</button></div>
     <div class="w-body"><p class="w-sum">${s.sum}</p>${controlHTML(s)}<ul class="w-facts">${s.facts.map((f) => `<li>${f}</li>`).join("")}</ul>
-    <p class="w-more"><a href="#" data-act="read">Read everything as text</a></p></div>
+    <p class="w-more"><a class="w-page" href="${s.page[0]}">${s.page[1]} →</a><a href="#" data-act="read">Everything as text</a></p></div>
     <div class="w-nav"><button type="button" data-act="prev" ${ui.cur === 0 ? "disabled" : ""}>← ${ui.cur > 0 ? STATIONS[ui.cur - 1].name : ""}</button><span>${ui.cur + 1} / ${STATIONS.length}</span><button type="button" data-act="next" ${ui.cur === last ? "disabled" : ""}>${ui.cur < last ? STATIONS[ui.cur + 1].name : ""} →</button></div>`;
   panel.setAttribute("data-open", ""); panel.dataset.sheet = ui.sheet;
   const idHere = panel.querySelector("[data-id-here]"); if (idHere) panelField = identityCard(idHere, true);
@@ -191,7 +191,7 @@ function foldSvc(folded, remember = true) {
 }
 function renderRead() {
   $("[data-read-cv]").innerHTML = cvLinks();
-  $("[data-read-list]").innerHTML = STATIONS.map((s, i) => html`<li style="--a:${ACC[s.ns]}"><p class="w-tag"><i></i>svc/${s.svc} · ${s.tag}</p><h4>${s.name}</h4><p>${s.sum}</p><ul>${s.facts.map((f) => `<li>${f}</li>`).join("")}</ul><button type="button" data-goto="${i}">Visit in the world →</button></li>`).join("");
+  $("[data-read-list]").innerHTML = STATIONS.map((s, i) => html`<li style="--a:${ACC[s.ns]}"><p class="w-tag"><i></i>svc/${s.svc} · ${s.tag}</p><h4>${s.name}</h4><p>${s.sum}</p><ul>${s.facts.map((f) => `<li>${f}</li>`).join("")}</ul><p class="w-rlinks"><a href="${s.page[0]}">${s.page[1]} →</a><button type="button" data-goto="${i}">Visit in the world →</button></p></li>`).join("");
 }
 
 /* ---------- lightbox, synced with the card tray ---------- */
@@ -354,7 +354,8 @@ ROOT.addEventListener("click", (e) => {
   if (lbOpen && e.target === lb) return closeLightbox();
   if (idPop.hasAttribute("data-open") && !e.target.closest("[data-idpop],[data-chip]")) toggleId(false);
   const t = e.target.closest("[data-act],[data-mode],[data-card],[data-photo],[data-goto],[data-rot],[data-zoom],[data-theme-toggle],[data-copy],[data-sound],[data-chip],[data-skip],[data-termtoggle],[data-term-size],[data-term-close],[data-svc-fold]");
-  if (!t) return;
+  // the root carries data-mode itself, so closest() can land on it: that is not a control, and plain links must work
+  if (!t || t === ROOT) return;
   if (t.tagName === "A" && !t.dataset.act) return;
   e.preventDefault(); SFX.unlock();
   if (t.hasAttribute("data-skip")) return skipBoot();

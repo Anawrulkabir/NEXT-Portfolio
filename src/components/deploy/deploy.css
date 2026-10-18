@@ -195,7 +195,19 @@ body:has(.x) { margin: 0; background: var(--sea); color: var(--ink); font: 400 1
 .w-facts { display: grid; gap: 6px; }
 .w-facts li { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 6px; text-wrap: pretty; }
 .w-facts li::before { content: ""; width: 5px; height: 5px; margin-top: 8px; border-radius: 50%; background: var(--a); }
-.w-more a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 4px; }
+.w-more { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.w-more a { color: var(--muted); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 4px; }
+.w-more .w-page { color: var(--ink); font-weight: 500; }
+.w-rlinks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; }
+.w-rlinks a { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 4px; }
+.w-readmode li .w-rlinks button { margin: 0; color: var(--muted); }
+/* the pages behind the island, always one click away */
+.pages { display: inline-flex; gap: 2px; padding: 3px; border-radius: 11px; }
+.pages a { display: grid; place-items: center; height: 30px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none; }
+@media (hover: hover) { .pages a:hover { color: var(--ink); background: var(--canvas); } }
+.x.is-mobile .pages { display: none; }
+.w-rnav { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.w-rnav a { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 8px; box-shadow: var(--card); font-size: 12px; font-weight: 500; text-decoration: none; }
 .w-ctl { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: var(--stone); }
 .w-ctl label { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 500; }
 .w-ctl output { font: 400 12px var(--mono); }
