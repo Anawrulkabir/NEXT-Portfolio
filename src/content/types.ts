@@ -63,7 +63,7 @@ export type Profile = {
     viewHref: string
     downloadHref: string
     updated: ISODateish
-    academic?: Maybe<string>
+    academic?: string
   }
   links: Link[]
 }

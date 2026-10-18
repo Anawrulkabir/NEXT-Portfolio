@@ -104,7 +104,7 @@ function identityCard(el, compact) {
   el.innerHTML = html`<div class="id-portrait" data-id-p><canvas class="id-ascii"></canvas><img class="id-photo" alt="Md Anawrul Kabir Fahad" src="${IMG.portrait}"><span class="id-hint">${matchMedia("(hover: hover)").matches ? "point to develop" : "tap to develop"}</span></div>
     <div class="id-meta"><p class="id-k"><i></i>pod/fahad-kabir · Running</p><h3>Md Anawrul Kabir Fahad</h3><p class="id-role">Mechanical Engineering, CUET · research software · GPU platforms</p>
     ${compact ? "" : html`<dl class="id-dl"><dt>labels</dt><dd>focus=scientific-ml · build=research-software · infra=gpu</dd><dt>node</dt><dd>cuet / mechanical (2022 →)</dd><dt>region</dt><dd>Dhaka, Bangladesh</dd></dl>`}
-    <div class="id-links"><a href="${LINKS.github}" target="_blank" rel="noopener">GitHub</a><a href="${LINKS.linkedin}" target="_blank" rel="noopener">LinkedIn</a><button type="button" data-copy="${LINKS.email}">Copy email</button></div></div>`;
+    <div class="id-links">${cvLinks()}<a href="${LINKS.github}" target="_blank" rel="noopener">GitHub</a><a href="${LINKS.linkedin}" target="_blank" rel="noopener">LinkedIn</a><button type="button" data-copy="${LINKS.email}">Copy email</button></div></div>`;
   const P = el.querySelector("[data-id-p]"), field = asciiField(P.querySelector("canvas"), { cell: compact ? 8 : 9 });
   const move = (e) => { const r = P.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top; field.point([mx, my]); P.style.setProperty("--mx", mx + "px"); P.style.setProperty("--my", my + "px"); P.setAttribute("data-lit", ""); };
   P.addEventListener("pointermove", move);

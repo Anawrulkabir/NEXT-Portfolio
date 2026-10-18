@@ -41,7 +41,7 @@ writeFileSync(join(DIR, 'engine.js'), engine)
 const shell = readFileSync(join(SRC, 'shell.html'), 'utf8')
 let style = shell.slice(shell.indexOf('<style>') + 7, shell.indexOf('</style>'))
 let markup = shell.slice(shell.indexOf('<div class="x" data-x>'), shell.indexOf('<script src=')).trim()
-markup = markup.replace('__PORTRAIT__', '/media/portrait/fahad-2026.webp')
+markup = markup.replaceAll('__PORTRAIT__', '/media/portrait/fahad-2026.webp')
 
 // scope the page-wide rules to this experience, so other routes keep their own look
 style = swap(style, ':root {', '.x {')

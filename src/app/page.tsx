@@ -17,7 +17,15 @@ function TextVersion({ d }: { d: DeskData }) {
       <p>{d.profile.positioning}</p>
       <p>{d.profile.sentence}</p>
       <p>
-        <a href={d.profile.cv.download}>Résumé (PDF)</a> · <a href={`mailto:${d.profile.email}`}>{d.profile.email}</a>
+        <a href={d.profile.cv.download}>Software engineering CV (PDF)</a>
+        {d.profile.cv.academic && (
+          <>
+            {' · '}
+            <a href={d.profile.cv.academic}>Academic CV (PDF)</a>
+          </>
+        )}
+        {' · '}
+        <a href={`mailto:${d.profile.email}`}>{d.profile.email}</a>
       </p>
       <h2>About</h2>
       {d.profile.about.map((p) => (

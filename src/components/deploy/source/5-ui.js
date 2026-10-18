@@ -50,12 +50,12 @@ function placeCam() {
 const tweenCam = (to, zoom, dur, now) => { ctl.tween = { a: ctl.t.clone(), za: ctl.z, b: to.clone(), zb: zoom, t0: now, dur }; };
 
 /* ---------- state ---------- */
-const ui = { mode: "explore", cur: -1, hover: -1, sheet: "half", term: false };
+const ui = { mode: "explore", cur: -1, hover: -1, sheet: "half", term: "compact" };
 const BOOT = { phase: "idle", typed: "", idleT: 0, ghost: false, bt: 0, speed: 1, events: [], rows: [], last: 0, ghostWait: 0 };
 const CMD = "kubectl apply -f fahad-kabir.yaml";
 const labels = $("[data-labels]"), panel = $("[data-panel]"), tourbar = $("[data-tourbar]"), svcList = $("[data-svc]");
 const labelEls = STATIONS.map((s, i) => { const b = document.createElement("button"); b.type = "button"; b.className = "w-label"; b.style.setProperty("--a", ACC[s.ns]); b.innerHTML = `<i></i>${s.name}`; b.addEventListener("click", () => go(i)); labels.appendChild(b); return b; });
-svcList.innerHTML = `<p class="svc-h"><span>svc</span><span>ns</span></p>` + STATIONS.map((s, i) => `<button type="button" class="svc-row" data-goto="${i}" style="--a:${ACC[s.ns]}"><i></i><span>${s.svc}</span><em>${s.ns}</em></button>`).join("");
+svcList.innerHTML = `<button type="button" class="svc-h" data-svc-fold aria-expanded="true" aria-label="Show or hide the services"><span>svc</span><span class="svc-ns">ns</span><span class="svc-n">${STATIONS.length} running</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3.75 5 6.25l2.5-2.5"/></svg></button>` + STATIONS.map((s, i) => `<button type="button" class="svc-row" data-goto="${i}" style="--a:${ACC[s.ns]}"><i></i><span>${s.svc}</span><em>${s.ns}</em></button>`).join("");
 const svcRows = [...svcList.querySelectorAll(".svc-row")];
 svcRows.forEach((b, i) => { b.addEventListener("pointerenter", () => (ui.hover = i)); b.addEventListener("pointerleave", () => (ui.hover = -1)); });
 
@@ -77,7 +77,7 @@ function controlHTML(s) {
     case "race": return html`<div class="w-ctl"><button class="w-btn" type="button" data-act="race">Launch a session both ways</button><div class="w-race"><div><span>AWS · new EC2 machine</span><b data-race="aws">—</b></div><i><s data-bar="aws"></s></i><div><span>Bare metal · HAMi slice</span><b data-race="bm">—</b></div><i><s data-bar="bm"></s></i></div><p class="w-note">One launch drawn from each stated range (10–15 and 3–5 minutes), a second of animation per 2.5 minutes.</p></div>`;
     case "kick": return html`<div class="w-ctl"><button class="w-btn" type="button" data-act="kick">Kick off</button><div class="w-thumbs">${PHOTOS.map(([id, alt], k) => `<button type="button" data-photo="${k}"><img alt="${alt}" src="${IMG[id]}"></button>`).join("")}</div></div>`;
     case "certs": return html`<div class="w-thumbs w-thumbs-c">${CERTS.map(([id, n], k) => `<button type="button" data-card="${k}" title="${n}"><img alt="${n}" src="${IMG[id]}"></button>`).join("")}</div>`;
-    case "contact": return html`<div class="w-ctl w-contact"><p class="w-read"><b>${LINKS.email}</b></p><div class="id-links"><button type="button" data-copy="${LINKS.email}">Copy email</button><a href="${LINKS.linkedin}" target="_blank" rel="noopener">LinkedIn</a><a href="${LINKS.github}" target="_blank" rel="noopener">GitHub</a></div></div>`;
+    case "contact": return html`<div class="w-ctl w-contact"><p class="w-read"><b>${LINKS.email}</b></p><div class="id-links"><button type="button" data-copy="${LINKS.email}">Copy email</button>${cvLinks()}<a href="${LINKS.linkedin}" target="_blank" rel="noopener">LinkedIn</a><a href="${LINKS.github}" target="_blank" rel="noopener">GitHub</a></div></div>`;
     default: return "";
   }
 }
@@ -118,10 +118,11 @@ function go(i, opts = {}) {
   else { const p = PATH[stopAt[i]]; cart.position.set(p.x + 0.5, S(p.x, p.z), p.z + 0.5); focus(i); }
   renderPanel(); layoutOffsets(); syncNav(); SFX.open();
   store.set("last", i);
+  if (!opts.fromHistory) setRoute(STATIONS[i].svc, opts.replace);
   if (!opts.quiet) logLine([seg("→ ", "dim"), seg("svc/" + STATIONS[i].svc, "acc"), seg("  200 OK", "ok")]);
 }
 function focus(i) { const s = STATIONS[i]; ctl.tween = null; ctl.tg.set(s.c[0] + 0.5, S(s.c[0], s.c[1]) + 1, s.c[1] + 0.5); ctl.zg = s.zoom * (mobile ? 0.62 : 1); SFX.whoosh(); }
-function overview() { ui.cur = -1; ROOT.dataset.view = "overview"; ctl.tween = null; ctl.tg.copy(OVER); ctl.zg = overviewZoom(); renderPanel(); layoutOffsets(); syncNav(); }
+function overview(opts = {}) { if (!opts.fromHistory) setRoute(""); ui.cur = -1; ROOT.dataset.view = "overview"; ctl.tween = null; ctl.tg.copy(OVER); ctl.zg = overviewZoom(); renderPanel(); layoutOffsets(); syncNav(); }
 function startTravel(from, to) {
   const n = PATH.length, a = stopAt[from], b = stopAt[to], fwd = (b - a + n) % n, back = (a - b + n) % n, seq = [];
   if (fwd <= back) for (let k = 0; k <= fwd; k++) seq.push((a + k) % n); else for (let k = 0; k <= back; k++) seq.push((a - k + n) % n);
@@ -134,14 +135,62 @@ function syncNav() {
   labelEls.forEach((l, i) => l.toggleAttribute("data-on", i === ui.cur));
   svcRows.forEach((b, i) => b.toggleAttribute("aria-current", i === ui.cur));
 }
-function setMode(m) {
+function setMode(m, opts = {}) {
+  const was = ui.mode;
   ui.mode = m; ROOT.dataset.mode = m;
-  if (m === "read") renderRead();
-  else if (m === "tour") { if (ui.cur < 0) go(0, { jump: true }); }
-  else if (m === "explore" && mobile) overview();
+  if (m === "read") { renderRead(); if (!opts.fromHistory) setRoute("read"); }
+  else if (was === "read" && !opts.fromHistory) setRoute(ui.cur >= 0 ? STATIONS[ui.cur].svc : "", true);
+  if (m === "tour") { if (ui.cur < 0) go(0, { jump: true, replace: true }); }
+  else if (m === "explore" && mobile) overview(opts);
   syncNav();
 }
+
+/* ---------- the address bar: every station is a link (#/propbench), and Back steps back ---------- */
+function routeOf() {
+  const h = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+  if (h === "read") return { read: true };
+  const i = STATIONS.findIndex((s) => s.svc === h);
+  return i >= 0 ? { i } : null;
+}
+function setRoute(path, replace) {
+  const base = location.pathname + location.search, url = base + (path ? "#/" + path : "");
+  if (url === base + location.hash) return;
+  history[replace ? "replaceState" : "pushState"](history.state, "", url);
+}
+window.addEventListener("popstate", () => {
+  if (BOOT.phase !== "live") return;
+  const r = routeOf(), o = { fromHistory: true };
+  if (r && r.read) return setMode("read", o);
+  if (ui.mode === "read") setMode(mobile ? "tour" : "explore", o);
+  if (r) go(r.i, { jump: true, quiet: true, fromHistory: true }); else if (ui.cur >= 0) overview(o);
+});
+
+/* ---------- one way to dismiss: Esc, ×, or a click outside always closes the top layer ---------- */
+function dismissTop() {
+  if (lbOpen) return closeLightbox();
+  if (idPop.hasAttribute("data-open")) return toggleId(false);
+  if (ui.mode === "read") return setMode(mobile ? "tour" : "explore");
+  if (ui.cur >= 0) { SFX.close(); return overview(); }
+  if (ui.term === "open") return setTerm("compact");
+}
+
+/* ---------- the HUD terminal: open, compact or closed, and it stays as the visitor left it ---------- */
+/** a phone has no room for the compact strip, so there only "open" shows */
+const termShown = () => ui.term === "open" || (ui.term === "compact" && !mobile);
+function setTerm(st, remember = true) {
+  ui.term = st; ROOT.dataset.term = st; termDirty = true;
+  ROOT.querySelectorAll("[data-termtoggle]").forEach((b) => b.setAttribute("aria-pressed", String(termShown())));
+  if (remember) store.set("term", st);
+  if (st === "open" && !mobile) hudIn.focus();
+  else if (st === "closed" && document.activeElement === hudIn) hudIn.blur();
+}
+function foldSvc(folded, remember = true) {
+  svcList.toggleAttribute("data-folded", folded);
+  svcList.querySelector("[data-svc-fold]").setAttribute("aria-expanded", String(!folded));
+  if (remember) store.set("svc", folded ? "folded" : "open");
+}
 function renderRead() {
+  $("[data-read-cv]").innerHTML = cvLinks();
   $("[data-read-list]").innerHTML = STATIONS.map((s, i) => html`<li style="--a:${ACC[s.ns]}"><p class="w-tag"><i></i>svc/${s.svc} · ${s.tag}</p><h4>${s.name}</h4><p>${s.sum}</p><ul>${s.facts.map((f) => `<li>${f}</li>`).join("")}</ul><button type="button" data-goto="${i}">Visit in the world →</button></li>`).join("");
 }
 
@@ -175,7 +224,7 @@ function exec(raw) {
   const a = args.join(" ");
   const out = (t, c) => TERM.push([seg(t, c)]);
   switch (cmd) {
-    case "help": [["ls", "list the services"], ["open <svc>", "go there   (or just type its name)"], ["logs <svc>", "what it did"], ["whoami", "who runs this cluster"], ["tour", "ride the cart through every service"], ["certs", "the card tray in the hall"], ["contact", "how to reach me"], ["sound on|off", "the clicks and the hum"], ["theme dark|light", "day or night"], ["home", "back to the whole island"], ["clear", "clear this window"]].forEach(([c, d]) => TERM.push([seg("  " + pad(c, 18), "acc"), seg(d, "mute")])); break;
+    case "help": [["ls", "list the services"], ["open <svc>", "go there   (or just type its name)"], ["logs <svc>", "what it did"], ["whoami", "who runs this cluster"], ["tour", "ride the cart through every service"], ["certs", "the card tray in the hall"], ["contact", "how to reach me"], ["cv swe|academic", "download a CV"], ["sound on|off", "the clicks and the hum"], ["theme dark|light", "day or night"], ["home", "back to the whole island"], ["clear", "clear this window"]].forEach(([c, d]) => TERM.push([seg("  " + pad(c, 18), "acc"), seg(d, "mute")])); break;
     case "ls": TERM.push([seg(pad("NAME", 18) + pad("NAMESPACE", 12) + "STATUS", "dim")]); STATIONS.forEach((s) => TERM.push([seg(pad(s.svc, 18), "fg"), seg(pad(s.ns, 12), "mute"), seg("Running", "ok")])); break;
     case "open": case "cd": case "go": case "describe": {
       if (cmd === "cd" && (!a || a === "~" || a === ".." || a === "/")) { overview(); out("~", "mute"); break; }
@@ -185,7 +234,11 @@ function exec(raw) {
     case "tour": setMode("tour"); out("riding the mesh, stop 1 of 10", "mute"); break;
     case "contact": go(9); out(LINKS.email, "hi"); break;
     case "certs": case "certificates": go(2); out("8 cards in the tray · point to riffle, click to pull one", "mute"); break;
-    case "cv": out("cv.pdf → " + LINKS.site + LINKS.cv, "info"); break;
+    case "cv": {
+      const kind = /^a/.test(a) ? "academic" : /^(s|e)/.test(a) ? "swe" : "";
+      if (!kind) { TERM.push([seg("  cv swe      ", "acc"), seg("software engineering CV · " + LINKS.cv.swe, "mute")]); TERM.push([seg("  cv academic ", "acc"), seg("academic CV · " + LINKS.cv.academic, "mute")]); break; }
+      const l = document.createElement("a"); l.href = LINKS.cv[kind]; l.download = LINKS.cv[kind].split("/").pop(); l.click();
+      out(`downloading ${l.download}`, "ok"); SFX.latch(true); break; }
     case "clear": TERM.clear(); break;
     case "home": case "exit": overview(); break;
     case "sound": SFX.set(a ? a === "on" : !SFX.on); out(`sound ${SFX.on ? "on" : "off"}`, "mute"); break;
@@ -279,27 +332,38 @@ function deploy(fast) {
   BOOT.events = E.sort((a, b) => a.t - b.t);
 }
 function goLive() {
+  const returning = store.get("booted", false);
   BOOT.phase = "live"; ROOT.dataset.phase = "live"; store.set("booted", true); BOOT.speed = 1;
-  TERM.push([seg("Type ", "mute"), seg("help", "acc"), seg(", a service name, or click any building.", "mute")]);
+  TERM.push([seg("Type ", "mute"), seg("help", "acc"), seg(", a service name, or click any building. ", "mute"), seg("Esc", "acc"), seg(" closes this window.", "mute")]);
   TERM.prompt = "fahad@cluster:~$ "; TERM.input = ""; TERM.showInput = true; TERM.bump();
   ctl.tween = null; ctl.tg.copy(OVER); ctl.zg = overviewZoom();
   SFX.humStart();
   chip.removeAttribute("hidden");
-  if (mobile) setMode("tour"); else { ui.mode = "explore"; ROOT.dataset.mode = "explore"; ROOT.dataset.view = "overview"; syncNav(); }
+  setTerm(store.get("term", "compact"), false);
+  foldSvc(store.get("svc", W < 1100 ? "folded" : "open") === "folded", false);
+  const r = routeOf();
+  if (mobile && !(r && r.i !== undefined)) setMode("tour"); else { ui.mode = mobile ? "tour" : "explore"; ROOT.dataset.mode = ui.mode; ROOT.dataset.view = "overview"; syncNav(); }
+  if (r && r.read) setMode("read", { fromHistory: true });
+  else if (r) go(r.i, { jump: true, quiet: true, fromHistory: true });
   const last = store.get("last", -1);
-  if (!mobile && last > 0 && BOOT.speed > 1) { const t = $("[data-toast]"); t.querySelector("[data-resume-name]").textContent = STATIONS[last].name; t.querySelector("[data-act='resume']").dataset.at = last; t.setAttribute("data-open", ""); setTimeout(() => t.removeAttribute("data-open"), 9000); }
+  if (!r && !mobile && last > 0 && returning) { const t = $("[data-toast]"); t.querySelector("[data-resume-name]").textContent = STATIONS[last].name; t.querySelector("[data-act='resume']").dataset.at = last; t.setAttribute("data-open", ""); setTimeout(() => t.removeAttribute("data-open"), 9000); }
 }
 function skipBoot() { if (BOOT.phase === "live") return; if (BOOT.phase !== "deploy") deploy(false); SFX.hush(true); BOOT.speed = 400; }
 /* ---------- clicks ---------- */
 ROOT.addEventListener("click", (e) => {
-  const t = e.target.closest("[data-act],[data-mode],[data-card],[data-photo],[data-goto],[data-rot],[data-zoom],[data-theme-toggle],[data-copy],[data-sound],[data-chip],[data-skip],[data-termtoggle]");
+  if (lbOpen && e.target === lb) return closeLightbox();
+  if (idPop.hasAttribute("data-open") && !e.target.closest("[data-idpop],[data-chip]")) toggleId(false);
+  const t = e.target.closest("[data-act],[data-mode],[data-card],[data-photo],[data-goto],[data-rot],[data-zoom],[data-theme-toggle],[data-copy],[data-sound],[data-chip],[data-skip],[data-termtoggle],[data-term-size],[data-term-close],[data-svc-fold]");
   if (!t) return;
   if (t.tagName === "A" && !t.dataset.act) return;
   e.preventDefault(); SFX.unlock();
   if (t.hasAttribute("data-skip")) return skipBoot();
   if (t.hasAttribute("data-sound")) return SFX.set(!SFX.on);
   if (t.hasAttribute("data-chip")) return toggleId();
-  if (t.hasAttribute("data-termtoggle")) { ui.term = !ui.term; ROOT.toggleAttribute("data-term", ui.term); if (ui.term && !mobile) hudIn.focus(); return; }
+  if (t.hasAttribute("data-termtoggle")) return setTerm(termShown() ? "closed" : "open");
+  if (t.hasAttribute("data-term-size")) return setTerm(ui.term === "open" ? "compact" : "open");
+  if (t.hasAttribute("data-term-close")) return setTerm("closed");
+  if (t.hasAttribute("data-svc-fold")) return foldSvc(!svcList.hasAttribute("data-folded"));
   if (t.dataset.copy) { const done = () => { t.textContent = "Copied"; setTimeout(() => (t.textContent = "Copy email"), 1400); }; navigator.clipboard?.writeText(t.dataset.copy).then(done, done); SFX.latch(true); return; }
   if (t.dataset.mode) return setMode(t.dataset.mode);
   if (t.dataset.card) return openLightbox(certItems, +t.dataset.card);
@@ -310,7 +374,9 @@ ROOT.addEventListener("click", (e) => {
   if (t.hasAttribute("data-theme-toggle")) { document.documentElement.setAttribute("data-theme", dark ? "light" : "dark"); return; }
   const a = t.dataset.act;
   if (a === "deploy") return BOOT.phase === "live" ? null : deploy(false);
-  if (a === "close") return mobile && ui.mode === "tour" ? setSheet(ui.sheet === "peek" ? "half" : "peek") : (SFX.close(), overview());
+  // the essentials: skip the opening and land on the text version, with both CVs at the top
+  if (a === "essentials") { setRoute("read", true); return skipBoot(); }
+  if (a === "close") { SFX.close(); return overview(); }
   if (a === "sheet") return setSheet(ui.sheet === "peek" ? "half" : "peek");
   if (a === "next") return go(Math.min(STATIONS.length - 1, ui.cur + 1));
   if (a === "prev") return go(Math.max(0, ui.cur - 1));
@@ -349,17 +415,18 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "Tab") { e.preventDefault(); hudIn.value = complete(hudIn.value); return; }
     if (e.key === "ArrowUp") { e.preventDefault(); histK = Math.max(0, histK - 1); hudIn.value = hist[histK] || ""; return; }
     if (e.key === "ArrowDown") { e.preventDefault(); histK = Math.min(hist.length, histK + 1); hudIn.value = hist[histK] || ""; return; }
-    if (e.key === "Escape") { hudIn.blur(); return; }
+    if (e.key === "Escape") { setTerm("closed"); return; }
     if (e.key.length === 1 || e.key === "Backspace") { DEV.press(e.key === "Backspace" ? "Backspace" : e.key); e.key === " " ? SFX.space() : SFX.key(); }
     return;
   }
   if (e.target.matches && e.target.matches("input, textarea")) return;
-  if (e.key === "Escape") { if (lbOpen) closeLightbox(); else if (idPop.hasAttribute("data-open")) toggleId(false); else if (ui.mode === "read") setMode("explore"); else overview(); return; }
+  if (e.key === "Escape") return dismissTop();
   if (lbOpen && (e.key === "ArrowRight" || e.key === "ArrowLeft")) { lbK = (lbK + (e.key === "ArrowRight" ? 1 : -1) + lbList.length) % lbList.length; SFX.flick(lbK); drawLightbox(); return; }
   if (e.key === "ArrowRight") return go(Math.min(STATIONS.length - 1, ui.cur + 1));
   if (e.key === "ArrowLeft") return go(Math.max(0, ui.cur - 1));
-  // any other printable key starts a command: the terminal is always listening
-  if (e.key.length === 1 && !mobile) { ui.term = true; ROOT.setAttribute("data-term", ""); hudIn.focus(); }
+  // ` or / opens the terminal; while it is showing, any printable key starts a command in it
+  if (e.key === "`" || e.key === "/") { e.preventDefault(); return setTerm("open"); }
+  if (e.key.length === 1 && termShown()) setTerm("open");
 });
 
 /* ---------- pointer: pan, pinch, click, machines ---------- */
@@ -593,7 +660,7 @@ const start = () => { if (!running) { running = true; prev = 0; raf = requestAni
 const stop = () => { running = false; cancelAnimationFrame(raf); };
 new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? start() : stop())).observe(ROOT);
 document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
-new ResizeObserver(() => { if (size() && BOOT.phase === "live") { if (mobile && ui.mode === "explore" && ui.cur < 0) setMode("tour"); else layoutOffsets(); } }).observe(ROOT);
+new ResizeObserver(() => { if (size() && BOOT.phase === "live") { setTerm(ui.term, false); if (mobile && ui.mode === "explore" && ui.cur < 0) setMode("tour"); else layoutOffsets(); } }).observe(ROOT);
 
 /* ---------- start ---------- */
 size();
@@ -601,7 +668,7 @@ bootIntro();
 ctl.t.copy(OVER); ctl.tg.copy(OVER); ctl.z = ctl.zg = bootZoom(); DEV.fitScreen();
 ROOT.dataset.phase = "idle"; hint.dataset.state = "start";
 SFX.onChange(() => {}); SFX.set(SFX.on);
-if (store.get("booted", false)) { BOOT.typed = CMD; TERM.input = CMD; deploy(true); }
+if (store.get("booted", false) || routeOf()) { BOOT.typed = CMD; TERM.input = CMD; deploy(true); }
 if (REDUCED) skipBoot();
 start();
 const API = { cardScreen: (k) => { const v = new V3(0, 0.88 * 1.76, 0); cards[k].g.localToWorld(v); v.project(cam); return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * Hh]; }, state: () => ({ phase: BOOT.phase, hover: riffle.hover, pick: riffle.pick, lb: lbOpen }), exec, go, overview, setMode, skip: skipBoot, deploy, reboot: () => { store.set("booted", false); location.reload(); } };

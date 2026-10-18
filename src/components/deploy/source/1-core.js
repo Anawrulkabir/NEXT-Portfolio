@@ -63,7 +63,9 @@ const CERTS = [
 ];
 const PHOTOS = [["versions", "The soccer robot, first and second version"], ["bench", "Arduino Uno, breadboard and buck converters"], ["parts", "The parts laid out before assembly"]];
 const STEP2 = [5, 4, 1, 2, 5, 0, 0], H1 = { 0: 10, 2: 8, 3: 6, 4: 10 };
-const LINKS = { github: "https://github.com/anawrulkabir", linkedin: "https://linkedin.com/in/anawrulkabir", site: "https://fahadkabir.com", cv: "/cv/Md-Anawrul-Kabir-Fahad-CV.pdf", email: "mdanawrulkabirfahad123@gmail.com" };
+const LINKS = { github: "https://github.com/anawrulkabir", linkedin: "https://linkedin.com/in/anawrulkabir", site: "https://fahadkabir.com", cv: { swe: "/cv/Md-Anawrul-Kabir-Fahad-SWE-CV.pdf", academic: "/cv/Md-Anawrul-Kabir-Fahad-Academic-CV.pdf" }, email: "mdanawrulkabirfahad123@gmail.com" };
+/** Both CVs, always side by side and always labelled by kind. */
+const cvLinks = () => `<a href="${LINKS.cv.swe}" download="Md-Anawrul-Kabir-Fahad-SWE-CV.pdf">Software engineering CV</a><a href="${LINKS.cv.academic}" download="Md-Anawrul-Kabir-Fahad-Academic-CV.pdf">Academic CV</a>`;
 
 /* ---------- palette: paper blocks, hairline edges; one accent per district ---------- */
 const MATS = {
