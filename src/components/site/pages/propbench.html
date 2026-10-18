@@ -1,0 +1,38 @@
+<div class="cs">
+              <nav class="rail" aria-label="On this page">
+                <div class="rail-group" style="--gc:var(--c-software)"><p class="rail-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13V8M8 13V3M13 13V6"/></svg>The workflow</p><ul><li><a href="#pb-problem">The problem</a></li><li><a href="#pb-check">Spot disagreements</a></li><li><a href="#pb-fit">Fit and validate</a></li><li><a href="#pb-lock">A rule you can’t bend</a></li></ul></div>
+                <div class="rail-group" style="--gc:var(--c-infra)"><p class="rail-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h4M6.5 2v4L3 13a1 1 0 0 0 .9 1.5h8.2A1 1 0 0 0 13 13L9.5 6V2"/></svg>Engineering</p><ul><li><a href="#pb-arch">Architecture</a></li><li><a href="#pb-safe">Isolation</a></li><li><a href="#pb-correct">Correctness</a></li></ul></div>
+                <div class="rail-group" style="--gc:var(--c-contests)"><p class="rail-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>Status</p><ul><li><a href="#pb-shots">Screens</a></li><li><a href="#pb-next">Next</a></li></ul></div>
+              </nav>
+              <article class="cs-col">
+                <header class="rise">
+                  <p class="cs-label" style="--i:0">Case study · open source, pre-alpha</p>
+                  <h1 class="cs-h1" style="--i:1">From new measurements to a <em>validated</em> property model.</h1>
+                  <p class="cs-lede" style="--i:2">An open-source desktop workbench for thermophysical property research. Import lab data, check it against published measurements, fit and cross-validate models with stated uncertainty, and export journal-ready figures and CoolProp-compatible models, without writing code.</p>
+                  <div class="chips" style="--i:3"><span class="tag">Rust · Tauri 2</span><span class="tag">Python</span><span class="tag">Svelte</span><span class="tag">CoolProp</span><span class="tag">MIT</span></div>
+                  <p class="cs-island" style="--i:4"><a class="more" href="/#/propbench">Move the loupe on the island →</a></p>
+                </header>
+                <div class="cs-fig figwrap">
+                  <div class="stage" data-fig="loupe" data-intensity="0.6" data-play></div>
+                  <div class="readout"><span data-read>63 points · 3 datasets</span><label class="slider">intensity<input type="range" min="0" max="1" step="0.01" value="0.6" data-int><output>0.60</output></label></div>
+                </div>
+                <p class="cap" style="margin-top:8px">Drag the loupe over the sheet. Three published CF₃I viscosity datasets, 63 points in all. Where two of them overlap near 333 K, PropBench flags a +7.4 % offset. Point positions are drawn, not plotted.</p>
+
+                <section class="sec"><div class="stats"><div class="card stat"><b>~32k</b><span>lines of code</span></div><div class="card stat"><b>7</b><span>Rust crates</span></div><div class="card stat"><b>450+</b><span>automated tests</span></div><div class="card stat"><b>4</b><span>CI platforms</span></div></div></section>
+                <section class="sec" id="pb-problem"><h2>The problem</h2><p>When a new working fluid is measured for the first time, the path from raw data to a usable model runs through spreadsheets, one-off scripts and closed tools. Disagreements between labs go unnoticed, models are judged on the data they were fitted to, and the uncertainty is rarely stated. PropBench puts the whole study in one reproducible project file.</p></section>
+                <section class="sec" id="pb-check"><h2>Spot disagreements before they reach the model</h2><p>Model-free comparisons within combined expanded uncertainty, Bayesian constant offsets with 95 % intervals, and z-scores against NIST reference models. On published CF₃I viscosity data it flags a +7.4 % offset between two laboratories at 333 K (95 % interval 3.1–11.8 %).</p></section>
+                <section class="sec" id="pb-fit"><h2>Fit and validate</h2><ul class="list"><li>ECS, residual-entropy scaling and dilute-gas models, each with a published check value as a test.</li><li>Weighted least squares in relative deviation, multistart, per-dataset scale factors, GUM uncertainty propagation.</li><li>Leave-one-dataset-out, leave-one-state-out, k-fold and bootstrap cross-validation, ranked beside the NIST reference model.</li></ul></section>
+                <section class="sec" id="pb-lock"><h2>A rule you can’t bend</h2><p>Before any model is fitted, you state how the best one will be chosen: metric, validation scheme, physics checks. PropBench stores a SHA-256 of that rule and records it in the report, so nobody can pick the winner afterwards.</p></section>
+                <section class="sec" id="pb-arch"><h2>Architecture</h2><p class="note">The UI never computes. Hover a station.</p><div class="card relay" data-relay></div></section>
+                <section class="sec" id="pb-safe"><h2>Isolation</h2><p>Third-party plug-ins run in a Wasmtime sandbox, or in the project’s Python environment, with only the permissions declared in their <code>plugin.toml</code>. Packages are signed with minisign. Projects are one SQLite file, saved atomically, with a migration for every schema change.</p></section>
+                <section class="sec" id="pb-correct"><h2>Correctness</h2>
+                  <div class="card tbl"><table><thead><tr><th>Check</th><th>Published value</th><th>Reproduced</th></tr></thead><tbody>
+                    <tr><td>R134a, 300 K, 1 MPa</td><td class="num">1201.53 kg/m³</td><td>reference EoS density</td></tr>
+                    <tr><td>CF₃I viscosity, 356.8 K</td><td class="num">168.5169 µPa·s</td><td>to 5 × 10⁻⁶ (NISTIR 8209)</td></tr>
+                    <tr><td>JCGM 100, example H.1</td><td class="num">50.000838 mm</td><td>k = 2.92</td></tr>
+                  </tbody></table></div>
+                </section>
+                <section class="sec" id="pb-shots"><h2>Screens</h2><figure class="shot light"><img alt="PropBench results view: cross-validated AARD for the ECS viscosity model" src="/media/projects/propbench/results.webp" loading="lazy" decoding="async"></figure><p class="cap">Results: a candidate model ranked by leave-one-state-out AARD, with physics checks and the locked selection rule in the log.</p><figure class="shot light"><img alt="PropBench graph studio" src="/media/projects/propbench/graph-studio.webp" loading="lazy" decoding="async"></figure><p class="cap">Graph studio with journal size presets.</p></section>
+                <section class="sec" id="pb-next"><h2>Next</h2><p>Signed installers, a package on PyPI, a documentation site, and a software paper with the CF₃I viscosity study as its first case study.</p><p><a class="more" href="https://github.com/Anawrulkabir/PropBench" target="_blank" rel="noopener">github.com/Anawrulkabir/PropBench</a></p></section>
+              </article>
+            </div>

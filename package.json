@@ -2,17 +2,22 @@
   "name": "portfolio",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "build:deploy": "tsx scripts/build-deploy.ts",
     "gaps": "tsx scripts/content-gaps.ts",
     "gaps:check": "tsx scripts/content-gaps.ts --check-blockers",
     "optimize-images": "tsx scripts/optimize-images.ts",
     "a11y": "tsx scripts/a11y-audit.ts"
   },
   "dependencies": {
+    "@lucasmarkes/hairline": "^0.5.1",
     "lucide-react": "^0.397.0",
     "next": "14.2.4",
     "react": "^18",

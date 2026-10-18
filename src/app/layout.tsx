@@ -3,6 +3,7 @@ import { Caveat, Fraunces, IBM_Plex_Sans, IBM_Plex_Mono, Nunito } from 'next/fon
 import './globals.css'
 import { profile } from '@/content'
 import { motionBootScript } from '@/lib/motion'
+import { themeBootScript } from '@/lib/theme'
 
 // fahadOS: the "f" mark and display serif.
 const showcaseFont = Fraunces({
@@ -78,6 +79,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Restores the reduce-motion toggle before first paint (I-17). */}
         <script dangerouslySetInnerHTML={{ __html: motionBootScript }} />
+        {/* Restores the day/night choice before first paint, on every route. */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body className="font-sans">
         <script

@@ -54,9 +54,9 @@ export const profile: Profile = {
   },
   cv: {
     viewHref: '/cv',
-    downloadHref: '/cv/Md-Anawrul-Kabir-Fahad-CV.pdf',
+    downloadHref: '/cv/Md-Anawrul-Kabir-Fahad-SWE-CV.pdf',
     updated: '2026-07',
-    academic: pending('ADD ACADEMIC CV — optional'),
+    academic: '/cv/Md-Anawrul-Kabir-Fahad-Academic-CV.pdf',
   },
   links: [
     { kind: 'email', label: 'Email', href: 'mailto:mdanawrulkabirfahad123@gmail.com' },
