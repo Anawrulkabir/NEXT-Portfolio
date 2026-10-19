@@ -24,15 +24,15 @@ export const LESSONS: Lesson[] = [
     exercises: [
       {
         kind: 'choice',
-        prompt: 'In the first version, what did every new session get?',
-        options: [{ text: 'Its own g4dn GPU instance', logo: '/media/logos/aws-ec2.svg' }, { text: 'A slice of a shared GPU', logo: '/media/logos/nvidia.svg' }, { text: 'A CPU-only container' }],
+        prompt: 'In the first version, where did a new session run?',
+        options: [{ text: 'On a g4dn GPU instance, shared by up to 3 sessions', logo: '/media/logos/aws-ec2.svg' }, { text: 'A slice of a shared GPU', logo: '/media/logos/nvidia.svg' }, { text: 'A CPU-only container' }],
         answer: 0,
-        why: 'Each session booted a fresh g4dn EC2 instance from a custom AMI. Simple, but a whole new machine every time.',
+        why: 'When no instance had room, a new g4dn EC2 instance was booted. Up to 3 sessions then shared its T4, with no isolation between them.',
       },
       {
         kind: 'order',
         prompt: 'Put the AWS launch in order',
-        steps: ['Temporal starts the launch workflow', 'A g4dn instance boots from the custom AMI', 'The instance joins the Kubernetes cluster', 'The TensorFlow image is pulled from ECR', 'The IDE starts, with its sidecar'],
+        steps: ['Temporal starts the launch workflow', 'A g4dn instance boots', 'The instance joins the Kubernetes cluster', 'The IDE container is scheduled onto it', 'The IDE starts, with its sidecar'],
         why: 'That’s the path a request took, from the workflow to a working notebook.',
       },
       {
@@ -58,9 +58,9 @@ export const LESSONS: Lesson[] = [
           { job: 'Retry a launch that failed halfway', tool: 'Temporal', logo: '/media/logos/temporal.svg' },
           { job: 'Remember which GPU slice is free', tool: 'PostgreSQL', logo: '/media/logos/postgresql.svg' },
           { job: 'Keep your files after the session', tool: 'JuiceFS on S3', logo: '/media/logos/aws-s3.svg' },
-          { job: 'Store the TensorFlow image', tool: 'ECR', logo: '/media/logos/aws-ecr.svg' },
+          { job: 'Run the editor containers', tool: 'Kubernetes (K3s)', logo: '/media/logos/kubernetes.svg' },
         ],
-        why: 'Temporal runs launches as durable workflows. PostgreSQL holds sessions and slice allocation (I designed that schema and API). JuiceFS keeps work on S3. ECR hosts the images.',
+        why: 'Temporal runs launches as durable workflows. PostgreSQL holds sessions and machines. JuiceFS keeps work on S3. K3s runs the editor containers.',
       },
       {
         kind: 'choice',

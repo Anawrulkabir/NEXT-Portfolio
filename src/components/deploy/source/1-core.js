@@ -30,7 +30,7 @@ const STATIONS = [
     sum: "Every certificate hangs here in a frame. Click one to take it off the wall and read it, or pull it from the tray below: point at a card, click it, and it rises into your hands. The trophy is for Break The Monolith, the one we won.",
     facts: ["Champion, Break The Monolith Hackathon 2025 (Team_Deadlock)", "Finalist and CUET Rising Team, API Avengers, Televerse 1.0", "7th, Brain Station 23 AI Engineering · 9th, NSU TechFest WebXtreme", "ICPC Dhaka Regional preliminary, CUET IUPC, ASRRO Robocoder"] },
   { id: "gpu", page: ["/about#ab-work", "The work at Poridhi.io"], svc: "gpu-datacenter", ns: "infra", name: "GPU datacenter", tag: "Poridhi.io · 2025–26", c: [10, 26], hit: [4, 20, 17, 32, 6], zoom: 2.1, marker: [17, 27], control: "race",
-    sum: "AI Studio gives each user a GPU workspace with Jupyter or VS Code. It used to boot a fresh EC2 GPU machine for every session (the cloud floating offshore). We moved it to a Kubernetes cluster on the company’s own GPU server, where one RTX 4090 is cut into isolated slices.",
+    sum: "AI Studio gives each user a GPU workspace with Jupyter or VS Code. It used to boot fresh EC2 GPU machines on demand, each shared by up to three sessions (the cloud floating offshore). We moved it to a Kubernetes cluster on the company’s own GPU server, where one RTX 4090 is cut into isolated slices.",
     facts: ["Launch time cut by about 70%, from 10–15 to 3–5 minutes", "Six users share 48 GB of VRAM as isolated 8 GB slices (HAMi)", "Built the Next.js frontend; brought the services up on the new cluster", "Also: owned the TensorCode frontend, co-developed TensorRAG"] },
   { id: "market", page: ["/work", "The products shelf in Work"], svc: "market-street", ns: "products", name: "Market street", tag: "Products", c: [17, 14], hit: [10, 9, 25, 19, 5], zoom: 2.3, marker: [21, 22],
     sum: "Things shipped to real users. Zeenah Store sells handloom sarees and jewellery. The Olly Labs assistant records meetings and turns them into notes. The kiosk is Puku AI’s public site.",
@@ -49,7 +49,7 @@ const STATIONS = [
     facts: ["433 paired, randomized trials; 133 tests", "Pass/fail rules written before each run", "The board on the hut shows the real result chart"] },
   { id: "lighthouse", page: ["/about#ab-contact", "Contact and both CVs"], svc: "contact", ns: "core", name: "Lighthouse", tag: "Contact", c: [65, 52], hit: [61, 48, 69, 56, 14], zoom: 2.2, marker: [65, 45], control: "contact",
     sum: "Get in touch. The beam keeps turning while you read.",
-    facts: ["Email, LinkedIn and GitHub, as on the CV", "CV as a PDF", "fahadkabir.com"] },
+    facts: ["Email, LinkedIn and GitHub, as on the CV", "Both CVs as PDFs: software engineering and academic", "fahadkabir.com"] },
 ];
 const CERTS = [
   ["break-the-monolith-champion", "Champion — Break The Monolith Microservice Hackathon", "IEEE Computer Society, CUET Student Branch Chapter", "2025"],

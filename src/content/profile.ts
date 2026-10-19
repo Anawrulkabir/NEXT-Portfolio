@@ -10,9 +10,9 @@ import type { Profile } from './types'
 export const profile: Profile = {
   name: 'Md Anawrul Kabir Fahad',
   shortName: 'Fahad Kabir',
-  positioning: 'Mechanical engineering student who builds GPU infrastructure',
+  positioning: 'Mechanical engineering student and software engineer',
   sentence:
-    'I study mechanical engineering at CUET and work on AI Studio at Poridhi.io, where I helped cut GPU session launch time from 10–15 minutes to 3–5.',
+    'I study Mechanical Engineering at CUET, and for over a year I worked on GPU platforms at Poridhi.io. I like problems where physics, data and software meet.',
   spine: [
     '2022: I built a remote-controlled soccer robot.',
     '2022–23: competitive programming. ICPC preliminaries twice, 300+ problems.',
@@ -21,9 +21,9 @@ export const profile: Profile = {
   ],
   location: 'Chattogram, Bangladesh',
   about: [
-    // Plain, specific, first person — every sentence carries a fact from the CV (Jul 2026).
-    'At Poridhi.io I work on AI Studio, an on-demand GPU platform. I set up its first AWS stack, then co-engineered its move to a bare-metal Kubernetes cluster, where HAMi splits each RTX 4090 into six isolated 8 GB slices. Starting a GPU session used to take 10–15 minutes; now it takes 3–5. I also built the backend of TensorCode, an in-browser GPU IDE, on Cloudflare’s edge.',
-    'I also study mechanical engineering at CUET. My thesis trains a physics-informed neural network to predict airflow around a NACA 0012 airfoil, then adapts it to steep angles of attack with LoRA-style fine-tuning instead of retraining from scratch. Separately, I work on machine-learning models for heat transfer in low-GWP refrigerants.',
+    // Plain, specific, first person — every sentence restates the current SWE and Academic CVs (Oct 2026).
+    'From May 2025 to July 2026 I worked at Poridhi.io. On AI Studio, which gives users GPU workspaces with Jupyter or VS Code, I developed the Next.js frontend and partnered with the team to move the platform from AWS to a Kubernetes cluster on the company GPU server. There, six users share 48 GB of GPU memory as isolated 8 GB slices, and starting a session went from 10–15 minutes to 3–5. On TensorCode, a browser platform for AI, GPU and kernel programming, I owned the frontend from the first version and co-developed TensorRAG, a visual tool for building ML training pipelines.',
+    'I study Mechanical Engineering at CUET. My thesis adapts a released physics-informed airfoil surrogate to conditions beyond its training range with low-rank updates, and measures what it forgets. Separately, I build machine-learning models of heat transfer for two low-GWP refrigerants and test them on operating conditions left out of training.',
   ],
   // C5 resolved: new professional portrait supplied by the author (Sep 2026).
   portrait: {
@@ -38,7 +38,7 @@ export const profile: Profile = {
       institution: 'Chittagong University of Engineering & Technology (CUET)',
       degree: 'B.Sc. in Mechanical Engineering',
       location: 'Chattogram, Bangladesh',
-      dates: { start: '2022-04', end: 'expected', endLabel: 'Jul 2026 (expected)' }, // C1
+      dates: { start: '2022-04', end: 'present', endLabel: 'Present' }, // both CVs: in progress, Apr 2022 – Present
       status: 'in-progress',
       details: [
         pending('ADD CGPA — optional'),

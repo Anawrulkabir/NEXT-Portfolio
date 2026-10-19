@@ -45,6 +45,8 @@ export const skillGroups: SkillGroup[] = [
   },
 ]
 
+// verify: true on hono, cloudflare-*, aws-ecr, headlamp, k8s-rbac — these came from the Jul 2026 CV and conflict with or
+// aren't in the current CVs (Oct 2026); hidden in production until confirmed.
 export const skills: Skill[] = [
   // Programming
   { id: 'python', name: 'Python', group: 'programming', evidence: [{ type: 'research', id: 'pinn-naca0012-thesis' }] },
@@ -55,10 +57,10 @@ export const skills: Skill[] = [
 
   // Software
   { id: 'nodejs', name: 'Node.js', group: 'software', evidence: [{ type: 'project', id: 'ride-sharing-microservices' }] },
-  { id: 'hono', name: 'Hono.js', group: 'software', evidence: [{ type: 'project', id: 'tensorcode' }] },
+  { id: 'hono', name: 'Hono.js', group: 'software', evidence: [{ type: 'project', id: 'tensorcode' }], verify: true },
   { id: 'flask', name: 'Flask', group: 'software', evidence: [{ type: 'experience', id: 'poridhi' }] },
   { id: 'react', name: 'React', group: 'software', evidence: [{ type: 'project', id: 'tensorcode' }] },
-  { id: 'nextjs', name: 'Next.js', group: 'software', evidence: [], verify: true },
+  { id: 'nextjs', name: 'Next.js', group: 'software', evidence: [{ type: 'project', id: 'ai-studio' }] }, // SWE CV, Oct 2026
   { id: 'postgresql', name: 'PostgreSQL', group: 'software', evidence: [{ type: 'experience', id: 'poridhi' }] },
   { id: 'redis', name: 'Redis', group: 'software', evidence: [{ type: 'project', id: 'ride-sharing-microservices' }] },
   { id: 'mongodb', name: 'MongoDB', group: 'software', evidence: [{ type: 'project', id: 'luca' }, { type: 'project', id: 'sitemark' }] },
@@ -76,18 +78,18 @@ export const skills: Skill[] = [
   { id: 'k3s', name: 'k3s', group: 'infrastructure', evidence: [], verify: true },
   { id: 'aws-ec2', name: 'AWS EC2', group: 'infrastructure', evidence: [{ type: 'project', id: 'ai-studio' }] },
   { id: 'aws-s3', name: 'AWS S3', group: 'infrastructure', evidence: [{ type: 'project', id: 'ai-studio' }] },
-  { id: 'aws-ecr', name: 'AWS ECR', group: 'infrastructure', evidence: [{ type: 'project', id: 'ai-studio' }] },
+  { id: 'aws-ecr', name: 'AWS ECR', group: 'infrastructure', evidence: [{ type: 'project', id: 'ai-studio' }], verify: true },
   { id: 'temporal', name: 'Temporal', group: 'infrastructure', evidence: [{ type: 'experience', id: 'poridhi' }] },
   { id: 'terraform', name: 'Terraform', group: 'infrastructure', evidence: [{ type: 'experience', id: 'poridhi' }] },
   { id: 'pulumi', name: 'Pulumi', group: 'infrastructure', evidence: [{ type: 'experience', id: 'poridhi' }] },
   { id: 'github-actions', name: 'GitHub Actions', group: 'infrastructure', evidence: [{ type: 'experience', id: 'poridhi' }] },
-  { id: 'cloudflare-workers', name: 'Cloudflare Workers', group: 'infrastructure', evidence: [{ type: 'project', id: 'tensorcode' }] },
-  { id: 'cloudflare-d1', name: 'Cloudflare D1', group: 'infrastructure', evidence: [{ type: 'project', id: 'tensorcode' }] },
-  { id: 'cloudflare-r2', name: 'Cloudflare R2', group: 'infrastructure', evidence: [{ type: 'project', id: 'tensorcode' }] },
-  { id: 'cloudflare-kv', name: 'Cloudflare KV', group: 'infrastructure', evidence: [{ type: 'project', id: 'tensorcode' }] },
+  { id: 'cloudflare-workers', name: 'Cloudflare Workers', group: 'infrastructure', evidence: [{ type: 'project', id: 'tensorcode' }], verify: true },
+  { id: 'cloudflare-d1', name: 'Cloudflare D1', group: 'infrastructure', evidence: [{ type: 'project', id: 'tensorcode' }], verify: true },
+  { id: 'cloudflare-r2', name: 'Cloudflare R2', group: 'infrastructure', evidence: [{ type: 'project', id: 'tensorcode' }], verify: true },
+  { id: 'cloudflare-kv', name: 'Cloudflare KV', group: 'infrastructure', evidence: [{ type: 'project', id: 'tensorcode' }], verify: true },
   { id: 'juicefs', name: 'JuiceFS', group: 'infrastructure', evidence: [{ type: 'project', id: 'ai-studio' }] },
-  { id: 'headlamp', name: 'Headlamp', group: 'infrastructure', evidence: [{ type: 'experience', id: 'poridhi' }] },
-  { id: 'k8s-rbac', name: 'Kubernetes RBAC', group: 'infrastructure', evidence: [{ type: 'experience', id: 'poridhi' }] },
+  { id: 'headlamp', name: 'Headlamp', group: 'infrastructure', evidence: [{ type: 'experience', id: 'poridhi' }], verify: true },
+  { id: 'k8s-rbac', name: 'Kubernetes RBAC', group: 'infrastructure', evidence: [{ type: 'experience', id: 'poridhi' }], verify: true },
 
   // GPU / AI Systems
   { id: 'hami', name: 'HAMi GPU virtualization', group: 'gpu-ai', evidence: [{ type: 'project', id: 'ai-studio' }] },
