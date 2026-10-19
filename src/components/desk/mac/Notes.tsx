@@ -100,12 +100,12 @@ function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg
           </p>
           <h2>What changed</h2>
           <p>
-            I set up the platform&rsquo;s first stack on AWS: g4dn instances with custom AMIs, TensorFlow images in
-            ECR, and sessions saved to S3 through JuiceFS. Later, with the team, we moved it to a bare-metal Kubernetes
-            cluster.
+            The first version ran on AWS: a new demand booted a g4dn GPU instance that joined a Kubernetes cluster, and
+            files were kept on S3 through JuiceFS. I maintained and extended that version, then partnered with the team
+            to move the platform to a Kubernetes cluster on the company GPU server.
           </p>
           <p>
-            The key piece is HAMi. It splits each RTX 4090 into six 8 GB slices with hard isolation, which
+            The key piece is HAMi. It splits the server&rsquo;s 48 GB of GPU memory into six 8 GB slices with hard isolation, which
             Kubernetes&rsquo; built-in time-slicing couldn&rsquo;t give us. Sessions share a card without touching each
             other&rsquo;s memory.
           </p>
@@ -165,13 +165,14 @@ function buildNotes(d: DeskData, go: (id: string) => void, open: (id: AppId, arg
         <>
           <h1>My thesis, in plain words</h1>
           <p>
-            A physics-informed neural network (PINN) learns a flow field while also being made to obey the equations
-            of fluid flow. Mine predicts the flow around a NACA 0012 airfoil, the classic symmetric wing section.
+            A physics-informed neural network learns a flow field while also being made to obey the equations of fluid
+            flow. I start from one that was already trained and released: a surrogate that predicts the flow around an
+            airfoil.
           </p>
           <p>
             The hard part is steep angles of attack, where the flow behaves differently from what the network was
-            trained on. Instead of retraining the whole network, I adapt it with LoRA-style fine-tuning: a small set of
-            extra weights, trained on the new conditions.
+            trained on. Instead of retraining the whole network, I adapt it with low-rank updates: a small set of extra
+            weights, trained on the new conditions. Then I measure what the adapted model forgets.
           </p>
           {thesis?.supervisor && <p className="meta">Supervisor: {thesis.supervisor}</p>}
           {thesis?.title && thesis.title !== thesis.shortTitle && <p className="meta">Full title: {thesis.title}</p>}

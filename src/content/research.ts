@@ -13,18 +13,20 @@ export const research: Research[] = [
   {
     id: 'pinn-naca0012-thesis',
     kind: 'thesis',
+    // Academic CV [C1]
     title:
-      'Parameter-Efficient Adaptation of a PINN Solver for High-Incidence Airfoil Flow',
-    shortTitle: 'PINN solver for airfoil flow',
-    status: 'ongoing-thesis', // C1
+      'Localized forgetting in parameter-efficient adaptation of a frozen physics-informed airfoil surrogate',
+    shortTitle: 'Localized forgetting in PEFT',
+    status: 'under-review', // C1, 10th BSME ICTFE, under review
     oneLine:
-      'A physics-informed neural network solver for flow over the NACA 0012 airfoil, adapted to high-incidence conditions with LoRA-style parameter-efficient fine-tuning.',
+      'Adapting a released physics-informed airfoil surrogate beyond its training range with low-rank updates, and measuring what it forgets.',
     question: pending('ADD research question wording'),
-    system: 'Flow over the NACA 0012 airfoil, out-of-distribution high-incidence conditions',
+    system: 'Flow around an airfoil, at conditions outside the surrogate’s training range',
     data: pending('ADD thesis dataset / simulation setup'),
     method: [
-      'Physics-informed neural network (PINN) solver, PyTorch',
-      'LoRA-style parameter-efficient fine-tuning to adapt to out-of-distribution, high-incidence conditions without full retraining',
+      'Low-rank (parameter-efficient) updates to a released, frozen physics-informed airfoil surrogate',
+      'CFD reference data generated in SU2',
+      'Eight adaptation methods compared on accuracy and forgetting',
     ],
     investigating: [
       pending('ADD what specifically is being investigated beyond the one-line summary'),
@@ -40,7 +42,7 @@ export const research: Research[] = [
   {
     id: 'r455a-evaporation-ml',
     kind: 'manuscript',
-    title: pending('ADD EXACT R455A MANUSCRIPT TITLE'),
+    title: 'Optimizing evaporation heat transfer predictions of low GWP R455A in an industrial plate heat exchanger via machine learning', // Academic CV [J1]
     shortTitle: 'R455A evaporation heat transfer, ML prediction',
     status: 'under-review',
     oneLine:
@@ -98,9 +100,9 @@ export const research: Research[] = [
   {
     id: 'r1336mzze-condensation-ml',
     kind: 'project',
-    title: pending('ADD R1336mzz(E) working title, if any'),
+    title: 'Machine learning based prediction of the condensation heat transfer of low GWP refrigerant R1336mzz(E) in an industrial plate heat exchanger', // Academic CV [J2]
     shortTitle: 'R1336mzz(E) condensation, ML study',
-    status: 'in-progress',
+    status: 'under-review', // Academic CV [J2]: International Journal of Refrigeration, under review
     oneLine:
       'Machine-learning study of condensation heat transfer of low-GWP refrigerant R1336mzz(E) in an industrial plate heat exchanger.',
     question: pending('ADD research question'),

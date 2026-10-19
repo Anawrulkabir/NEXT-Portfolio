@@ -5,6 +5,8 @@ import { buildDeskData, type DeskData } from '@/components/desk/data'
 export const metadata: Metadata = {
   title: 'The desk',
   description: 'Fahad’s real desk in 3D. Sit down, use the computer, read the notes.',
+  // kept out of search while its AI Studio story is rebuilt from the archive
+  robots: { index: false, follow: true },
 }
 
 /**

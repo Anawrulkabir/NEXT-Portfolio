@@ -49,7 +49,7 @@ const STATIONS = [
     facts: ["433 paired, randomized trials; 133 tests", "Pass/fail rules written before each run", "The board on the hut shows the real result chart"] },
   { id: "lighthouse", page: ["/about#ab-contact", "Contact and both CVs"], svc: "contact", ns: "core", name: "Lighthouse", tag: "Contact", c: [65, 52], hit: [61, 48, 69, 56, 14], zoom: 2.2, marker: [65, 45], control: "contact",
     sum: "Get in touch. The beam keeps turning while you read.",
-    facts: ["Email, LinkedIn and GitHub, as on the CV", "CV as a PDF", "fahadkabir.com"] },
+    facts: ["Email, LinkedIn and GitHub, as on the CV", "Both CVs as PDFs: software engineering and academic", "fahadkabir.com"] },
 ];
 const CERTS = [
   ["break-the-monolith-champion", "Champion — Break The Monolith Microservice Hackathon", "IEEE Computer Society, CUET Student Branch Chapter", "2025"],
