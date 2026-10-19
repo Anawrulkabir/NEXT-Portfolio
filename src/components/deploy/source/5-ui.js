@@ -765,7 +765,7 @@ function frame(now) {
   if (REG[7].svcT >= 0) drawLens();
   { let best = 1, who = null; for (const ds of SETS) for (const q of ds.pts) { const dd = (q[0] - lp.u) ** 2 + ((q[1] - lp.v) * 0.7) ** 2; if (dd < best) { best = dd; who = ds; } }
     lp.read = lp.u > 0.46 && lp.u < 0.74 && Math.abs(lp.v - (1 - curveY(lp.u))) < 0.22 ? "<b>Overlap near 333 K</b>: offset between two labs <b>+7.4 %</b> (95 %: 3.1–11.8 %)" : best < 0.012 ? `<b>${who.name}</b> · ${who.n} points` : "<b>63 points</b> · 3 datasets"; }
-  if (ui.cur === 7 && pointerY !== null) { tmp.set(0, 1.2, 0); laptop.localToWorld(tmp); tmp.project(cam); const ly = (-tmp.y * 0.5 + 0.5) * Hh; lidGoal = clamp(lerp(1.45, -0.4, (ly - pointerY) / 220 + 0.5), -0.4, 1.45); } else lidGoal = -0.15;
+  if (ui.cur === 7 && pointerY !== null) { tmp.set(0, 1.2, 0); laptop.localToWorld(tmp); tmp.project(cam); const ly = (-tmp.y * 0.5 + 0.5) * Hh; lidGoal = clamp(lerp(1.45, -0.15, (ly - pointerY) / 220 + 0.5), -0.15, 1.45); } else lidGoal = 0;
   lidA = damp(lidA, lidGoal, 8, dt); lid.rotation.x = lidA;
   lockOpen = damp(lockOpen, lockGoal, 9, dt); shackle.position.y = 0.5 + lockOpen * 0.22; shackle.rotation.y = lockOpen * 1.1;
   beamPivot.rotation.y += dt * (REDUCED ? 0 : 0.8);

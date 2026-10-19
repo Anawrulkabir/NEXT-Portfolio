@@ -242,13 +242,14 @@ function drawLens() {
   x.drawImage(sheetC, cx - cw / 2, cy - cw / 2, cw, cw, 0, 0, 256, 256); x.restore(); lensTex.needsUpdate = true;
 }
 // a laptop whose lid follows the pointer's height (Hairline's Laptop, in the world)
-const laptop = new THREE.Group(); laptop.position.set(61.2, 3.0, 20.1); laptop.rotation.y = Math.PI / 4; world.add(laptop); own(7, laptop);
+// square to the back wall and clear of it: turned 45° its wide lid swung a corner into the wall
+const laptop = new THREE.Group(); laptop.position.set(61.2, 3.0, 20.25); world.add(laptop); own(7, laptop, 0.8);
 const lid = new THREE.Group(); lid.position.set(0, 0.1, -1.05); laptop.add(lid);
 { const base = box(3.2, 0.12, 2.1, "stone"); base.position.y = 0.06; laptop.add(base); const pad = box(1.0, 0.01, 0.6, "white", { edges: true }); pad.position.set(0, 0.125, 0.55); laptop.add(pad);
   const lb = box(3.2, 2.05, 0.08, "stone"); lb.position.set(0, 1.02, 0); lid.add(lb);
   const ls = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 1.85), new THREE.MeshBasicMaterial({ map: tex(IMG.pbresults) })); ls.position.set(0, 1.02, 0.045); lid.add(ls);
   lb.userData = { laptop: true }; ls.userData = { laptop: true }; base.userData = { laptop: true }; PICK.push(lb, ls, base); }
-let lidA = -1.75, lidGoal = -1.75;
+let lidA = 1.45, lidGoal = 1.45; // starts closed; it never reclines far enough to reach the wall
 // a padlock: the selection rule is locked before fitting
 const lock = new THREE.Group(); lock.position.set(64.6, 3.0, 20.0); lock.rotation.y = Math.PI / 4; world.add(lock); own(7, lock);
 const shackle = new THREE.Group(); shackle.position.set(-0.17, 0.5, 0); lock.add(shackle);
