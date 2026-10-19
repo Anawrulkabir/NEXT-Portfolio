@@ -56,7 +56,7 @@ export const AWS: Flow = {
     { from: 'k8s', to: 'pod', text: 'The IDE container starts, with a sidecar container for runtime isolation.', weight: 0.8 },
     { from: 'pod', to: 'you', text: 'Your notebook link comes back. Total: 10–15 minutes.', weight: 0.3 },
   ],
-  notes: ['One GPU instance per session', 'I maintained and extended this version'],
+  notes: ['Up to 3 sessions per GPU instance', 'I maintained and extended this version'],
 }
 
 export const METAL: Flow = {

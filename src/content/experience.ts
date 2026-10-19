@@ -24,7 +24,7 @@ export const experience: Experience[] = [
               'Cut session launch time by about 70%, from 10–15 minutes to 3–5.',
               'Enabled six users to share 48 GB of VRAM at once by giving each an isolated 8 GB slice through HAMi.',
               'Brought the backend services, database and workflow engine online on the new cluster, each with its own access controls.',
-              'Maintained and extended the earlier AWS version, which ran each session on a dedicated EC2 GPU instance.',
+              'Maintained and extended the earlier AWS version, which launched EC2 GPU instances on demand.', // design docs: up to 3 sessions shared each instance,
             ],
           },
           {

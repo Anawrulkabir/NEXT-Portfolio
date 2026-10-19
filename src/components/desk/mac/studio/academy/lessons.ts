@@ -24,10 +24,10 @@ export const LESSONS: Lesson[] = [
     exercises: [
       {
         kind: 'choice',
-        prompt: 'In the first version, what did every new session get?',
-        options: [{ text: 'Its own g4dn GPU instance', logo: '/media/logos/aws-ec2.svg' }, { text: 'A slice of a shared GPU', logo: '/media/logos/nvidia.svg' }, { text: 'A CPU-only container' }],
+        prompt: 'In the first version, where did a new session run?',
+        options: [{ text: 'On a g4dn GPU instance, shared by up to 3 sessions', logo: '/media/logos/aws-ec2.svg' }, { text: 'A slice of a shared GPU', logo: '/media/logos/nvidia.svg' }, { text: 'A CPU-only container' }],
         answer: 0,
-        why: 'Each session ran on a g4dn EC2 GPU instance, booted on demand. Simple, but a whole new machine every time.',
+        why: 'When no instance had room, a new g4dn EC2 instance was booted. Up to 3 sessions then shared its T4, with no isolation between them.',
       },
       {
         kind: 'order',

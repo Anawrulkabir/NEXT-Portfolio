@@ -15,7 +15,7 @@ export const projects: Project[] = [
     contribution: [
       'Developed the Next.js frontend where users configure memory, GPU and editor for each session',
       'Brought the backend services, database and workflow engine online on the new cluster',
-      'Maintained and extended the earlier AWS version, which ran each session on a dedicated EC2 GPU instance',
+      'Maintained and extended the earlier AWS version, which launched EC2 GPU instances on demand',
     ],
     tech: ['nextjs', 'react', 'kubernetes', 'hami', 'temporal', 'postgresql', 'aws-ec2'],
     status: 'production',
