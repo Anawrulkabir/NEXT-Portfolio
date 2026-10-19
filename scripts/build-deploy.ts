@@ -47,7 +47,8 @@ markup = markup.replaceAll('__PORTRAIT__', '/media/portrait/fahad-2026.webp')
 style = swap(style, ':root {', '.x {')
 style = swap(style, ':root:not([data-theme="light"]) {', ':root:not([data-theme="light"]) .x {')
 style = swap(style, ':root[data-theme="dark"] {', ':root[data-theme="dark"] .x {')
-style = swap(style, 'html, body { height: 100%; }\nbody {', 'body:has(.x) {')
+// the island stays mounted under every route (IslandHost), so these hold only while it is the one showing
+style = swap(style, 'html, body { height: 100%; }\nbody {', 'body:has(:not([hidden]) > .x) {')
 style = swap(style, '* { box-sizing: border-box; }', '.x, .x * { box-sizing: border-box; }')
 // element resets go through :where() so they weigh no more than one class, and the class rules after them win
 for (const sel of ['button', 'a', 'h1, h2, h3, h4, p, ul, ol, dl, dd', 'ul, ol', 'em']) {
@@ -57,8 +58,8 @@ style = swap(style, '\n:is(button, a, input, canvas):focus-visible {', '\n.x :is
 // the site's layout sets its own font on body; the experience sets its type on its root
 style = swap(
   style,
-  'body:has(.x) {',
-  '.x { color: var(--ink); font: 400 13px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }\nbody:has(.x) {',
+  'body:has(:not([hidden]) > .x) {',
+  '.x { color: var(--ink); font: 400 13px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }\nbody:has(:not([hidden]) > .x) {',
 )
 
 const css =

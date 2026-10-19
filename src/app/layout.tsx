@@ -4,6 +4,7 @@ import './globals.css'
 import { profile } from '@/content'
 import { motionBootScript } from '@/lib/motion'
 import { themeBootScript } from '@/lib/theme'
+import { IslandHost } from '@/components/deploy/IslandHost'
 
 // fahadOS: the "f" mark and display serif.
 const showcaseFont = Fraunces({
@@ -89,6 +90,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
         {children}
+        {/* the island: mounted once, kept alive (asleep) while other routes show */}
+        <IslandHost />
       </body>
     </html>
   )
