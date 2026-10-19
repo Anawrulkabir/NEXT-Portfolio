@@ -45,6 +45,8 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 
 /* the opening: Hairline's Laptop and Keyboard over the empty sea */
 .dev { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 64px 16px 120px; --hairline-plate: var(--sea); transition: opacity 700ms ease, transform 1000ms var(--ease-out), visibility 0s 1000ms; }
+/* until the engine is running there is no laptop to frame the screen, so the device layer waits unseen */
+.x:not([data-phase]) :is(.dev, .x-tl, .x-tr) { opacity: 0; visibility: hidden; transition: none; }
 .dev[data-gone] { opacity: 0; transform: translateY(40px) scale(0.92); visibility: hidden; pointer-events: none; }
 .dev-stack { position: relative; width: min(1040px, 96vw, 118vh); }
 .dev-lap { position: relative; width: 64%; margin-left: 22%; pointer-events: none; }
@@ -337,7 +339,8 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .mm-cv a { display: flex; justify-content: space-between; align-items: center; height: 42px; padding: 0 12px; border-radius: 10px; box-shadow: var(--card); font-size: 13px; font-weight: 500; text-decoration: none; }
 .mm-cv small { font: 400 10.5px var(--mono); color: var(--faint); }
 .x.is-mobile .term { left: 0; right: 0; bottom: 0; width: auto; height: 46%; border-radius: 18px 18px 0 0; }
-.x.is-mobile[data-phase="assemble"] .term { top: 0; bottom: auto; height: 34%; border-radius: 0 0 18px 18px; }
+/* while the island assembles, the terminal sits under the top controls, not beneath them */
+.x.is-mobile[data-phase="assemble"] .term { top: 56px; left: 10px; right: 10px; bottom: auto; height: 34%; border-radius: 14px; }
 .x.is-mobile[data-phase="live"]:not([data-term="open"]) .term { opacity: 0; visibility: hidden; pointer-events: none; }
 .x.is-mobile[data-phase="live"][data-term="open"] .term { z-index: 9; height: 52%; }
 .x.is-mobile .term-h [data-term-size] { display: none; }
@@ -347,16 +350,19 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .x.is-mobile[data-mode="tour"] .w-label:not([data-on]) { opacity: 0; pointer-events: none; }
 .x.is-mobile .tourbar { left: 10px; right: 10px; transform: none; justify-content: space-between; }
 .x.is-mobile[data-view="station"] .tourbar { display: none; }
-.x.is-mobile .w-panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: 50%; border-radius: 18px 18px 0 0; transform: translateY(102%); opacity: 1; transition: transform 220ms var(--ease-drawer), height 300ms var(--ease-out), visibility 0s 220ms; padding-bottom: env(safe-area-inset-bottom, 0px); }
-.x.is-mobile .w-panel[data-open] { transform: none; transition: transform 340ms var(--ease-out), height 300ms var(--ease-out), visibility 0s; }
-.x.is-mobile .w-panel[data-sheet="peek"] { height: 132px; }
-.x.is-mobile .w-panel[data-sheet="full"] { height: calc(100% - 60px); }
+/* the phone sheet: one height, slid to its detent (--sy, set by the engine); transform only, so it can follow a finger */
+.x.is-mobile .w-panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: calc(100% - 56px); border-radius: 18px 18px 0 0; transform: translateY(102%); opacity: 1; transition: transform 260ms var(--ease-drawer), border-radius 300ms var(--ease-out), visibility 0s 260ms; padding-bottom: env(safe-area-inset-bottom, 0px); box-shadow: 0 -1px 0 var(--line), 0 -12px 40px -18px #00000040; will-change: transform; }
+.x.is-mobile .w-panel[data-open] { transform: translateY(var(--sy, 50%)); transition: transform 460ms var(--ease-drawer), border-radius 300ms var(--ease-out), visibility 0s; }
+.x.is-mobile .w-panel[data-dragging] { transition: none; }
+.x.is-mobile .w-panel[data-sheet="full"] { border-radius: 12px 12px 0 0; }
+/* below full, a drag on the content moves the sheet; the hidden part of a lower detent stays reachable once it is full */
+.x.is-mobile .w-panel:not([data-sheet="full"]) .w-body { overflow: hidden; }
+.x.is-mobile .w-panel[data-sheet="full"] .w-body { touch-action: pan-y; }
 .w-full { display: none; }
 .x.is-mobile .w-full { display: grid; place-items: center; flex: none; width: 30px; height: 30px; margin: -4px 0 0; border-radius: 50%; font-size: 15px; color: var(--muted); }
 .x.is-mobile .w-ph > div:last-child { display: flex; gap: 2px; }
 .x.is-mobile .w-grab { touch-action: none; height: 22px; margin: 0 auto; background: none; position: relative; width: 80px; }
 .x.is-mobile .w-grab::before { content: ""; position: absolute; left: 20px; right: 20px; top: 8px; height: 5px; border-radius: 3px; background: var(--lo); }
-.x.is-mobile .w-panel[data-sheet="peek"] .w-body { display: none; }
 .x.is-mobile .w-grab { display: block; order: -2; cursor: pointer; }
 .x.is-mobile .w-panel .w-nav { order: -1; border-top: 0; border-bottom: 1px solid var(--line); padding: 4px 8px; }
 .x.is-mobile .idpop { top: 54px; left: 10px; right: 10px; width: auto; max-height: calc(100% - 64px); overflow-y: auto; }

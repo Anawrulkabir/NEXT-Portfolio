@@ -43,6 +43,8 @@ const SFX = (() => {
     set(v) { on = v; store.set("sound", v); if (ctx) master.gain.setTargetAtTime(v ? vol : 0, ctx.currentTime, 0.05); if (v && ctx) api.unlock(); listeners.forEach((f) => f()); },
     onChange(f) { listeners.add(f); },
     hush(v) { hush = v; },
+    /** while the island is out of sight, nothing plays: the hum included */
+    sleep(v) { if (!ctx || !unlocked) return; if (v) ctx.suspend(); else ctx.resume(); },
     /** a mechanical key: a bright click and a short thock, never twice the same */
     key() { if (!ok()) return; const t = T(), r = 0.9 + Math.random() * 0.2; noise(t, 0.022, "bandpass", 3400 * r, 1.4, 0.13); tone(t, 170 * r, 85, 0.045, "sine", 0.1); },
     space() { if (!ok()) return; const t = T(); noise(t, 0.03, "bandpass", 1900, 1.1, 0.15); tone(t, 120, 70, 0.06, "sine", 0.12); },

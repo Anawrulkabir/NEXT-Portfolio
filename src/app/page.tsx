@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { DeployExperience } from '@/components/deploy/DeployExperience'
 import { buildDeskData, type DeskData } from '@/components/desk/data'
 
 export const metadata: Metadata = {
@@ -7,7 +6,8 @@ export const metadata: Metadata = {
 }
 
 /**
- * The home page is a deployment you start by typing. Search engines and screen
+ * The home page is a deployment you start by typing. The island itself is mounted by
+ * IslandHost in the root layout, so it survives route changes. Search engines and screen
  * readers get this plain text version of the same content, rendered on the server.
  */
 function TextVersion({ d }: { d: DeskData }) {
@@ -87,7 +87,6 @@ export default function Home() {
   return (
     <>
       <TextVersion d={data} />
-      <DeployExperience />
     </>
   )
 }

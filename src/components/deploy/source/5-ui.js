@@ -39,7 +39,7 @@ function size() {
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2)); renderer.setSize(W, Hh, false);
   if (BOOT.phase === "idle" || BOOT.phase === "typed") { ctl.tg.copy(OVER); ctl.zg = bootZoom(); }
   requestAnimationFrame(() => DEV.fitScreen());
-  layoutOffsets();
+  layoutOffsets(); placeSheet();
   return was !== mobile;
 }
 function placeCam() {
@@ -95,7 +95,7 @@ function renderPanel() {
     <div class="w-body"><p class="w-sum">${s.sum}</p>${controlHTML(s)}<ul class="w-facts">${s.facts.map((f) => `<li>${f}</li>`).join("")}</ul>
     <p class="w-more"><a class="w-page" href="${s.page[0]}">${s.page[1]} →</a><a href="#" data-act="read">Everything as text</a></p></div>
     <div class="w-nav"><button type="button" data-act="prev" ${ui.cur === 0 ? "disabled" : ""}>← ${ui.cur > 0 ? STATIONS[ui.cur - 1].name : ""}</button><span>${ui.cur + 1} / ${STATIONS.length}</span><button type="button" data-act="next" ${ui.cur === last ? "disabled" : ""}>${ui.cur < last ? STATIONS[ui.cur + 1].name : ""} →</button></div>`;
-  panel.setAttribute("data-open", ""); panel.dataset.sheet = ui.sheet;
+  panel.setAttribute("data-open", ""); panel.dataset.sheet = ui.sheet; placeSheet();
   const idHere = panel.querySelector("[data-id-here]"); if (idHere) panelField = identityCard(idHere, true);
   // the Hall's tray is Hairline's own Riffle: eight cards for eight certificates; the pulled one opens on click
   const rf = panel.querySelector("[data-riffle]");
@@ -171,12 +171,13 @@ function routeOf() {
   return i >= 0 ? { i } : null;
 }
 function setRoute(path, replace) {
+  if (paused) return;
   const base = location.pathname + location.search, url = base + (path ? "#/" + path : "");
   if (url === base + location.hash) return;
   history[replace ? "replaceState" : "pushState"](history.state, "", url);
 }
 window.addEventListener("popstate", () => {
-  if (BOOT.phase !== "live") return;
+  if (paused || BOOT.phase !== "live") return;
   const r = routeOf(), o = { fromHistory: true };
   if (r && r.read) return setMode("read", o);
   if (ui.mode === "read") setMode(mobile ? "tour" : "explore", o);
@@ -458,19 +459,60 @@ ROOT.addEventListener("click", (e) => {
   if (a === "idclose") return toggleId(false);
 });
 function setSheet(s) {
-  ui.sheet = s; panel.dataset.sheet = s; layoutOffsets();
+  ui.sheet = s; panel.dataset.sheet = s; placeSheet(); layoutOffsets();
   const b = panel.querySelector(".w-full"); if (b) { b.textContent = s === "full" ? "⤡" : "⤢"; b.setAttribute("aria-label", s === "full" ? "Make the sheet smaller" : "Full screen"); }
 }
-// swipe the grab bar: up grows the sheet (peek → half → full), down shrinks it, and down from a peek closes it
-let sheetSwiped = false, sheetY = null;
-panel.addEventListener("pointerdown", (e) => { if (e.target.closest(".w-grab")) sheetY = e.clientY; });
-panel.addEventListener("pointerup", (e) => {
-  if (sheetY === null) return; const dy = e.clientY - sheetY; sheetY = null;
-  if (Math.abs(dy) < 28) return;
-  sheetSwiped = true; setTimeout(() => (sheetSwiped = false), 400);
-  const order = ["peek", "half", "full"], k = order.indexOf(ui.sheet);
-  if (dy < 0) setSheet(order[Math.min(2, k + 1)]); else if (k === 0) { SFX.close(); overview(); } else setSheet(order[k - 1]);
-});
+/* ---------- the phone sheet, the way iOS does it: always full height and slid down to a detent (peek, half,
+   full); it follows the finger from anywhere on it, a flick carries it on to the nearest detent, it stretches
+   past the top, and at full the content scrolls first, then pulls the sheet down from its top edge ---------- */
+const DETENTS = ["peek", "half", "full"];
+function detentY(s) { const H = panel.offsetHeight || Hh; return s === "full" ? 0 : Math.max(0, H - (s === "half" ? Math.round(Hh * 0.52) : 132)); }
+function placeSheet() { if (mobile) panel.style.setProperty("--sy", detentY(ui.sheet) + "px"); else panel.style.removeProperty("--sy"); }
+const stretch = (x) => (1 - 1 / ((x * 0.55) / Hh + 1)) * Hh * 0.3;
+let sheetSwiped = false, drag = null;
+// figures that answer the pointer themselves (the Riffle) and the sliders keep their gestures
+const ownGesture = (el) => !!el.closest("input, select, textarea, [data-riffle]");
+function dragStart(y, fromBody) { const s0 = detentY(ui.sheet); drag = { y0: y, s0, y: s0, moved: false, fromBody, pts: [[performance.now(), y]] }; }
+function dragMove(y) {
+  const d = drag; if (!d) return false;
+  if (!d.moved) { if (Math.abs(y - d.y0) < 6) return false; d.moved = true; panel.setAttribute("data-dragging", ""); }
+  const ny = d.s0 + (y - d.y0);
+  d.y = ny < 0 ? -stretch(-ny) : ny;
+  panel.style.transform = `translateY(${d.y.toFixed(1)}px)`;
+  d.pts.push([performance.now(), y]); if (d.pts.length > 6) d.pts.shift();
+  return true;
+}
+function dragEnd() {
+  const d = drag; drag = null; if (!d || !d.moved) return;
+  panel.removeAttribute("data-dragging"); panel.style.transform = "";
+  sheetSwiped = true; setTimeout(() => (sheetSwiped = false), 350);
+  const [t0, y0] = d.pts[0], [t1, y1] = d.pts[d.pts.length - 1];
+  const v = t1 - t0 > 0 ? (y1 - y0) / (t1 - t0) : 0; // px per ms; a flick carries the sheet about 0.25 s further
+  const at = d.y + v * 250;
+  if (at > detentY("peek") + 56) { SFX.close(); return overview(); }
+  let best = ui.sheet, gap = Infinity;
+  for (const s of DETENTS) { const g = Math.abs(detentY(s) - at); if (g < gap) { gap = g; best = s; } }
+  setSheet(best);
+}
+panel.addEventListener("touchstart", (e) => {
+  if (!mobile || e.touches.length !== 1 || ownGesture(e.target)) { drag = null; return; }
+  const b = e.target.closest(".w-body");
+  if (b && ui.sheet === "full" && b.scrollTop > 0) return; // the content scrolls before the sheet moves
+  dragStart(e.touches[0].clientY, !!b);
+}, { passive: true });
+panel.addEventListener("touchmove", (e) => {
+  if (!drag) return;
+  const y = e.touches[0].clientY;
+  // at full, content pushed upward is a scroll, not a drag
+  if (drag.fromBody && ui.sheet === "full" && !drag.moved && y < drag.y0) { drag = null; return; }
+  if (dragMove(y) && e.cancelable) e.preventDefault();
+}, { passive: false });
+panel.addEventListener("touchend", dragEnd);
+panel.addEventListener("touchcancel", dragEnd);
+// a mouse (a narrow desktop window) drags by the top of the sheet
+panel.addEventListener("pointerdown", (e) => { if (!mobile || e.pointerType !== "mouse" || !e.target.closest(".w-grab, .w-nav span, .w-ph > div:first-child")) return; panel.setPointerCapture(e.pointerId); dragStart(e.clientY, false); });
+panel.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse" && drag) dragMove(e.clientY); });
+panel.addEventListener("pointerup", (e) => { if (e.pointerType === "mouse") dragEnd(); });
 /* ---------- the phone menu: pages, text, tour, terminal, theme, sound and both CVs ---------- */
 const mMenu = $("[data-mmenu]");
 // a touch anywhere outside the menu closes it: on the canvas the pointer is captured, so a click may never come
@@ -487,6 +529,7 @@ SFX.onChange(() => ROOT.querySelectorAll("[data-sound]").forEach((b) => { b.setA
 
 /* ---------- keys: during boot they write the command; afterwards they reach the terminal ---------- */
 window.addEventListener("keydown", (e) => {
+  if (paused) return;
   // a figure that claimed the key (the Riffle walking its cards, or putting one back) keeps it
   if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
   SFX.unlock();
@@ -738,11 +781,30 @@ function frame(now) {
   if (panel.hasAttribute("data-open")) updateReads();
   renderer.render(scene, cam);
 }
-const start = () => { if (!running) { running = true; prev = 0; raf = requestAnimationFrame(frame); } };
+/* ---------- asleep: the site's pages are showing, and the island waits behind them exactly as it was ---------- */
+let paused = false;
+const start = () => { if (!running && !paused) { running = true; prev = 0; raf = requestAnimationFrame(frame); } };
 const stop = () => { running = false; cancelAnimationFrame(raf); };
 new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? start() : stop())).observe(ROOT);
 document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
-new ResizeObserver(() => { if (size() && BOOT.phase === "live") { setTerm(ui.term, false); if (mobile && ui.mode === "explore" && ui.cur < 0) setMode("tour"); else layoutOffsets(); } }).observe(ROOT);
+new ResizeObserver(() => { if (paused || !ROOT.offsetWidth) return; if (size() && BOOT.phase === "live") { setTerm(ui.term, false); if (mobile && ui.mode === "explore" && ui.cur < 0) setMode("tour"); else layoutOffsets(); } }).observe(ROOT);
+
+function pause() { if (paused) return; paused = true; stop(); SFX.sleep(true); }
+function resume() {
+  if (!paused) return;
+  paused = false;
+  if (size() && BOOT.phase === "live") setTerm(ui.term, false);
+  if (BOOT.phase === "live") {
+    // Back lands on the address it left; a plain link to "/" keeps what was open, and the address bar says so
+    const r = routeOf(), o = { fromHistory: true };
+    if (r && r.read) { if (ui.mode !== "read") setMode("read", o); }
+    else if (r) { if (r.i !== ui.cur) go(r.i, { jump: true, quiet: true, fromHistory: true }); }
+    else if (ui.mode === "read") setRoute("read", true);
+    else if (ui.cur >= 0) setRoute(STATIONS[ui.cur].svc, true);
+  }
+  SFX.sleep(false);
+  if (!document.hidden) start();
+}
 
 /* ---------- start ---------- */
 size();
@@ -753,4 +815,4 @@ SFX.onChange(() => {}); SFX.set(SFX.on);
 if (store.get("booted", false) || routeOf()) { BOOT.typed = CMD; TERM.input = CMD; deploy(true); }
 if (REDUCED) skipBoot();
 start();
-const API = { cert: (k) => openCert(k), state: () => ({ phase: BOOT.phase, cert: certK, lb: lbOpen }), exec, go, overview, setMode, skip: skipBoot, deploy, reboot: () => { store.set("booted", false); location.reload(); } };
+const API = { pause, resume, cert: (k) => openCert(k), state: () => ({ phase: BOOT.phase, cert: certK, lb: lbOpen }), exec, go, overview, setMode, skip: skipBoot, deploy, reboot: () => { store.set("booted", false); location.reload(); } };

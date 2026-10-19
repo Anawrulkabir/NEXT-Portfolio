@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './site.css'
 import { mountSite } from './figures'
 import { currentTheme, setTheme } from '@/lib/theme'
@@ -16,7 +16,8 @@ type Section = 'work' | 'research' | 'about'
 /**
  * One page of the site: the shared topbar and footer around a page body from ./pages. The body is
  * plain HTML (rendered on the server); figures, the reading rail and the Work catalogue are wired
- * in the browser by mountSite. Links to the island are plain anchors, so it always starts fresh.
+ * in the browser by mountSite. The island stays alive behind these pages, so its links are router
+ * links too: going back to it wakes it as it was left.
  * On a phone the topbar folds into a menu, and a case study gets a way back to its list.
  */
 export function SitePage({
@@ -30,6 +31,8 @@ export function SitePage({
 }) {
   const host = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState(false)
+  // React compares this prop by identity: a new object on every render (opening the menu) would rewrite the body
+  const html = useMemo(() => ({ __html: body }), [body])
 
   useEffect(() => {
     const root = host.current
@@ -68,10 +71,10 @@ export function SitePage({
     <div className="v3">
       <div className="site">
         <header className="topbar">
-          <a className="brand" href="/">
+          <Link className="brand" href="/">
             <b>Fahad Kabir</b>
             <span>Mechanical · CUET</span>
-          </a>
+          </Link>
           <nav className="nav" aria-label="Site">
             {nav('/work', 'Work', 'work')}
             {nav('/research', 'Research', 'research')}
@@ -87,9 +90,9 @@ export function SitePage({
                 </a>
               </div>
             </details>
-            <a className="island opt" href="/">
+            <Link className="island opt" href="/">
               Island
-            </a>
+            </Link>
             <button
               className="themebtn"
               type="button"
@@ -132,7 +135,9 @@ export function SitePage({
             <Link href="/about" onClick={close} aria-current={section === 'about' ? 'page' : undefined}>
               About
             </Link>
-            <a href="/">The island</a>
+            <Link href="/" onClick={close}>
+              The island
+            </Link>
           </nav>
           <div className="sitemenu-cv">
             <a className="btn" href={CV.swe} download>
@@ -148,7 +153,7 @@ export function SitePage({
             <Link href={back.href}>← {back.label}</Link>
           </nav>
         )}
-        <div ref={host} dangerouslySetInnerHTML={{ __html: body }} />
+        <div ref={host} dangerouslySetInnerHTML={html} />
         <footer className="foot">
           <p>Md Anawrul Kabir Fahad · Mechanical Engineering, CUET</p>
           <nav aria-label="Elsewhere">
@@ -164,7 +169,7 @@ export function SitePage({
             <a href={CV.academic} download>
               Academic CV
             </a>
-            <a href="/">The island</a>
+            <Link href="/">The island</Link>
           </nav>
         </footer>
       </div>
