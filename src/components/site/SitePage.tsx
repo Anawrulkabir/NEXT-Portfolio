@@ -129,6 +129,12 @@ export function SitePage({
             <Link className="sub" href="/work/propbench" onClick={close}>
               PropBench
             </Link>
+            <Link className="sub" href="/work/ai-studio" onClick={close}>
+              AI Studio
+            </Link>
+            <Link className="sub" href="/work/tensorcode" onClick={close}>
+              TensorCode
+            </Link>
             <Link href="/research" onClick={close} aria-current={section === 'research' ? 'page' : undefined}>
               Research
             </Link>
