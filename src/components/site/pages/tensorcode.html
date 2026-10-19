@@ -12,60 +12,23 @@
 <p class="cap">A lab: read on the left, run code on the right.</p>
 
 <section class="sec" id="tc-map"><h2>The product in one picture</h2>
-<p>Five areas, and the way a learner moves between them. Open any screenshot for the full view.</p>
-<div class="dg"><div class="dg-legend" aria-label="Legend">
-      <span><i class="dg-mk"></i>Frontend: built by me</span>
-      <span><i class="dg-mk dg-half"></i>Built with a teammate</span>
-      <span><i class="dg-mk dg-none"></i>Content, backends, infrastructure: team</span>
-    </div>
-
-    <div class="dg-journey">
-      <div class="dg-area">
-        <a class="dg-shotlink" href="/media/projects/tensorcode/T03-learning-paths.jpg" target="_blank" rel="noopener" aria-label="Learning paths: four roadmaps (opens the full screenshot)"><img src="/media/projects/tensorcode/T03-learning-paths-th.jpg" alt="Learning paths: PyTorch, CUDA, NumPy and Triton roadmaps"></a>
-        <div class="dg-body"><h3>Learning paths</h3><p>4 roadmaps → modules → chapters → lessons</p><span class="dg-who">frontend · mine</span></div>
-      </div>
-      <div class="dg-link" aria-hidden="true"><svg width="40" height="12" viewBox="0 0 40 12" fill="none" stroke="currentColor" stroke-width="1.25"><path d="M1 6h36M32 1.5 37 6l-5 4.5"/></svg>open a lesson</div>
-      <div class="dg-area">
-        <a class="dg-shotlink" href="/media/projects/tensorcode/T06-lab-guide-editor.jpg" target="_blank" rel="noopener" aria-label="A lab: the guide on the left, runnable code on the right (opens the full screenshot)"><img src="/media/projects/tensorcode/T06-lab-guide-editor-th.jpg" alt="A lab: lesson text on the left, CUDA code editor and console on the right"></a>
-        <div class="dg-body"><h3>Lab</h3><p>Guide on the left, runnable code on the right: NumPy, CUDA, Triton</p><span class="dg-who">frontend · mine</span></div>
-      </div>
-      <div class="dg-link" aria-hidden="true"><svg width="40" height="12" viewBox="0 0 40 12" fill="none" stroke="currentColor" stroke-width="1.25" stroke-dasharray="3 3"><path d="M1 6h36"/><path d="M32 1.5 37 6l-5 4.5" stroke-dasharray="none"/></svg>practise</div>
-      <div class="dg-area">
-        <a class="dg-shotlink" href="/media/projects/tensorcode/T02-problem-editor-tests.jpg" target="_blank" rel="noopener" aria-label="A problem: description, editor, test cases, Run Tests and Submit (opens the full screenshot)"><img src="/media/projects/tensorcode/T01-problems-list-th.jpg" alt="The problems list with difficulty and GPU or CPU tags"></a>
-        <div class="dg-body"><h3>Problems</h3><p>173 graded exercises with test cases and submissions, tagged GPU or CPU</p><span class="dg-who">frontend · mine</span></div>
-      </div>
-      <div class="dg-link" aria-hidden="true"><svg width="40" height="12" viewBox="0 0 40 12" fill="none" stroke="currentColor" stroke-width="1.25" stroke-dasharray="3 3"><path d="M1 6h36"/><path d="M32 1.5 37 6l-5 4.5" stroke-dasharray="none"/></svg>go beyond one file</div>
-      <div class="dg-area">
-        <a class="dg-shotlink" href="/media/projects/tensorcode/T09-ide-cuda-t4.jpg" target="_blank" rel="noopener" aria-label="The IDE: a multi-file CUDA project, run on a GPU (opens the full screenshot)"><img src="/media/projects/tensorcode/T09-ide-cuda-t4-th.jpg" alt="The IDE: file explorer with kernels and utils folders, a CUDA editor and console"></a>
-        <div class="dg-body"><h3>IDE</h3><p>Multi-file CUDA and Triton projects run on a GPU; GitHub and download</p><span class="dg-who">frontend · mine</span></div>
-      </div>
-    </div>
-
-    <div class="dg-second">
-      <div>
-        <p class="dg-entry">own entry in the side navigation</p>
-        <div class="dg-area dg-rag">
-          <a class="dg-shotlink" href="/media/projects/tensorcode/T11-tensorrag-board.jpg" target="_blank" rel="noopener" aria-label="TensorRAG: a training pipeline built from typed cards (opens the full screenshot)"><img src="/media/projects/tensorcode/T11-tensorrag-board-th.jpg" alt="TensorRAG board: cards from Data Load to Inference joined by labelled connections"></a>
-          <div class="dg-body"><h3>TensorRAG</h3><p>Build an ML training pipeline from typed cards, configure each step, run one step or all</p>
-            <div class="dg-split"><span class="dg-who">board · mine</span><span class="dg-who dg-team">execution · teammate</span></div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <p class="dg-entry">across every page</p>
-        <div class="dg-area dg-acct">
-          <div class="dg-acct-body"><h3>Account</h3><p>Sign-in and a credit balance, shown in every screen's header</p><span class="dg-who">frontend · mine</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="dg-runs">
-      <span class="dg-eyebrow">Runs on · the company GPU server, outside the TensorCode cluster</span>
-      <div class="dg-backends">
-        <span class="dg-be">NumPy<small>backend</small></span><span class="dg-be">CUDA<small>backend</small></span><span class="dg-be">Triton<small>backend</small></span><span class="dg-be">Go<small>backend</small></span>
-      </div>
-      <p>One execution backend per runtime. Some run as 1–2 replicas, each on its own GPU slice. Built and run by the team.</p>
-    </div></div>
+<p>Four areas a learner moves through, plus TensorRAG on its own. I built the frontend of all of them; the content, backends and infrastructure were team work. Click a screenshot for the full view.</p>
+<div class="dg"><div class="dg-pm">
+<ol class="dg-pm-flow">
+<li class="dg-pm-row"><a class="dg-pm-shot" href="/media/projects/tensorcode/T03-learning-paths.jpg" target="_blank" rel="noopener" aria-label="Learning paths: open the full screenshot"><img src="/media/projects/tensorcode/T03-learning-paths-th.jpg" alt="Learning paths: PyTorch, CUDA, NumPy and Triton roadmaps" loading="lazy" decoding="async"></a><div class="dg-pm-txt"><h3>Learning paths</h3><p>Four roadmaps (PyTorch, CUDA, NumPy, Triton), each split into modules, chapters and lessons.</p></div></li>
+<li class="dg-pm-step" aria-hidden="true"><span>open a lesson</span></li>
+<li class="dg-pm-row"><a class="dg-pm-shot" href="/media/projects/tensorcode/T06-lab-guide-editor.jpg" target="_blank" rel="noopener" aria-label="Lab: open the full screenshot"><img src="/media/projects/tensorcode/T06-lab-guide-editor-th.jpg" alt="A lab: lesson text on the left, code and console on the right" loading="lazy" decoding="async"></a><div class="dg-pm-txt"><h3>Lab</h3><p>The guide on the left, runnable code on the right. Switch between NumPy, CUDA and Triton.</p></div></li>
+<li class="dg-pm-step" aria-hidden="true"><span>practise</span></li>
+<li class="dg-pm-row"><a class="dg-pm-shot" href="/media/projects/tensorcode/T02-problem-editor-tests.jpg" target="_blank" rel="noopener" aria-label="Problems: open the full screenshot"><img src="/media/projects/tensorcode/T01-problems-list-th.jpg" alt="The problems list with difficulty and GPU or CPU tags" loading="lazy" decoding="async"></a><div class="dg-pm-txt"><h3>Problems</h3><p>173 graded exercises with test cases and submissions, each tagged GPU or CPU.</p></div></li>
+<li class="dg-pm-step" aria-hidden="true"><span>go beyond one file</span></li>
+<li class="dg-pm-row"><a class="dg-pm-shot" href="/media/projects/tensorcode/T09-ide-cuda-t4.jpg" target="_blank" rel="noopener" aria-label="IDE: open the full screenshot"><img src="/media/projects/tensorcode/T09-ide-cuda-t4-th.jpg" alt="The IDE: a multi-file CUDA project, editor and console" loading="lazy" decoding="async"></a><div class="dg-pm-txt"><h3>IDE</h3><p>Multi-file CUDA and Triton projects that run on a GPU, with GitHub and download.</p></div></li>
+</ol>
+<p class="dg-pm-also">Its own entry in the side navigation</p>
+<ol class="dg-pm-flow">
+<li class="dg-pm-row"><a class="dg-pm-shot" href="/media/projects/tensorcode/T11-tensorrag-board.jpg" target="_blank" rel="noopener" aria-label="TensorRAG: open the full screenshot"><img src="/media/projects/tensorcode/T11-tensorrag-board-th.jpg" alt="TensorRAG: a training pipeline of connected cards" loading="lazy" decoding="async"></a><div class="dg-pm-txt"><h3>TensorRAG</h3><p>Build an ML training pipeline from typed cards, configure each step, run one step or all.</p><p class="dg-pm-who"><b>Board</b> built by me · <b>execution</b> by a teammate</p></div></li>
+</ol>
+<div class="dg-pm-runs"><p>Runs on the company GPU server, outside the TensorCode cluster</p><div><span>NumPy</span><span>CUDA</span><span>Triton</span><span>Go</span></div></div>
+</div></div>
 </section>
 
 <section class="sec" id="tc-lab"><h2>A lab, up close</h2>
