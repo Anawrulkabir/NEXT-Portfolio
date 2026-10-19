@@ -1,0 +1,193 @@
+<div class="cs">
+<nav class="rail" aria-label="On this page"><div class="rail-group" style="--gc:var(--c-infra)"><p class="rail-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13V8M8 13V3M13 13V6"/></svg>The system</p><ul><li><a href="#as-first">The first version</a></li><li><a href="#as-why">Why move</a></li><li><a href="#as-move">The move</a></li><li><a href="#as-launch">A launch now</a></li></ul></div><div class="rail-group" style="--gc:var(--c-software)"><p class="rail-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h4M6.5 2v4L3 13a1 1 0 0 0 .9 1.5h8.2A1 1 0 0 0 13 13L9.5 6V2"/></svg>My part</p><ul><li><a href="#as-mine">What I did</a></li><li><a href="#as-result">Result</a></li></ul></div><div class="rail-group" style="--gc:var(--c-contests)"><p class="rail-title"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>Open</p><ul><li><a href="#as-open">Open questions</a></li></ul></div></nav>
+<article class="cs-col">
+<header class="rise">
+<p class="cs-label" style="--i:0">Case study · Poridhi.io · 2025–26</p>
+<h1 class="cs-h1" style="--i:1">GPU workspaces, from a machine per demand to a <em>shared</em> GPU server.</h1>
+<p class="cs-lede" style="--i:2">AI Studio gives each user a GPU workspace in the browser, with VS Code, Jupyter or marimo. I built its Next.js frontend, maintained the first version on AWS, and partnered with the team to move the platform onto the company’s own GPU server.</p>
+<div class="chips" style="--i:3"><span class="tag">Next.js</span><span class="tag">Kubernetes (K3s)</span><span class="tag">HAMi</span><span class="tag">Temporal</span><span class="tag">PostgreSQL</span></div>
+<p class="cs-island" style="--i:4"><a class="more" href="https://ai.poridhi.io" target="_blank" rel="noopener">ai.poridhi.io ↗</a> · <a class="more" href="/#/gpu-datacenter">Race a launch on the island →</a></p>
+</header>
+<div class="dg"><div class="dg-d2">
+      <div class="dg-panel dg-before">
+        <div class="dg-panel-h"><span class="dg-eyebrow">Before · AWS</span><span class="dg-muted" style="font-size:12px">one machine per demand</span></div>
+        <div class="dg-scale" style="width:calc(100% * 16 / 48); min-width:180px">
+          <div class="dg-gpu dg-pool" role="img" aria-label="NVIDIA T4 GPU with 16 gigabytes of memory, one shared pool"><span>one shared pool</span></div>
+          <div class="dg-gpu-l"><span>T4 · 16 GB</span><span>not divided</span></div>
+        </div>
+        <div class="dg-users" style="width:calc(100% * 16 / 48); min-width:180px" aria-hidden="true">
+          <div class="dg-u dg-u1" style="width:100%">User 1 · all 16 GB</div>
+          <div class="dg-u dg-u2" style="width:100%">User 2 · all 16 GB</div>
+          <div class="dg-u dg-u3" style="width:100%">User 3 · all 16 GB</div>
+        </div>
+        <p class="dg-flag">User 3's job takes the whole card. Users 1 and 2 run out of memory.</p>
+        <p class="dg-cap"><b>Up to 3 users, no isolation.</b> Each could allocate the whole 16 GB, so one heavy job could starve the others.</p>
+      </div>
+
+      <div class="dg-panel dg-after">
+        <div class="dg-panel-h"><span class="dg-eyebrow">After · own GPU server</span><span class="dg-muted" style="font-size:12px">sessions share one card</span></div>
+        <div class="dg-scale">
+          <div class="dg-gpu" role="img" aria-label="48 gigabyte GPU divided into six 8 gigabyte slices, one per user">
+            <div class="dg-slices">
+              <div class="dg-slice dg-s1">U1<small>8 GB</small></div><div class="dg-slice dg-s2">U2<small>8 GB</small></div><div class="dg-slice dg-s3">U3<small>8 GB</small></div>
+              <div class="dg-slice dg-s4">U4<small>8 GB</small></div><div class="dg-slice dg-s5">U5<small>8 GB</small></div><div class="dg-slice dg-s6">U6<small>8 GB</small></div>
+            </div>
+          </div>
+          <div class="dg-gpu-l"><span>RTX 4090, 48 GB</span><span>6 × 8 GB, enforced</span></div>
+        </div>
+        <p class="dg-flag">User 3's request past 8 GB is refused. Everyone else keeps running.</p>
+        <p class="dg-cap"><b>6 users, each capped at 8 GB.</b> HAMi intercepts every GPU memory allocation inside a container and refuses anything past its slice, so the cap is enforced on the GPU, not left to good behaviour.</p>
+      </div>
+    </div></div>
+<p class="cap" style="margin-top:8px">Both bars use the same scale. Before: up to three users on one 16 GB card, nothing stopping one of them taking all of it. After: six users on one 48 GB card, each held to 8 GB.</p>
+
+<section class="sec" id="as-first"><h2>The first version</h2>
+<p>The first version ran on AWS. When no machine had room for a new session, a workflow booted a new EC2 GPU instance. The instance installed its tools and joined a Kubernetes (K3s) cluster before an editor could start. Up to three users then shared its T4 GPU, and nothing stopped one of them using all 16 GB.</p>
+<div class="dg"><div class="dg-d1-legend" aria-label="Arrow legend">
+      <span><svg width="34" height="10"><path d="M1 5h28" class="dg-ln"/><path d="M26 1.5 31 5l-5 3.5" class="dg-ln"/></svg>request</span>
+      <span><svg width="34" height="10"><path d="M1 5h28" class="dg-ln dg-dash"/><path d="M26 1.5 31 5l-5 3.5" class="dg-ln"/></svg>creates</span>
+      <span><svg width="34" height="10"><path d="M1 5h30" class="dg-ln dg-dot"/></svg>reads / writes state</span>
+      <span><svg width="34" height="10"><path d="M6 5h22" class="dg-ln dg-thin"/><path d="M8 1.5 3 5l5 3.5M26 1.5 31 5l-5 3.5" class="dg-ln dg-thin"/></svg>live status</span>
+    </div>
+
+    <figure class="dg-d1">
+      <svg viewBox="0 0 1020 560" role="img" aria-labelledby="d1-t d1-d" class="dg-d1-svg">
+        <title id="d1-t">AI Studio's first architecture on AWS</title>
+        <desc id="d1-d">The web app sends a launch request to the Go API server, which starts a Temporal workflow. The workflow records machine state in PostgreSQL and launches an EC2 GPU instance on AWS, which joins a K3s cluster. The API server deploys the IDE container and a storage sidecar onto it; the sidecar mounts per-user storage on S3 through JuiceFS. Ingress and a secure tunnel return the workspace URL to the browser.</desc>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1 9 5 0 9" class="dg-mk-p"/></marker>
+        </defs>
+        <rect x="16" y="40" width="200" height="124" rx="12" class="dg-bd"/><text x="30" y="60" class="dg-bl">BROWSER</text>
+        <rect x="264" y="40" width="228" height="252" rx="12" class="dg-bd"/><text x="278" y="60" class="dg-bl">API SERVER · GO</text>
+        <rect x="264" y="316" width="228" height="140" rx="12" class="dg-bd"/><text x="278" y="336" class="dg-bl">STATE</text>
+        <rect x="512" y="40" width="492" height="452" rx="12" class="dg-bd"/><text x="526" y="60" class="dg-bl">AWS</text>
+        <rect x="532" y="150" width="452" height="266" rx="10" class="dg-bd"/><text x="546" y="170" class="dg-bl">K3S CLUSTER</text>
+
+        <g class="dg-nd"><rect x="32" y="80" width="168" height="62" rx="9"/><text x="46" y="106" class="dg-nt">AI Studio web app</text><text x="46" y="126" class="dg-ns">pick editor · launch</text></g>
+        <g class="dg-nd"><rect x="280" y="80" width="196" height="62" rx="9"/><text x="294" y="106" class="dg-nt">API server</text><text x="294" y="126" class="dg-ns">auth · gateway · status</text></g>
+        <g class="dg-nd"><rect x="280" y="212" width="196" height="62" rx="9"/><text x="294" y="238" class="dg-nt">Temporal</text><text x="294" y="258" class="dg-ns">launch + cleanup flows</text></g>
+        <g class="dg-nd"><rect x="280" y="350" width="196" height="44" rx="8"/><text x="294" y="370" class="dg-nt dg-sm">PostgreSQL</text><text x="294" y="386" class="dg-ns">machine state</text></g>
+        <g class="dg-nd"><rect x="280" y="402" width="196" height="44" rx="8"/><text x="294" y="422" class="dg-nt dg-sm">Redis</text><text x="294" y="438" class="dg-ns">queue · credits</text></g>
+
+        <rect x="572" y="174" width="200" height="210" rx="9" class="dg-ghost"/>
+        <rect x="562" y="182" width="200" height="210" rx="9" class="dg-ghost"/>
+        <g class="dg-nd"><rect x="552" y="190" width="200" height="210" rx="9"/>
+          <text x="566" y="214" class="dg-nt">EC2 GPU instance</text><text x="566" y="232" class="dg-ns">spot g4dn · 1× T4, 16 GB</text><text x="566" y="248" class="dg-ns">joins as a GPU node</text>
+        </g>
+        <g class="dg-nd dg-inner"><rect x="566" y="262" width="172" height="40" rx="7"/><text x="580" y="287" class="dg-nt dg-sm">IDE container</text></g>
+        <g class="dg-nd dg-inner"><rect x="566" y="310" width="172" height="40" rx="7"/><text x="580" y="335" class="dg-nt dg-sm">storage sidecar</text></g>
+        <text x="782" y="186" class="dg-ns">× N, one per demand</text>
+
+        <g class="dg-nd"><rect x="800" y="252" width="170" height="62" rx="9"/><text x="814" y="278" class="dg-nt">Ingress</text><text x="814" y="298" class="dg-ns">Nginx + tunnel</text></g>
+        <g class="dg-nd"><rect x="552" y="430" width="200" height="48" rx="8"/><text x="566" y="451" class="dg-nt dg-sm">Per-user storage</text><text x="566" y="468" class="dg-ns">JuiceFS on S3</text></g>
+
+        <path d="M200 111H280" class="dg-ln dg-thin" marker-start="url(#ah)" marker-end="url(#ah)"/>
+        <text x="206" y="101" class="dg-el">live status</text>
+        <path d="M378 142V212" class="dg-ln" marker-end="url(#ah)"/><text x="386" y="182" class="dg-el">start launch</text>
+        <path d="M378 274V350" class="dg-ln dg-dot"/><text x="386" y="306" class="dg-el">machine state</text>
+        <path d="M476 243H552" class="dg-ln dg-dash" marker-end="url(#ah)"/><text x="482" y="234" class="dg-el">launch</text>
+        <path d="M476 96H652V190" class="dg-ln dg-dash" marker-end="url(#ah)"/><text x="498" y="88" class="dg-el">deploy IDE + sidecar</text>
+        <path d="M652 350V430" class="dg-ln dg-dot"/><text x="660" y="426" class="dg-el">mount files</text>
+        <path d="M738 282H800" class="dg-ln" marker-end="url(#ah)"/><text x="746" y="274" class="dg-el">serves</text>
+        <path d="M885 314V528H116V164" class="dg-ln" marker-end="url(#ah)"/><text x="480" y="520" class="dg-el">workspace URL back to the user</text>
+
+        <g class="dg-co"><circle cx="514" cy="262" r="10"/><text x="514" y="266">1</text></g>
+        <g class="dg-co"><circle cx="738" cy="228" r="10"/><text x="738" y="232">2</text></g>
+      </svg>
+      <figcaption class="dg-d1-notes">
+        <p><b class="dg-n">1</b> A whole GPU machine boots for a new demand, installs its tools and joins the cluster: <b>5–10 minutes</b> before the editor can even start.</p>
+        <p><b class="dg-n">2</b> Up to <b>3 users share one T4</b>, and nothing stops one of them using all 16 GB.</p>
+      </figcaption>
+    </figure>
+
+    <!-- phone: the same system as a vertical sequence -->
+    <ol class="dg-d1-steps" aria-label="The first version, step by step">
+      <li><b>AI Studio web app</b><span>You choose an editor and press launch. Status streams back live.</span></li>
+      <li><b>API server (Go)</b><span>Checks who you are and starts a launch workflow.</span></li>
+      <li><b>Temporal</b><span>Runs the launch and the cleanup. Machine state is kept in PostgreSQL; Redis queues tasks and credits.</span></li>
+      <li><b>EC2 GPU instance, on AWS</b><span>A spot g4dn (1× T4, 16 GB) boots and joins the K3s cluster. <em>5–10 minutes.</em> Up to 3 users share it, with no isolation.</span></li>
+      <li><b>IDE container + storage sidecar</b><span>Deployed onto the instance. The sidecar mounts your files from S3 through JuiceFS.</span></li>
+      <li><b>Ingress and secure tunnel</b><span>Return the workspace URL to your browser.</span></li>
+    </ol></div>
+</section>
+
+<section class="sec" id="as-why"><h2>Why move</h2>
+<ul class="list"><li>A new machine took 5–10 minutes to be ready, before the editor even started.</li><li>No memory isolation on the GPU: one heavy job could starve everyone else on the card.</li><li>Spot instances could be interrupted in the middle of a session.</li><li>Every instance cost money by the hour, even when it sat half used.</li><li>One instance type, one region, one GPU model.</li></ul>
+</section>
+
+<section class="sec" id="as-move"><h2>The move</h2>
+<p>The platform moved to the company’s own GPU server: one 48 GB card, split by HAMi into six 8 GB slices. HAMi sits inside each container and refuses any GPU memory allocation past its slice, so six people can share the card without touching each other’s memory. Time-slicing alone, Kubernetes’ built-in way to share a GPU, can’t enforce that.</p>
+<div class="card tbl"><table><thead><tr><th></th><th>First version (AWS)</th><th>GPU server</th></tr></thead><tbody>
+<tr><td>A new session</td><td>may wait for a machine to boot</td><td>takes a ready, pre-started pod</td></tr>
+<tr><td>Sharing a GPU</td><td>up to 3 users, no isolation</td><td>6 users, 8 GB each, enforced</td></tr>
+<tr><td>Machine lifecycle</td><td>create, use, terminate</td><td>assign, use, release</td></tr>
+<tr><td>Your files</td><td>JuiceFS on S3</td><td>a volume on the server</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="sec" id="as-launch"><h2>How a launch works now</h2>
+<p class="dg-design-flag"><b>The design the migration followed.</b> Drawn from the post-prototype design document. Which details reached production is not yet confirmed.</p>
+<div class="dg"><figure class="dg-d1 dg-d4">
+      <svg viewBox="0 0 1000 610" role="img" aria-labelledby="d4-t d4-d" class="dg-d1-svg">
+        <title id="d4-t">Workspace launch sequence on the company GPU server</title>
+        <desc id="d4-d">The web app asks the API server to launch an editor. The API starts a Temporal workflow, which checks and deducts credits and finds a free pre-started pod in PostgreSQL, assigns the pod and starts the editor in it on the GPU server, verifies it is ready, saves the session and reports the workspace ready. The workflow then stays open: the web app sends a heartbeat every five minutes, and when the timer runs out, the user stops, or the session goes idle, the workflow stops the editor, releases the pod, ends the session and refunds unused credits.</desc>
+        <defs><marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1 9 5 0 9" class="dg-mk-p"/></marker></defs>
+        <!-- participants -->
+        <g class="dg-nd"><rect x="20" y="24" width="140" height="48" rx="9"/><text x="90" y="53" class="dg-nt dg-c">Web app</text></g>
+        <g class="dg-nd"><rect x="200" y="24" width="140" height="48" rx="9"/><text x="270" y="53" class="dg-nt dg-c">API server</text></g>
+        <g class="dg-nd"><rect x="380" y="24" width="140" height="48" rx="9"/><text x="450" y="53" class="dg-nt dg-c">Temporal</text></g>
+        <g class="dg-nd"><rect x="570" y="24" width="140" height="48" rx="9"/><text x="640" y="53" class="dg-nt dg-c">PostgreSQL</text></g>
+        <g class="dg-nd"><rect x="770" y="24" width="190" height="48" rx="9"/><text x="865" y="46" class="dg-nt dg-c">GPU server</text><text x="865" y="63" class="dg-ns dg-c">K3s · HAMi · pod pool</text></g>
+        <path d="M90 72V590M270 72V590M450 72V590M640 72V590M865 72V590" class="dg-life"/>
+        <rect x="443" y="160" width="14" height="420" rx="3" class="dg-act"/>
+
+        <!-- phase A -->
+        <rect x="16" y="92" width="968" height="22" rx="5" class="dg-band"/><text x="28" y="107" class="dg-bl">LAUNCH · THE DESIGN EXPECTED SECONDS</text>
+        <path d="M90 140H270" class="dg-ln" marker-end="url(#ah4)"/><text x="180" y="132" class="dg-el dg-c">launch: editor, duration</text>
+        <path d="M270 170H443" class="dg-ln" marker-end="url(#ah4)"/><text x="356" y="162" class="dg-el dg-c">start the workflow</text>
+        <path d="M457 202H640" class="dg-ln dg-dot" marker-end="url(#ah4)"/><text x="548" y="194" class="dg-el dg-c">check, deduct credits</text>
+        <path d="M457 234H640" class="dg-ln dg-dot" marker-end="url(#ah4)"/><text x="548" y="226" class="dg-el dg-c">find a free pod</text>
+        <path d="M457 266H865" class="dg-ln" marker-end="url(#ah4)"/><text x="760" y="258" class="dg-el dg-c">assign the pod · start the editor</text>
+        <path d="M457 298H865" class="dg-ln" marker-end="url(#ah4)"/><text x="760" y="290" class="dg-el dg-c">verify it is ready</text>
+        <path d="M457 330H640" class="dg-ln dg-dot" marker-end="url(#ah4)"/><text x="548" y="322" class="dg-el dg-c">save the session</text>
+        <path d="M443 362H90" class="dg-ln" marker-end="url(#ah4)"/><text x="270" y="354" class="dg-el dg-c">workspace ready (status streams live)</text>
+
+        <!-- phase B -->
+        <rect x="16" y="384" width="968" height="22" rx="5" class="dg-band"/><text x="28" y="399" class="dg-bl">SESSION · THE WORKFLOW STAYS OPEN</text>
+        <path d="M90 432H443" class="dg-ln dg-thin" marker-end="url(#ah4)"/><text x="270" y="424" class="dg-el dg-c">heartbeat, every 5 minutes</text>
+        <path d="M457 452h44v24h-44" class="dg-ln" marker-end="url(#ah4)"/><text x="510" y="468" class="dg-el">waits for: timer · heartbeat · stop</text>
+        <path d="M457 512H865" class="dg-ln" marker-end="url(#ah4)"/><text x="760" y="504" class="dg-el dg-c">stop the editor · release the pod</text>
+        <path d="M457 548H640" class="dg-ln dg-dot" marker-end="url(#ah4)"/><text x="560" y="540" class="dg-el dg-c">end session · refund unused</text>
+      </svg>
+      <figcaption class="dg-d1-notes">
+        <p>The slow step from the first version is gone: pods are already running on the GPU server with their 8 GB slice, so a launch only <b>assigns one and starts the editor inside it</b>. The same workflow then watches the session until the timer ends, the user stops it, or the heartbeat stops.</p>
+      </figcaption>
+    </figure>
+    <ol class="dg-d1-steps" aria-label="Launch on the company GPU server, step by step">
+      <li><b>Web app → API server</b><span>Launch with an editor and a duration.</span></li>
+      <li><b>API server → Temporal</b><span>Starts one workflow for the whole session.</span></li>
+      <li><b>Temporal ↔ PostgreSQL</b><span>Checks and deducts credits, then finds a free pre-started pod.</span></li>
+      <li><b>Temporal → GPU server</b><span>Assigns the pod, starts the editor inside it, and checks it's ready.</span></li>
+      <li><b>Workspace ready</b><span>The session is saved and the link returns to the browser.</span></li>
+      <li><b>While you work</b><span>The browser sends a heartbeat every 5 minutes; the workflow waits for the timer, a stop, or silence.</span></li>
+      <li><b>At the end</b><span>The editor stops, the pod goes back to the pool, unused credits are refunded.</span></li>
+    </ol></div>
+</section>
+
+<section class="sec" id="as-mine"><h2>What I did</h2>
+<div class="card tbl"><table><tbody>
+<tr><td><b>Built</b></td><td>The Next.js frontend where users choose their editor, memory and GPU for each session.</td></tr>
+<tr><td><b>With the team</b></td><td>The move from AWS to the company GPU server. Bringing the backend services, database and workflow engine up on the new cluster, each with its own access controls.</td></tr>
+<tr><td><b>Maintained</b></td><td>The first version on AWS, which I kept running and extended.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="sec" id="as-result"><h2>Result</h2>
+<div class="stats"><div class="card stat"><b>10–15 → 3–5</b><span>minutes to launch</span></div><div class="card stat"><b>6 × 8 GB</b><span>users per 48 GB GPU</span></div></div>
+<p class="cap">Launch times as seen in the workflow history, not a formal benchmark. The design expected launches in seconds; what still takes minutes in practice isn’t written up here yet.</p>
+</section>
+
+<section class="sec" id="as-open"><h2>Open questions in the design</h2>
+<ul class="list"><li>Files live on one server’s volume, so a user moved to another server wouldn’t find them there.</li><li>A fixed pool of slices means a full server has to say “no capacity”, or queue, or fall back to the cloud.</li><li>Both the database and HAMi know which slices are in use; keeping two records in step is its own problem.</li></ul>
+</section>
+</article></div>
